@@ -241,26 +241,6 @@ Potential future enhancements include:
 - Expanded document management
 - Enhanced notification systems
 
----
-
-## About Me
-
-I'm a rising junior at Iowa State University studying:
-
-- Management Information Systems
-- Applied Artificial Intelligence (Minor)
-- Data Science (Minor)
-
-I'm interested in:
-
-- Business Analytics
-- Information Systems
-- Technology Consulting
-- Operations Technology
-- Process Improvement
-- AI Applications in Business
-
-Currently seeking Summer 2027 internship opportunities in MIS, business analytics, IT, operations, or technology consulting.
 
 ---
 
