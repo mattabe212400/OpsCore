@@ -126,10 +126,4 @@ open index.html   # no server needed — opens directly in any browser
 
 The demo auto-authenticates as President on load. Use the **role switcher** in the blue banner to explore different access levels.
 
----
 
-## Resume Bullets
-
-> **Built OpsCore**, a 21-module chapter management SPA in vanilla JS + Firebase; implemented role-based access control across 12 officer types, Chart.js analytics dashboards, and a real-time Firestore data layer with offline cache fallback
-
-> **Designed the data architecture** for a chapter operations platform tracking attendance, finance, recruitment (14-rushee CRM funnel), judicial cases, and academic performance for 18+ members, with a composite Chapter Health Score algorithm across 5 weighted dimensions
