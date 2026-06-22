@@ -52,7 +52,7 @@
 | Secretary | Dashboard, Notes, Attendance, Calendar, Reports |
 | Recruitment Chair | Dashboard, Recruitment, Calendar, Members, Committees |
 | Scholarship Chair | Dashboard, Academics, Members, Analytics, Reports |
-| Risk Manager | Dashboard, Sober, Calendar, Analytics |
+| Risk Manager | Dashboard, Sober, Calendar, Analytics, Academics |
 | Chaplain | Dashboard, Ritual, Members, Committees |
 | Philanthropy Chair | Dashboard, Philanthropy, Committees, Calendar |
 | Alumni Relations Chair | Dashboard, Alumni, Members |
