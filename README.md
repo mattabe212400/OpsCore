@@ -122,16 +122,3 @@ No npm, no build tools, no framework. Loads instantly from a single `index.html`
 |---|---|---|
 | ![Dashboard](screenshots/dashboard.png) | ![Attendance](screenshots/attendance.png) | ![Recruitment](screenshots/recruitment.png) |
 
----
-
-## Run Locally
-
-```
-git clone https://github.com/your-username/opscore.git
-cd opscore
-open index.html   # no server needed — opens directly in any browser
-```
-
-The demo auto-authenticates as President on load. Use the **role switcher** in the blue banner to explore different access levels.
-
-
