@@ -7,7 +7,7 @@
 
 ![Dashboard](screenshots/dashboard.png)
 
-**OpsCore** is a full-stack chapter management system built for Greek-letter organizations. It covers every operational domain a chapter runs — from attendance and finance to recruitment CRM, judicial cases, and succession planning — in a single role-aware SPA. Built after identifying real pain points managing a 160-member chapter on spreadsheets and email threads.
+**OpsCore** is a full-stack chapter management system built for Greek organizations. It covers every operational domain a chapter runs on from attendance and finance to recruitment, judicial cases, and succession planning, all in one place. Built after identifying real pain points managing a 160-member chapter on spreadsheets and email threads.
 
 **[Live Demo →](https://internal-ops-dashboard-livid.vercel.app/)** · No login required · All data is fictional seed data
 
@@ -134,10 +134,4 @@ open index.html   # no server needed — opens directly in any browser
 
 The demo auto-authenticates as President on load. Use the **role switcher** in the blue banner to explore different access levels.
 
----
 
-## Resume Bullets
-
-> **Built OpsCore**, a 21-module chapter management SPA in vanilla JS + Firebase; implemented role-based access control across 12 officer types, Chart.js analytics dashboards, and a real-time Firestore data layer with offline cache fallback
-
-> **Designed the data architecture** for a chapter operations platform tracking attendance, finance, recruitment (14-rushee CRM funnel), judicial cases, and academic performance for 18+ members, with a composite Chapter Health Score algorithm across 5 weighted dimensions
