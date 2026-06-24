@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>OpsCore 2.0 — Live Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+
+<!-- Styles -->
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/responsive.css">
+
+<!-- Demo banner padding override -->
+<style>
+  body { padding-top: 36px; }
+  @media(max-width:600px){ body { padding-top: 52px; } }
+</style>
+</head>
+<body>
+
+<!-- Demo banner -->
+<div id="demo-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0c1d56,#1a3a8c);color:#fff;font-size:11.5px;font-family:'DM Sans',system-ui,sans-serif;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:5px;padding:2px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Demo Mode</span>
+    <span style="opacity:.9">OpsCore 2.0 · Viewing as <strong id="demo-role-label">President</strong> · All data is fictional</span>
+    <select id="demo-role-switcher" onchange="switchDemoRole(this.value)" title="Switch role to explore RBAC access control" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:5px;font-size:10.5px;padding:2px 6px;cursor:pointer;outline:none;max-width:210px">
+      <option value="" disabled selected style="color:#1e293b;background:#fff">Switch role…</option>
+      <option value="President" style="color:#1e293b;background:#fff">President — full access</option>
+      <option value="Vice President" style="color:#1e293b;background:#fff">Vice President — full access</option>
+      <option value="Treasurer" style="color:#1e293b;background:#fff">Treasurer — finance + exec base</option>
+      <option value="Secretary" style="color:#1e293b;background:#fff">Secretary — exec base (view notes/members)</option>
+      <option value="Risk Manager" style="color:#1e293b;background:#fff">Risk Manager — event safety, academics + exec base</option>
+      <option value="Recruitment Chair" style="color:#1e293b;background:#fff">Recruitment Chair — CRM + exec base</option>
+      <option value="Scholarship Chair" style="color:#1e293b;background:#fff">Scholarship Chair — academics + exec base</option>
+      <option value="Chaplain" style="color:#1e293b;background:#fff">Chaplain — ritual + exec base</option>
+      <option value="Philanthropy Chair" style="color:#1e293b;background:#fff">Philanthropy Chair — philanthropy + exec base</option>
+      <option value="Community Service Chair" style="color:#1e293b;background:#fff">Community Service — philanthropy + exec base</option>
+      <option value="Alumni Relations Chair" style="color:#1e293b;background:#fff">Alumni Relations — alumni + exec base</option>
+      <option value="New Member Educator" style="color:#1e293b;background:#fff">New Member Educator — ritual + exec base</option>
+      <option value="Social Chair" style="color:#1e293b;background:#fff">Social Chair — exec base</option>
+      <option value="House Manager" style="color:#1e293b;background:#fff">House Manager — exec base</option>
+      <option value="Public Relations" style="color:#1e293b;background:#fff">Public Relations — exec base</option>
+    </select>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <button onclick="document.getElementById('demo-banner').style.display='none';document.body.style.paddingTop='0'" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:16px;line-height:1;padding:0 2px" title="Dismiss">×</button>
+  </div>
+</div>
+
+
+<!-- ── AUTH LOADING OVERLAY ── -->
+<div id="auth-loading">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+    <div class="auth-spinner"></div>
+    <div style="color:rgba(255,255,255,.6);font-size:11.5px;letter-spacing:.04em">Loading…</div>
+  </div>
+</div>
+
+<!-- ── TOAST CONTAINER ── -->
+<div id="toast-container"></div>
+
+<!-- ── OFFLINE BANNER ── -->
+<div id="offline-banner"><i class="ti ti-wifi-off" style="font-size:13px;margin-right:6px;vertical-align:middle"></i>You are offline — changes are saved locally and will sync when reconnected.</div>
+
+<!-- ── CONFIRM DIALOG ── -->
+<div id="confirm-overlay">
+  <div class="confirm-box">
+    <h4 id="confirm-title">Confirm</h4>
+    <p id="confirm-msg"></p>
+    <div class="btns">
+      <button class="btn" onclick="confirmCancel()">Cancel</button>
+      <button class="btn btn-d" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOGIN GATE ── -->
+<div id="login-gate">
+  <div class="lg-box">
+    <div class="lg-logo">
+      <div class="lg-badge">ΑΤΩ</div>
+      <div><div class="lg-name">Beta Chapter</div><div class="lg-sub">Executive Operations Platform</div></div>
+    </div>
+    <div class="lg-fld"><label>Email</label><input id="lg-user" type="email" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('lg-pass').focus()"></div>
+    <div class="lg-fld"><label>Password</label><input id="lg-pass" type="password" placeholder="••••••••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+    <button class="lg-btn" id="lg-btn" onclick="handleLogin()">Sign In</button>
+    <div class="lg-err" id="lg-err"></div>
+    <div id="lg-loading" style="display:none;text-align:center;font-size:11.5px;color:var(--mt);margin-top:8px">Checking session…</div>
+    <div class="lg-footer">State University · ATO Beta Chapter</div>
+  </div>
+</div>
+
+<nav class="sb" id="app-nav" style="display:none">
+  <div class="sb-logo" style="display:flex;align-items:center;gap:8px;justify-content:space-between">
+    <div><div class="sb-badge">ΑΤΩ</div><div class="sb-name">Beta Chapter</div><div class="sb-sub" id="sb-sem">State University · Fall 2026</div></div>
+    <button class="ib sb-close-btn" id="sb-close-btn" onclick="sbClose()" title="Close menu" aria-label="Close menu" style="display:none"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="ns"><div class="nl">Overview</div><div class="ni active" data-page="dashboard" onclick="rbacNav('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard</div></div>
+  <div class="ns" data-section="operations"><div class="nl">Operations</div>
+    <div class="ni" data-page="attendance" onclick="rbacNav('attendance',this)"><i class="ti ti-users"></i>Attendance<span class="nbdg nb-a" id="attend-sb-badge" style="display:none">0</span></div>
+    <div class="ni" data-page="calendar" onclick="rbacNav('calendar',this)"><i class="ti ti-calendar"></i>Calendar</div>
+    <div class="ni" data-page="tasks" onclick="rbacNav('tasks',this)"><i class="ti ti-checkbox"></i>Tasks &amp; Goals</div>
+    <div class="ni" data-page="notes" onclick="rbacNav('notes',this)"><i class="ti ti-notes"></i>Meeting Notes</div>
+
+    <div class="ni" data-page="finance" onclick="rbacNav('finance',this)"><i class="ti ti-cash"></i>Finance</div>
+  </div>
+  <div class="ns" data-section="governance"><div class="nl">Governance</div>
+    <div class="ni" data-page="judicial" onclick="rbacNav('judicial',this)"><i class="ti ti-scale"></i>Judicial Board<span class="nbdg nb-r" id="judicial-sb-badge" style="display:none">0</span></div>
+    <div class="ni" data-page="sober" onclick="rbacNav('sober',this)"><i class="ti ti-shield-check"></i>Social Monitors</div>
+  </div>
+  <div class="ns" data-section="members"><div class="nl">Members</div>
+    <div class="ni" data-page="members" onclick="rbacNav('members',this)"><i class="ti ti-user-circle"></i>Members</div>
+    <div class="ni" data-page="recruitment" onclick="rbacNav('recruitment',this)"><i class="ti ti-user-plus"></i>Recruitment CRM</div>
+    <div class="ni" data-page="academics" onclick="rbacNav('academics',this)"><i class="ti ti-school"></i>Academics</div>
+    <div class="ni" data-page="committees" onclick="rbacNav('committees',this)"><i class="ti ti-sitemap"></i>Committees</div>
+  </div>
+  <div class="ns" data-section="community"><div class="nl">Community</div>
+    <div class="ni" data-page="philanthropy" onclick="rbacNav('philanthropy',this)"><i class="ti ti-heart"></i>Philanthropy</div>
+    <div class="ni" data-page="alumni" onclick="rbacNav('alumni',this)"><i class="ti ti-users-group"></i>Alumni Relations</div>
+    <div class="ni" data-page="ritual" onclick="rbacNav('ritual',this)"><i class="ti ti-book"></i>Ritual & Education</div>
+  </div>
+  <div class="ns" data-section="intelligence"><div class="nl">Intelligence</div>
+    <div class="ni" data-page="healthscore" onclick="rbacNav('healthscore',this)"><i class="ti ti-activity-heartbeat"></i>Health Scorecard</div>
+    <div class="ni" data-page="analytics" onclick="rbacNav('analytics',this)"><i class="ti ti-chart-bar"></i>Analytics</div>
+    <div class="ni" data-page="reports" onclick="rbacNav('reports',this)"><i class="ti ti-file-analytics"></i>Reports</div>
+    <div class="ni" data-page="files" onclick="rbacNav('files',this)"><i class="ti ti-folder"></i>Files</div>
+  </div>
+  <div class="ns" data-section="system"><div class="nl">System</div>
+    <div class="ni" data-page="transition" onclick="rbacNav('transition',this)"><i class="ti ti-arrow-right-circle"></i>Transition Hub</div>
+    <div class="ni" data-page="settings" onclick="rbacNav('settings',this)"><i class="ti ti-settings"></i>Settings</div>
+  </div>
+  <div class="sb-user"><div class="av-sm" id="u-av"></div><div><div style="font-size:12px;font-weight:500" id="u-name"></div><div style="font-size:10px;color:var(--mt)" id="u-role"></div></div></div>
+</nav>
+<div class="sb-overlay" id="sb-overlay" onclick="sbClose()"></div>
+<div class="main" id="app-main" style="display:none">
+  <div class="topbar">
+    <button class="ib sb-hamburger" id="sb-hamburger" onclick="sbToggle()" title="Menu" aria-label="Toggle menu"><i class="ti ti-menu-2"></i></button>
+    <div class="tb-title" id="pg-title" style="flex:0 0 auto;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dashboard</div>
+    <!-- Global Search -->
+    <div class="gs-wrap" id="gs-wrap">
+      <div class="gs-input-row">
+        <i class="ti ti-search"></i>
+        <input id="gs-input" placeholder="Search everything..." autocomplete="off"
+          oninput="gsOnInput()" onkeydown="gsOnKey(event)" onfocus="gsOnFocus()" />
+        <button class="gs-clear" id="gs-clear" onclick="gsClear()" title="Clear search"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="gs-dropdown" id="gs-dropdown"></div>
+    </div>
+    <div class="tb-date" id="tb-date"></div>
+    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+      <button class="ib" onclick="rbacNav('settings',null)" title="Settings"><i class="ti ti-settings"></i></button>
+      <div class="av-sm" style="cursor:pointer" onclick="rbacNav('settings',null)" id="tb-av"></div>
+      <button class="ib" onclick="handleLogout()" title="Log out" style="margin-left:2px"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+  <div class="content" id="ca">
+    <div class="page active" id="page-dashboard">
+
+      <!-- ── HERO BANNER: Chapter Health + Quick Actions ── -->
+      <div class="d2-hero">
+        <!-- Health Score -->
+        <div class="d2-hero-health">
+          <div class="d2-health-ring">
+            <svg width="68" height="68" viewBox="0 0 68 68">
+              <circle cx="34" cy="34" r="28" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="7"/>
+              <circle id="d-health-ring" cx="34" cy="34" r="28" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" style="transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)"/>
+            </svg>
+            <div class="d2-health-val">
+              <span id="d-health-val">—</span>
+              <span class="d2-health-lbl">score</span>
+            </div>
+          </div>
+          <div class="d2-hero-copy">
+            <div class="d2-hero-label">Chapter Health Score</div>
+            <div id="d-health-dims" class="d2-hero-dims"></div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="d2-hero-div"></div>
+
+        <!-- Quick Actions -->
+        <div class="d2-hero-actions">
+          <div class="d2-hero-label" style="margin-bottom:9px">Quick Actions</div>
+          <div class="d2-qa-grid" id="d-quick-actions">
+            <button class="d2-qa-btn" onclick="openAddNote()"><i class="ti ti-notes"></i>New Note</button>
+            <button class="d2-qa-btn" onclick="openM('m-addtask')"><i class="ti ti-checkbox"></i>Add Task</button>
+            <button class="d2-qa-btn" onclick="openMarkAtt()"><i class="ti ti-user-check"></i>Mark Attendance</button>
+            <button class="d2-qa-btn" onclick="openM('m-addevent')"><i class="ti ti-calendar-plus"></i>Add Event</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── KPI ROW ── -->
+      <div class="d2-kpi-row" id="d-kpi"></div>
+
+      <!-- ── MAIN BODY: 2-column layout ── -->
+      <div class="d2-body">
+
+        <!-- LEFT COLUMN -->
+        <div class="d2-left">
+
+          <!-- Alerts -->
+          <div class="card d2-card" style="margin-bottom:11px">
+            <div class="card-hd">
+              <span class="card-t d2-card-t">
+                <span id="d-alerts-dot" class="d2-pulse-dot"></span>
+                Active Alerts
+              </span>
+              <button class="card-a" onclick="rbacNav('analytics',null)">Analytics</button>
+            </div>
+            <div id="d-alerts"></div>
+          </div>
+
+          <!-- Upcoming Events -->
+          <div class="card d2-card" style="margin-bottom:11px">
+            <div class="card-hd">
+              <span class="card-t d2-card-t"><i class="ti ti-calendar-event d2-card-ico" style="color:var(--bl)"></i>Upcoming Events</span>
+              <button class="card-a" onclick="rbacNav('calendar',null)">Calendar →</button>
+            </div>
+            <div id="d-events"></div>
+          </div>
+
+          <!-- Officer Accountability -->
+          <div class="card d2-card" style="margin-bottom:11px">
+            <div class="card-hd">
+              <span class="card-t d2-card-t"><i class="ti ti-users d2-card-ico" style="color:var(--navy)"></i>Officer KPIs</span>
+              <button class="card-a" onclick="rbacNav('analytics',null)">Full report →</button>
+            </div>
+            <div id="d-officers-v2" class="d2-officer-grid"></div>
+            <!-- hidden legacy table still required by renderDash() JS -->
+            <table class="tbl" id="d-officers" style="display:none"></table>
+          </div>
+
+          <!-- Semester Goals -->
+          <div class="card d2-card">
+            <div class="card-hd">
+              <span class="card-t d2-card-t"><i class="ti ti-target d2-card-ico" style="color:var(--gn)"></i>Semester Goals</span>
+              <button class="card-a" onclick="rbacNav('tasks',null)">View all →</button>
+            </div>
+            <div id="d-goals"></div>
+          </div>
+
+        </div><!-- /left -->
+
+        <!-- RIGHT COLUMN -->
+        <div class="d2-right">
+
+          <!-- Attendance Snapshot -->
+          <div class="card d2-card" style="margin-bottom:11px">
+            <div class="card-hd">
+              <span class="card-t d2-card-t"><i class="ti ti-chart-bar d2-card-ico" style="color:var(--navy)"></i>Attendance</span>
+              <button class="card-a" onclick="rbacNav('attendance',null)">Report →</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:13px;padding:6px 0 10px">
+              <div class="ring" style="flex-shrink:0">
+                <svg width="62" height="62">
+                  <circle cx="31" cy="31" r="24" fill="none" stroke="#f0f0ee" stroke-width="7"/>
+                  <circle id="ring-c" cx="31" cy="31" r="24" fill="none" stroke="var(--navy)" stroke-width="7" stroke-linecap="round" transform="rotate(-90 31 31)"/>
+                </svg>
+                <div class="ring-v" id="ring-v">—</div>
+              </div>
+              <div>
+                <div style="font-size:22px;font-weight:700;line-height:1;color:var(--tx)" id="ring-v2"></div>
+                <div style="font-size:11px;font-weight:500;color:var(--mt);margin-top:2px">Chapter average</div>
+                <div style="font-size:10.5px;color:var(--ht);margin-top:1px" id="ring-s"></div>
+              </div>
+            </div>
+            <div class="mch" id="d-chart" style="margin-top:2px;height:46px"></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--ht);margin-top:3px" id="d-chart-labels"></div>
+          </div>
+
+          <!-- Attendance Risk -->
+          <div class="card d2-card" style="margin-bottom:11px">
+            <div class="card-hd">
+              <span class="card-t d2-card-t"><i class="ti ti-alert-triangle d2-card-ico" style="color:var(--am)"></i>Attendance Risk</span>
+              <button class="card-a" onclick="rbacNav('attendance',null)">Full report →</button>
+            </div>
+            <div id="d-att-risk"></div>
+          </div>
+
+          <!-- Overdue Tasks -->
+          <div class="card d2-card" style="margin-bottom:11px">
+            <div class="card-hd">
+              <span class="card-t d2-card-t"><i class="ti ti-clock d2-card-ico" style="color:var(--rd)"></i>Overdue Tasks</span>
+              <button class="card-a" onclick="rbacNav('tasks',null)">All tasks →</button>
+            </div>
+            <div id="d-overdue"></div>
+          </div>
+
+          <!-- Social Monitors -->
+          <div class="card d2-card" style="margin-bottom:11px">
+            <div class="card-hd">
+              <span class="card-t d2-card-t"><i class="ti ti-shield-check d2-card-ico" style="color:var(--gn)"></i>Social Monitors — This Weekend</span>
+              <button class="card-a" onclick="rbacNav('sober',null)">Schedule →</button>
+            </div>
+            <div id="d-sober"></div>
+          </div>
+
+          <!-- Recent Notes -->
+          <div class="card d2-card">
+            <div class="card-hd">
+              <span class="card-t d2-card-t"><i class="ti ti-notes d2-card-ico" style="color:var(--bl)"></i>Recent Notes</span>
+              <button class="card-a" onclick="rbacNav('notes',null)">View all →</button>
+            </div>
+            <div id="d-notes"></div>
+          </div>
+
+        </div><!-- /right -->
+      </div><!-- /body -->
+
+    </div>
+
+    <div class="page" id="page-attendance">
+
+      <!-- KPIs -->
+      <div class="g4" id="a-kpi" style="margin-bottom:13px"></div>
+
+      <!-- Tab Bar + Actions -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;flex-wrap:wrap;gap:8px" id="att-toolbar">
+        <div class="att-tabs" id="att-tabs" style="margin-bottom:14px">
+          <button class="att-tab active" onclick="attTab(this,'att-analytics')">Analytics</button>
+          <button class="att-tab" onclick="attTab(this,'att-members')">Members</button>
+          <button class="att-tab" onclick="attTab(this,'att-events')">Events</button>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-p" id="att-new-event-btn" onclick="openM('m-addevent')"><i class="ti ti-plus"></i>New Event</button>
+          <button class="btn" id="att-mark-btn" onclick="openMarkAtt()"><i class="ti ti-checkbox"></i>Mark Attendance</button>
+          <button class="btn" onclick="xport('attendance')"><i class="ti ti-download"></i>Export</button>
+        </div>
+      </div>
+
+      <!-- ── ANALYTICS TAB ── -->
+      <div id="att-analytics">
+
+        <!-- Row 1: Trend + Distribution -->
+        <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:11px;margin-bottom:11px" id="att-row1">
+
+          <!-- Trend line -->
+          <div class="card">
+            <div class="card-hd">
+              <span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-trending-up" style="font-size:12px;color:var(--navy)"></i>Attendance Trend</span>
+              <span style="font-size:10px;color:var(--ht)" id="att-trend-lbl"></span>
+            </div>
+            <div style="position:relative">
+              <svg id="att-line" width="100%" height="140" style="overflow:visible;display:block"></svg>
+              <div id="att-line-tooltip" style="display:none;position:absolute;background:#1a1a18;color:#fff;font-size:10px;padding:5px 9px;border-radius:6px;pointer-events:none;white-space:nowrap;z-index:10"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--ht);margin-top:4px;overflow:hidden" id="att-line-xaxis"></div>
+          </div>
+
+          <!-- Donut distribution -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-chart-donut" style="font-size:12px;color:var(--bl)"></i>Status Distribution</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;padding:6px 0 10px">
+              <div style="position:relative;width:110px;height:110px;margin-bottom:10px">
+                <svg id="att-donut" width="110" height="110" viewBox="0 0 110 110"></svg>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                  <div style="font-size:18px;font-weight:700" id="att-donut-pct">—</div>
+                  <div style="font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.05em">Good</div>
+                </div>
+              </div>
+              <div id="att-donut-legend" style="display:flex;flex-direction:column;gap:5px;width:100%"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Row 2: Event breakdown + Class year -->
+        <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:11px;margin-bottom:11px" id="att-row2">
+
+          <!-- Per-event bar chart -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-calendar-stats" style="font-size:12px;color:var(--am)"></i>Event Breakdown</span></div>
+            <div id="att-events-chart" style="display:flex;flex-direction:column;gap:5px;margin-top:4px"></div>
+          </div>
+
+          <!-- Class year breakdown -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-school" style="font-size:12px;color:var(--gn)"></i>By Class Year</span></div>
+            <div id="att-class-chart" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div>
+          </div>
+
+        </div>
+
+        <!-- Row 3: Risk Stratification -->
+        <div class="card">
+          <div class="card-hd">
+            <span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-alert-triangle" style="font-size:12px;color:var(--rd)"></i>Risk Stratification</span>
+            <span style="font-size:10.5px;color:var(--mt)" id="att-risk-summary"></span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px" id="att-risk-grid"></div>
+        </div>
+
+      </div><!-- /analytics -->
+
+      <!-- ── MEMBERS TAB ── -->
+      <div id="att-members" style="display:none">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px">
+          <div class="sbar" style="flex:1;max-width:250px;margin-bottom:0"><i class="ti ti-search"></i><input id="a-search" placeholder="Search member..." oninput="filterA()"></div>
+        </div>
+        <div class="card"><div class="card-hd"><span class="card-t" id="att-hd">Member Attendance</span></div><div class="tw"><table class="tbl" id="a-table"></table></div></div>
+      </div>
+
+      <!-- ── EVENTS TAB ── -->
+      <div id="att-events" style="display:none">
+        <div class="card"><div class="card-hd"><span class="card-t">Events This Semester</span></div><div class="tw"><table class="tbl" id="a-events"></table></div></div>
+      </div>
+
+    </div>
+
+    <div class="page" id="page-calendar">
+      <!-- Toolbar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn" onclick="calPrev()"><i class="ti ti-chevron-left"></i></button>
+          <span style="font-size:14px;font-weight:600;min-width:160px;text-align:center" id="cal-month-label"></span>
+          <button class="btn" onclick="calNext()"><i class="ti ti-chevron-right"></i></button>
+          <button class="btn" style="font-size:11px" onclick="calToday()">Today</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="display:flex;gap:4px" id="cal-filt"></div>
+          <button class="btn btn-p" onclick="openM('m-addevent')"><i class="ti ti-plus"></i>New Event</button>
+        </div>
+      </div>
+      <!-- Calendar grid -->
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:13px">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--bdr)">
+          <div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em">Sun</div>
+          <div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em">Mon</div>
+          <div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em">Tue</div>
+          <div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em">Wed</div>
+          <div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em">Thu</div>
+          <div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em">Fri</div>
+          <div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em">Sat</div>
+        </div>
+        <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr)"></div>
+      </div>
+      <!-- Legend -->
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:13px;font-size:11px;color:var(--mt)">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#e8eef7;border:1px solid #b5c8e8;flex-shrink:0"></span>Chapter event</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--gn-bg);border:1px solid #a8d4a0;flex-shrink:0"></span>Recruitment</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--am-bg);border:1px solid #f0c87a;flex-shrink:0"></span>Brotherhood</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--rd-bg);border:1px solid #f0a8a8;flex-shrink:0"></span>Mandatory</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--navy);flex-shrink:0"></span>Task due</span>
+      </div>
+      <!-- Day detail panel (shows when a day is clicked) -->
+      <div id="cal-detail" style="display:none">
+        <div class="card">
+          <div class="card-hd"><span class="card-t" id="cal-detail-title">Events</span><button class="card-a" onclick="document.getElementById('cal-detail').style.display='none'">Close</button></div>
+          <div id="cal-detail-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-tasks">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-title">Tasks &amp; Goals</div><div class="ph-sub">Track officer tasks, semester goals, and chapter priorities</div></div>
+        <div class="ph-actions"><button class="btn btn-p" onclick="openM('m-addtask')"><i class="ti ti-plus"></i>New Task</button></div>
+      </div>
+      <div class="g4" id="t-kpi" style="margin-bottom:13px"></div>
+      <div class="card" style="margin-bottom:13px"><div class="card-hd"><span class="card-t">Semester Goals</span><button class="card-a" onclick="openM('m-addgoal')">+ Add goal</button></div><div class="gg" id="t-goals"></div></div>
+      <div class="sb2">
+        <span class="sl">Task Board</span>
+      </div>
+      <div class="kb" id="t-kb"></div>
+    </div>
+
+    <div class="page" id="page-notes">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-title">Meeting Notes</div><div class="ph-sub">Chapter, exec, and committee meeting records</div></div>
+        <div class="ph-actions">
+          <div class="sbar" style="margin-bottom:0;width:200px"><i class="ti ti-search"></i><input id="n-search" placeholder="Search notes..." oninput="filterN()"></div>
+          <button class="btn btn-p" id="notes-add-btn" onclick="openAddNote()"><i class="ti ti-plus"></i>New Note</button>
+        </div>
+      </div>
+      <div id="notes-g" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px"></div>
+    </div>
+
+
+
+    <div class="page" id="page-judicial">
+      <!-- Access gate — shown to unauthorized users -->
+      <div id="jb-gate">
+        <div style="max-width:360px;margin:60px auto;text-align:center">
+          <div style="width:56px;height:56px;background:var(--rd-bg);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <i class="ti ti-scale" style="font-size:26px;color:var(--rd)"></i>
+          </div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:6px">Judicial Board</div>
+          <div style="font-size:12px;color:var(--mt);margin-bottom:24px">This section is restricted to authorized officers only. Contact the chapter President if you need access.</div>
+        </div>
+      </div>
+
+      <!-- Main JBoard content (hidden until unlocked) -->
+      <div id="jb-content" style="display:none">
+        <!-- Confidential banner -->
+        <div style="background:var(--rd-bg);border:1px solid #f0a0a0;border-radius:8px;padding:9px 13px;margin-bottom:13px;font-size:11.5px;color:var(--rd-tx);display:flex;align-items:center;gap:8px"><i class="ti ti-shield-lock" style="font-size:14px;flex-shrink:0"></i><span><strong>Confidential — authorized officers only.</strong> Judicial Board records are restricted. Do not share case details outside this section.</span></div>
+        <!-- Header bar -->
+        <div class="ph" style="margin-bottom:13px">
+          <div class="ph-left">
+            <div class="ph-title">Judicial Board</div>
+            <div class="ph-sub">Confidential — authorized officers only</div>
+          </div>
+          <div class="ph-actions">
+            <button class="btn" onclick="jbLock()" style="display:none"><i class="ti ti-lock"></i>Lock</button>
+            <button class="btn btn-p" style="height:25px;font-size:11px" onclick="openM('m-addcase')"><i class="ti ti-plus"></i>New Case</button>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="g4" id="j-kpi" style="margin-bottom:13px"></div>
+
+        <!-- Two-column layout -->
+        <div class="g2" style="margin-bottom:13px">
+          <!-- Active cases -->
+          <div class="card">
+            <div class="card-hd">
+              <span class="card-t">Active Cases</span>
+            </div>
+            <div id="j-open-cards" style="display:flex;flex-direction:column;gap:8px"></div>
+            <div id="j-open-empty" style="display:none"></div>
+          </div>
+
+          <!-- Case pipeline -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Case Pipeline</span></div>
+            <div id="j-pipeline"></div>
+          </div>
+        </div>
+
+        <!-- Resolved cases table -->
+        <div class="card">
+          <div class="card-hd"><span class="card-t">Resolved This Semester</span></div>
+          <div class="tw"><table class="tbl" id="j-res"></table></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-sober">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-title">Social Monitors</div><div class="ph-sub">Shift scheduling and coverage tracking</div></div>
+        <div class="ph-actions" id="sober-toolbar">
+          <button class="btn" id="sober-import-btn" onclick="openM('m-simport')"><i class="ti ti-upload"></i>Import</button>
+          <button class="btn btn-p" id="sober-add-btn" onclick="openM('m-addshift')"><i class="ti ti-plus"></i>Add Shift</button>
+        </div>
+      </div>
+      <div class="g4" id="s-kpi" style="margin-bottom:13px"></div>
+      <div id="s-alert"></div>
+      <div class="card" style="margin-bottom:13px"><div class="card-hd"><span class="card-t">Upcoming Schedule</span></div><div class="tw"><table class="tbl" id="s-table"></table></div></div>
+      <div class="card"><div class="card-hd"><span class="card-t">Past Shifts</span></div><div class="tw"><table class="tbl" id="s-hist"></table></div></div>
+    </div>
+
+    <div class="page" id="page-members">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-title">Members</div><div class="ph-sub">Chapter roster, roles, and engagement</div></div>
+        <div class="ph-actions">
+          <div class="sbar" style="margin-bottom:0;width:200px"><i class="ti ti-search"></i><input id="m-search" placeholder="Search members..." oninput="filterM()"></div>
+          <button class="btn" onclick="xport('members')"><i class="ti ti-download"></i>Export</button>
+          <button class="btn" id="members-import-btn" onclick="openImportModal('members')" style="display:none"><i class="ti ti-table-import"></i>Import CSV</button>
+          <button class="btn btn-p" id="members-add-btn" onclick="openM('m-addmember')"><i class="ti ti-plus"></i>Add Member</button>
+        </div>
+      </div>
+      <div class="g3" id="m-kpi" style="margin-bottom:13px"></div>
+      <div class="card"><div class="tw"><table class="tbl" id="m-table"></table></div></div>
+    </div>
+
+    <div class="page" id="page-committees">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-title">Committees</div><div class="ph-sub" id="co-cnt"></div></div>
+        <div class="ph-actions"><button class="btn btn-p" id="comm-add-btn" onclick="openM('m-addcomm')"><i class="ti ti-plus"></i>New Committee</button></div>
+      </div>
+      <div id="co-grid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px"></div>
+    </div>
+
+    <div class="page" id="page-academics">
+      <!-- Access gate (hidden when authorized) -->
+      <div id="ac-gate" style="display:none;padding:60px 24px;text-align:center">
+        <div style="font-size:36px;margin-bottom:12px">🔒</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Academic Records — Restricted</div>
+        <div style="font-size:12.5px;color:var(--mt);max-width:340px;margin:0 auto">Only the President, Vice President, Scholarship Chair, and Risk Manager can view GPA data.</div>
+      </div>
+      <div id="ac-content">
+      <!-- KPIs -->
+      <div class="g4" id="ac-kpi" style="margin-bottom:13px"></div>
+
+      <!-- Chapter GPA card + update -->
+      <div class="g21" style="margin-bottom:13px">
+        <div class="card">
+          <div class="card-hd">
+            <span class="card-t">Chapter GPA — All Members</span>
+            <button class="btn btn-p" style="height:26px;font-size:11px" onclick="openUpdateGpa()"><i class="ti ti-edit"></i>Update GPAs</button>
+            <button class="btn" style="height:26px;font-size:11px" onclick="xport('academics')"><i class="ti ti-download"></i>Export</button>
+          </div>
+          <!-- Search + filter bar -->
+          <div style="display:flex;gap:7px;margin-bottom:11px">
+            <div class="sbar" style="flex:1;margin-bottom:0"><i class="ti ti-search"></i><input id="ac-search" placeholder="Search member..." oninput="filterAc()"></div>
+            <select id="ac-filter" onchange="filterAc()" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none">
+              <option value="all">All classes</option>
+              <option value="Senior">Seniors</option>
+              <option value="Junior">Juniors</option>
+              <option value="Sophomore">Sophomores</option>
+              <option value="Freshman">Freshmen</option>
+            </select>
+          </div>
+          <div class="tw"><table class="tbl" id="ac-table"></table></div>
+        </div>
+
+        <!-- Right column: highlights + warnings -->
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <!-- Top performers (by cumulative GPA) -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="color:var(--gn-tx)"><i class="ti ti-trophy" style="font-size:12px;color:var(--gn);margin-right:4px"></i>Top Cumulative GPAs</span></div>
+            <div id="ac-top" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+          <!-- Academic warnings -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="color:var(--rd-tx)"><i class="ti ti-alert-triangle" style="font-size:12px;color:var(--rd);margin-right:4px"></i>Academic Warnings</span></div>
+            <div id="ac-warn" style="display:flex;flex-direction:column;gap:6px"></div>
+            <div id="ac-warn-empty" style="display:none"></div>
+          </div>
+          <!-- GPA distribution -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">GPA Distribution</span></div>
+            <div id="ac-dist" style="display:flex;flex-direction:column;gap:5px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historical chapter GPA trend -->
+      <div class="card">
+        <div class="card-hd"><span class="card-t">Chapter GPA History</span></div>
+        <div id="ac-history" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div id="ac-history-empty" style="display:none"></div>
+      </div>
+    </div>
+    </div><!-- /ac-content -->
+
+    <!-- ── FINANCE ── -->
+    <div class="page" id="page-finance">
+      <!-- Tab bar -->
+      <div id="fin-tabs-bar" style="display:flex;gap:0;border-bottom:2px solid var(--bdr);margin-bottom:14px">
+        <button class="fin-tab active" data-tab="fin-overview" onclick="finTab(this,'fin-overview')">Overview</button>
+        <button class="fin-tab" data-tab="fin-dues" onclick="finTab(this,'fin-dues')">Member Dues</button>
+        <button class="fin-tab" data-tab="fin-national" onclick="finTab(this,'fin-national')">National Dues</button>
+        <button class="fin-tab" data-tab="fin-fines" onclick="finTab(this,'fin-fines')">Fines</button>
+        <button class="fin-tab" data-tab="fin-budget" onclick="finTab(this,'fin-budget')">Budget</button>
+        <button class="fin-tab" data-tab="fin-plans" onclick="finTab(this,'fin-plans')">Payment Plans</button>
+        <button class="fin-tab" data-tab="fin-settings" onclick="finTab(this,'fin-settings')"><i class="ti ti-settings" style="font-size:11px;margin-right:3px"></i>Settings</button>
+      </div>
+
+      <!-- Overview Tab -->
+      <div id="fin-overview">
+        <div class="g4" id="fin-kpi" style="margin-bottom:13px"></div>
+        <div class="g21" style="margin-bottom:13px">
+          <!-- Budget Overview -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Budget Overview</span><button class="card-a" onclick="finTab(document.querySelector('[data-tab=fin-budget]'),'fin-budget')">Manage</button></div>
+            <div id="fin-budget-overview"></div>
+          </div>
+          <!-- Health + Alerts -->
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <div class="card" id="fin-health-card">
+              <div class="card-hd"><span class="card-t">Financial Health</span></div>
+              <div id="fin-health"></div>
+            </div>
+            <div class="card">
+              <div class="card-hd"><span class="card-t">Alerts</span></div>
+              <div id="fin-alerts"></div>
+            </div>
+          </div>
+        </div>
+        <div class="g2">
+          <!-- Recent Payments Feed -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Recent Payments</span></div>
+            <div id="fin-feed"></div>
+          </div>
+          <!-- Upcoming Deadlines -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Upcoming Deadlines</span></div>
+            <div id="fin-deadlines"></div>
+          </div>
+        </div>
+        <!-- Who Owes What -->
+        <div class="card" style="margin-top:11px">
+          <div class="card-hd"><span class="card-t">Who Owes What</span><button class="card-a" onclick="finTab(document.querySelector('[data-tab=fin-dues]'),'fin-dues')">Full view</button></div>
+          <div id="fin-who-owes"></div>
+        </div>
+      </div>
+
+      <!-- Member Dues Tab -->
+      <div id="fin-dues" style="display:none">
+        <div class="g4" id="fin-dues-kpi" style="margin-bottom:11px"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap">
+          <div class="sbar" style="flex:1;max-width:240px;margin-bottom:0"><i class="ti ti-search"></i><input id="fin-search" placeholder="Search member..." oninput="finFilterDues()"></div>
+          <select id="fin-filter-pay" onchange="finFilterDues()" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none">
+            <option value="">All statuses</option>
+            <option value="Paid">Paid</option>
+            <option value="Partial">Partial</option>
+            <option value="Overdue">Overdue</option>
+            <option value="Payment Plan">Payment Plan</option>
+          </select>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <button class="btn" onclick="finExport()"><i class="ti ti-download"></i>Export CSV</button>
+            <button class="btn btn-p" id="fin-add-payment-btn" onclick="finOpenPayment()"><i class="ti ti-plus"></i>Record Payment</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="tw"><table class="tbl" id="fin-dues-table"></table></div>
+        </div>
+      </div>
+
+      <!-- National Dues Tab -->
+      <div id="fin-national" style="display:none">
+        <div class="g4" id="fin-natl-kpi" style="margin-bottom:11px"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap">
+          <div class="sbar" style="flex:1;max-width:240px;margin-bottom:0"><i class="ti ti-search"></i><input id="fin-natl-search" placeholder="Search member..." oninput="finFilterNational()"></div>
+          <select id="fin-natl-filter" onchange="finFilterNational()" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none">
+            <option value="">All statuses</option>
+            <option value="Paid">Paid</option>
+            <option value="Unpaid">Unpaid</option>
+            <option value="Partial">Partial</option>
+          </select>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <button class="btn btn-p" id="fin-natl-pay-btn" onclick="finOpenNationalPayment()"><i class="ti ti-plus"></i>Record Payment</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="tw"><table class="tbl" id="fin-natl-table"></table></div>
+        </div>
+      </div>
+
+      <!-- Fines Tab -->
+      <div id="fin-fines" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+          <div class="g3" id="fin-fines-kpi" style="margin-bottom:0;flex:1;margin-right:11px"></div>
+          <button class="btn btn-p" id="fin-add-fine-btn" onclick="finOpenAddFine()"><i class="ti ti-plus"></i>Add Fine</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="tw"><table class="tbl" id="fin-fines-table"></table></div>
+        </div>
+      </div>
+
+      <!-- Budget Tab -->
+      <div id="fin-budget" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+          <div style="font-size:11.5px;color:var(--mt)">Track spending against allocated budgets per category</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-p" id="fin-add-expense-btn" onclick="finOpenAddExpense()"><i class="ti ti-plus"></i>Log Expense</button>
+          </div>
+        </div>
+        <div class="g2" style="margin-bottom:13px">
+          <div id="fin-budget-cards"></div>
+          <div class="card"><div class="card-hd"><span class="card-t">Expense Log</span></div><div class="tw"><table class="tbl" id="fin-expense-log"></table></div></div>
+        </div>
+      </div>
+
+      <!-- Payment Plans Tab -->
+      <div id="fin-plans" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+          <div style="font-size:11.5px;color:var(--mt)">Members on structured installment payment plans</div>
+          <button class="btn btn-p" id="fin-add-plan-btn" onclick="finOpenAddPlan()"><i class="ti ti-plus"></i>Create Plan</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="tw"><table class="tbl" id="fin-plans-table"></table></div>
+        </div>
+      </div>
+
+      <!-- Finance Settings Tab -->
+      <div id="fin-settings" style="display:none">
+        <div class="g2">
+          <!-- Dues Configuration -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Semester Dues by Member Type</span></div>
+            <div style="font-size:11.5px;color:var(--mt);margin-bottom:13px">Set dues amounts for each member type. Members can have their type adjusted from the Members page.</div>
+
+            <!-- In-House Dues -->
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr)">In-House Members</div>
+            <div class="fr c2">
+              <div class="fld">
+                <label>In-House Dues Amount ($)</label>
+                <input id="fin-dues-inhouse" type="number" min="0" step="1" placeholder="e.g. 5050">
+              </div>
+              <div class="fld">
+                <label>Due Date</label>
+                <input id="fin-dues-inhouse-date" type="date">
+              </div>
+            </div>
+
+            <!-- Out-of-House Dues -->
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr);margin-top:11px">Out-of-House Members</div>
+            <div class="fr c2">
+              <div class="fld">
+                <label>Out-of-House Dues Amount ($)</label>
+                <input id="fin-dues-outofhouse" type="number" min="0" step="1" placeholder="e.g. 450">
+              </div>
+              <div class="fld">
+                <label>Due Date</label>
+                <input id="fin-dues-outofhouse-date" type="date">
+              </div>
+            </div>
+
+            <!-- New Member / Pledge Dues -->
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr);margin-top:11px">Pledges / New Members</div>
+            <div class="fr c2">
+              <div class="fld">
+                <label>Pledge Dues Amount ($)</label>
+                <input id="fin-dues-pledge" type="number" min="0" step="1" placeholder="e.g. 500">
+              </div>
+              <div class="fld">
+                <label>Due Date</label>
+                <input id="fin-dues-pledge-date" type="date">
+              </div>
+            </div>
+
+            <!-- National Dues -->
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr);margin-top:11px">National Dues (per member)</div>
+            <div class="fr c2">
+              <div class="fld">
+                <label>National Dues Amount ($)</label>
+                <input id="fin-dues-national" type="number" min="0" step="1" placeholder="e.g. 200">
+              </div>
+              <div class="fld">
+                <label>Due Date</label>
+                <input id="fin-dues-national-date" type="date">
+              </div>
+            </div>
+
+            <div style="font-size:11px;color:var(--mt);margin-bottom:11px;margin-top:4px">National dues are tracked separately in the National Dues tab.</div>
+
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+              <button class="btn btn-p" onclick="finSaveDuesSettings()"><i class="ti ti-device-floppy"></i>Save Dues Settings</button>
+              <button class="btn" onclick="finApplyDuesToAll()" style="font-size:11px"><i class="ti ti-users"></i>Apply amounts to all members</button>
+            </div>
+            <div id="fin-dues-status" style="font-size:11px;color:var(--mt);margin-top:9px"></div>
+          </div>
+
+          <!-- Budget Configuration -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Semester Budget</span></div>
+            <div style="font-size:11.5px;color:var(--mt);margin-bottom:11px">Set the allocated budget for each spending category. Adjust each semester before tracking expenses.</div>
+            <div id="fin-budget-inputs" style="display:flex;flex-direction:column;gap:7px"></div>
+            <div style="margin-top:11px;display:flex;gap:7px">
+              <button class="btn btn-p" onclick="finSaveBudget()"><i class="ti ti-device-floppy"></i>Save Budget</button>
+              <div style="margin-left:auto;font-size:11px;color:var(--mt);align-self:center" id="fin-budget-total"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RECRUITMENT CRM ── -->
+    <div class="page" id="page-recruitment">
+      <!-- Tab bar -->
+      <div id="rc-tabs-bar" style="display:flex;gap:0;border-bottom:2px solid var(--bdr);margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+        <button class="rc-tab active" data-tab="rc-overview" onclick="rcTab(this,'rc-overview')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--navy);border-bottom:2px solid var(--navy);margin-bottom:-2px;font-family:inherit;white-space:nowrap;flex-shrink:0">Overview</button>
+        <button class="rc-tab" data-tab="rc-rushees" onclick="rcTab(this,'rc-rushees')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0">Rushee Database</button>
+        <button class="rc-tab" data-tab="rc-pipeline" onclick="rcTab(this,'rc-pipeline')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0">Pipeline Board</button>
+        <button class="rc-tab" data-tab="rc-events" onclick="rcTab(this,'rc-events')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0">Rush Events</button>
+      </div>
+
+      <!-- Overview Tab -->
+      <div id="rc-overview">
+        <!-- KPIs -->
+        <div class="g4" id="rc-kpi" style="margin-bottom:13px"></div>
+
+        <!-- Hero Funnel -->
+        <div class="card" style="margin-bottom:11px">
+          <div class="card-hd">
+            <span class="card-t" style="display:flex;align-items:center;gap:5px">
+              <i class="ti ti-filter" style="font-size:12px;color:var(--navy)"></i>Recruitment Funnel
+            </span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:10px;color:var(--ht)" id="rc-funnel-total"></span>
+              <button class="card-a" onclick="rcTab(document.querySelector('[data-tab=rc-pipeline]'),'rc-pipeline')">Pipeline Board →</button>
+            </div>
+          </div>
+          <!-- SVG Funnel -->
+          <div id="rc-funnel-wrap" style="margin-bottom:4px"></div>
+          <!-- Stage click hint -->
+          <div style="font-size:10px;color:var(--ht);text-align:center;margin-top:2px">Click a stage to filter rushees</div>
+        </div>
+
+        <!-- Row 2: Conversion + Alerts + Upcoming Events -->
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:11px;margin-bottom:11px" id="rc-row2">
+
+          <!-- Stage Conversion Rates -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-arrow-right" style="font-size:11px;color:var(--gn)"></i>Stage Conversion</span></div>
+            <div id="rc-conversion" style="display:flex;flex-direction:column;gap:6px;margin-top:2px"></div>
+          </div>
+
+          <!-- Alerts -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-bell" style="font-size:11px;color:var(--am)"></i>Recruitment Alerts</span></div>
+            <div id="rc-alerts"></div>
+          </div>
+
+          <!-- Upcoming Rush Events -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-calendar-event" style="font-size:11px;color:var(--bl)"></i>Upcoming Events</span><button class="card-a" onclick="rcTab(document.querySelector('[data-tab=rc-events]'),'rc-events')">All →</button></div>
+            <div id="rc-upcoming-events"></div>
+          </div>
+
+        </div>
+
+        <!-- Row 3: Recruiter Scorecards + Prospect Quality + Goal -->
+        <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,0.9fr);gap:11px" id="rc-row3">
+
+          <!-- Recruiter Scorecards -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-users" style="font-size:11px;color:var(--navy)"></i>Recruiter Performance</span></div>
+            <div id="rc-leaderboard"></div>
+          </div>
+
+          <!-- Prospect Quality: Bid Score Distribution -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-star" style="font-size:11px;color:var(--am)"></i>Prospect Quality</span></div>
+            <div id="rc-quality"></div>
+          </div>
+
+          <!-- Goal Progress -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-target" style="font-size:11px;color:var(--gn)"></i>Season Goal</span><button class="card-a" onclick="rcOpenGoalEdit()">Edit</button></div>
+            <div id="rc-goal-panel"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Rushee Database Tab -->
+      <div id="rc-rushees" style="display:none">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap">
+          <div class="sbar" style="flex:1;max-width:240px;margin-bottom:0"><i class="ti ti-search"></i><input id="rc-search" placeholder="Search rushees..." oninput="rcFilterRushees()"></div>
+          <select id="rc-filter-status" onchange="rcFilterRushees()" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none">
+            <option value="">All stages</option>
+            <option value="New Lead">New Lead</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Attended Event">Attended Event</option>
+            <option value="Active Rush">Active Rush</option>
+            <option value="Interviewed">Interviewed</option>
+            <option value="Bid Ready">Bid Ready</option>
+            <option value="Bid Extended">Bid Extended</option>
+            <option value="Accepted">Accepted</option>
+          </select>
+          <select id="rc-sort" onchange="rcFilterRushees()" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none">
+            <option value="score">Sort: Bid Score</option>
+            <option value="name">Sort: Name</option>
+            <option value="last">Sort: Last Contact</option>
+            <option value="events">Sort: Events</option>
+          </select>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <button class="btn" onclick="xport('recruitment')"><i class="ti ti-download"></i>Export CSV</button>
+            <button class="btn btn-p" onclick="rcOpenAdd()"><i class="ti ti-plus"></i>Add Rushee</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="tw"><table class="tbl" id="rc-table"></table></div>
+        </div>
+      </div>
+
+      <!-- Pipeline Board Tab -->
+      <div id="rc-pipeline" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+          <div style="font-size:11.5px;color:var(--mt)">Drag cards between stages to update rushee status</div>
+          <button class="btn btn-p" onclick="rcOpenAdd()"><i class="ti ti-plus"></i>Add Rushee</button>
+        </div>
+        <div id="rc-kanban" class="rc-kanban" style="grid-template-columns:repeat(6,minmax(170px,1fr))"></div>
+      </div>
+
+      <!-- Rush Events Tab -->
+      <div id="rc-events" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+          <div class="g3" id="rc-event-kpi" style="margin-bottom:0;flex:1;margin-right:11px"></div>
+          <button class="btn btn-p" onclick="rcOpenAddEvent()"><i class="ti ti-plus"></i>Add Rush Event</button>
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="card-t">Rush Events</span></div>
+          <div class="tw"><table class="tbl" id="rc-events-table"></table></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-analytics">
+      <!-- Page Header — dark slate, data-focused identity -->
+      <div style="background:linear-gradient(135deg,#1a1a18 0%,#2d2d2a 100%);border-radius:12px;padding:16px 20px;margin-bottom:13px;color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:13px">
+          <div style="width:42px;height:42px;background:rgba(55,138,221,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(55,138,221,.3)"><i class="ti ti-chart-bar" style="color:#6ab4f0;font-size:20px"></i></div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Chapter Analytics</div>
+            <div style="font-size:16px;font-weight:700;color:#fff;line-height:1">Data &amp; Metrics</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:3px">Attendance trends, engagement, GPA, and officer performance</div>
+          </div>
+        </div>
+        <button class="btn" onclick="xport('all')" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff"><i class="ti ti-download"></i>Export All Data</button>
+      </div>
+
+      <!-- KPIs row -->
+      <div class="g4" id="an-kpi" style="margin-bottom:13px"></div>
+
+      <!-- Row 1: Attendance Trend Line Chart (wide) -->
+      <div class="card" style="margin-bottom:13px">
+        <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">📈 Attendance Trend</span><span id="an-trend-label" style="font-size:10.5px;color:var(--mt)"></span></div>
+        <div style="position:relative">
+          <svg id="an-line-chart" width="100%" height="150" style="overflow:visible;display:block"></svg>
+          <div id="an-line-tooltip" style="display:none;position:absolute;background:#1a1a18;color:#fff;font-size:11px;padding:5px 9px;border-radius:6px;pointer-events:none;white-space:nowrap;z-index:10"></div>
+        </div>
+        <div id="an-line-xaxis" style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--ht);margin-top:4px;padding:0 2px"></div>
+      </div>
+
+      <!-- Row 2: Task Completion Donut + GPA Distribution (2 col) -->
+      <div class="g2" style="margin-bottom:13px">
+        <div class="card">
+          <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">✅ Task Completion</span></div>
+          <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+            <div style="position:relative;flex-shrink:0">
+              <svg id="an-donut" width="110" height="110" viewBox="0 0 110 110"></svg>
+              <div id="an-donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+                <div id="an-donut-pct" style="font-size:18px;font-weight:700;color:var(--navy)"></div>
+                <div style="font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.05em">done</div>
+              </div>
+            </div>
+            <div id="an-donut-legend" style="display:flex;flex-direction:column;gap:7px;flex:1;min-width:120px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">🎓 GPA Distribution</span><span style="font-size:10px;color:var(--mt)" id="an-gpa-count"></span></div>
+          <div id="an-gpa-chart" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Officer Engagement Matrix (full width) -->
+      <div class="card" style="margin-bottom:13px">
+        <div class="card-hd">
+          <span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">👥 Officer Engagement Matrix</span>
+          <div style="display:flex;gap:13px;font-size:10px;color:var(--mt)">
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--navy);display:inline-block"></span>Attendance</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--gn);display:inline-block"></span>Tasks</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--am);display:inline-block"></span>Notes</span>
+          </div>
+        </div>
+        <div id="an-officers" style="display:flex;flex-direction:column;gap:5px"></div>
+      </div>
+
+      <!-- Row 4: Member Engagement Tiers + Semester Goals -->
+      <div class="g2">
+        <div class="card"><div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">📊 Member Engagement Tiers</span></div><div id="an-eng"></div></div>
+        <div class="card"><div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">🎯 Semester Goals</span></div><div class="gg" id="an-goals"></div></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-files">
+      <!-- Breadcrumb nav -->
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:11px;font-size:12px">
+        <span style="color:var(--navy);font-weight:500;cursor:pointer" onclick="fiNavRoot()"><i class="ti ti-folder" style="font-size:13px;margin-right:3px"></i>Files & Documents</span>
+        <span id="fi-bc-folder" style="display:none;color:var(--mt)"> / <span id="fi-bc-name" style="color:var(--tx);font-weight:500"></span></span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn" id="fi-back-btn" style="display:none;font-size:11px" onclick="fiNavRoot()"><i class="ti ti-arrow-left"></i>Back</button>
+        </div>
+      </div>
+
+      <!-- Root folder view -->
+      <div id="fi-root-view">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:10px;font-weight:500;color:var(--mt);text-transform:uppercase;letter-spacing:.07em">Folders</div>
+          <button class="btn" style="height:25px;font-size:11px" onclick="fiOpenAddFolder()"><i class="ti ti-plus"></i>New Folder</button>
+        </div>
+        <div id="fi-folders" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:18px"></div>
+        <div style="font-size:10px;font-weight:500;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">General Upload</div>
+        <div id="fi-drop-root" style="border:2px dashed var(--bdr);border-radius:12px;padding:22px;text-align:center;margin-bottom:11px;transition:border-color .15s,background .15s;cursor:pointer" ondragover="fiDragOver(event)" ondragleave="fiDragLeave(event)" ondrop="fiDrop(event)" onclick="document.getElementById('fi-input-root').click()">
+          <i class="ti ti-cloud-upload" style="font-size:24px;color:var(--ht);display:block;margin:0 auto 6px"></i>
+          <div style="font-size:12.5px;font-weight:500;margin-bottom:2px">Drop files or click to upload</div>
+          <div style="font-size:11px;color:var(--mt)">Files go to General folder — or open a position folder to upload there</div>
+          <input type="file" id="fi-input-root" multiple accept=".pdf,.xlsx,.xls,.csv,.docx,.doc,.txt,.png,.jpg,.jpeg" style="display:none" onchange="handleFU(this,'General')">
+        </div>
+        <div class="sb2"><span class="sl" id="fi-count">No files</span><button class="btn" onclick="fiClearAll()" style="font-size:11px"><i class="ti ti-trash"></i>Clear all</button></div>
+        <div id="fi-list-root" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div id="fi-empty-root"></div>
+      </div>
+
+      <!-- Folder detail view -->
+      <div id="fi-folder-view" style="display:none">
+        <!-- Upload Zone -->
+        <div id="fi-drop" style="border:2px dashed var(--bdr);border-radius:12px;padding:22px;text-align:center;margin-bottom:13px;transition:border-color .15s,background .15s;cursor:pointer" ondragover="fiDragOver(event)" ondragleave="fiDragLeave(event)" ondrop="fiDropFolder(event)" onclick="document.getElementById('fi-input').click()">
+          <i class="ti ti-cloud-upload" style="font-size:28px;color:var(--ht);display:block;margin:0 auto 7px"></i>
+          <div style="font-size:13px;font-weight:500;margin-bottom:3px">Drop files here or click to browse</div>
+          <div style="font-size:11px;color:var(--mt)" id="fi-drop-label">Upload to this folder</div>
+          <input type="file" id="fi-input" multiple accept=".pdf,.xlsx,.xls,.csv,.docx,.doc,.txt,.png,.jpg,.jpeg" style="display:none" onchange="handleFU(this)">
+        </div>
+
+
+        <!-- File list for folder -->
+        <div class="sb2"><span class="sl" id="fi-folder-count"></span></div>
+        <div id="fi-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div id="fi-empty"></div>
+      </div>
+    </div>
+
+    <!-- ── ADD FOLDER MODAL ── -->
+    <div class="mo" id="m-fi-addfolder" onclick="closeM(event,this)"><div class="md">
+      <div class="md-t">New Folder<button class="md-x" onclick="closeM(null,document.getElementById('m-fi-addfolder'))">&#x00D7;</button></div>
+      <div class="fr c2">
+        <div class="fld"><label>Folder Name *</label><input id="fi-folder-name" placeholder="e.g. House Manager"></div>
+        <div class="fld"><label>Icon (emoji)</label><input id="fi-folder-icon" placeholder="📁" style="font-size:18px" maxlength="4"></div>
+      </div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px">
+        <button class="btn" onclick="closeM(null,document.getElementById('m-fi-addfolder'))">Cancel</button>
+        <button class="btn btn-p" onclick="fiAddFolder()"><i class="ti ti-folder-plus"></i>Create Folder</button>
+      </div>
+    </div></div>
+
+    <!-- ═══════════ PHILANTHROPY & SERVICE ═══════════ -->
+    <div class="page" id="page-philanthropy">
+      <!-- KPIs spanning full width -->
+      <div class="g4" id="ph-kpi" style="margin-bottom:13px"></div>
+
+      <!-- Split screen: left = Community Service, right = Philanthropy -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+
+        <!-- ── LEFT: COMMUNITY SERVICE ── -->
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="width:30px;height:30px;background:var(--gn-bg);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-hand-helping" style="color:var(--gn);font-size:15px"></i></div>
+              <div><div style="font-size:13px;font-weight:600">Community Service</div><div style="font-size:10px;color:var(--mt)">Hours &amp; volunteering</div></div>
+            </div>
+            <div style="display:flex;gap:5px">
+              <button class="btn btn-p" style="height:26px;font-size:11px" onclick="phOpenLogHours('service')"><i class="ti ti-plus"></i>Log Hours</button>
+              <button class="btn" style="height:26px;font-size:11px" onclick="phOpenAddEvent('service')"><i class="ti ti-calendar-plus"></i>Add Event</button>
+            </div>
+          </div>
+
+          <!-- Service Goals -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Service Goals</span></div>
+            <div id="cs-goal-bars"></div>
+          </div>
+
+          <!-- Service Leaderboard -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Top Volunteers</span><span id="cs-total-hrs" style="font-size:11px;color:var(--mt)"></span></div>
+            <div id="cs-leaderboard"></div>
+          </div>
+
+          <!-- Service Events -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Service Events</span></div>
+            <div class="tw"><table class="tbl" id="cs-events-table"></table></div>
+          </div>
+
+          <!-- Member Hours Log -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Member Hours</span>
+              <div class="sbar" style="max-width:160px;margin-bottom:0;height:24px"><i class="ti ti-search" style="font-size:12px"></i><input id="cs-search" placeholder="Search..." oninput="csFilterHours()" style="font-size:11px"></div>
+            </div>
+            <div class="tw"><table class="tbl" id="cs-hours-table"></table></div>
+          </div>
+        </div>
+
+        <!-- ── RIGHT: PHILANTHROPY ── -->
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="width:30px;height:30px;background:#fbeaf0;border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-heart" style="color:#c0345a;font-size:15px"></i></div>
+              <div><div style="font-size:13px;font-weight:600">Philanthropy</div><div style="font-size:10px;color:var(--mt)">Fundraising &amp; money raised</div></div>
+            </div>
+            <div style="display:flex;gap:5px">
+              <button class="btn btn-p" style="height:26px;font-size:11px;background:#c0345a;border-color:#c0345a" onclick="phOpenLogFunds()"><i class="ti ti-coin"></i>Log Money Raised</button>
+              <button class="btn" style="height:26px;font-size:11px" onclick="phOpenAddEvent('philanthropy')"><i class="ti ti-calendar-plus"></i>Add Event</button>
+            </div>
+          </div>
+
+          <!-- Philanthropy Goals -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Philanthropy Goals</span></div>
+            <div id="ph-goal-bars2"></div>
+          </div>
+
+          <!-- Philanthropy Events -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Philanthropy Events</span></div>
+            <div class="tw"><table class="tbl" id="ph-events-table2"></table></div>
+          </div>
+
+          <!-- Fundraising / Money Raised -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Fundraising Log</span><button class="card-a" onclick="phOpenLogFunds()">+ Log</button></div>
+            <div id="ph-funds-log"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="mo" id="m-ph-addevent" onclick="closeM(event,this)"><div class="md"><div class="md-t" id="ph-addevent-title">Add Event<button class="md-x" onclick="closeM(null,document.getElementById('m-ph-addevent'))"><i class="ti ti-x"></i></button></div>
+      <input type="hidden" id="ph-ev-kind" value="service">
+      <div class="fr c2"><div class="fld"><label>Event Name</label><input id="ph-ev-title" placeholder="e.g. Habitat for Humanity Build"></div><div class="fld"><label>Date</label><input id="ph-ev-date" type="date"></div></div>
+      <div class="fr c2"><div class="fld"><label>Type</label><select id="ph-ev-type"><option value="service">Community Service</option><option value="philanthropy">Philanthropy</option><option value="fundraiser">Fundraiser</option></select></div><div class="fld"><label>Hour Goal</label><input id="ph-ev-goal" type="number" placeholder="e.g. 200" min="0"></div></div>
+      <div class="fr"><div class="fld"><label>Organization / Cause</label><input id="ph-ev-org" placeholder="e.g. Habitat for Humanity"></div></div>
+      <div class="fr"><div class="fld"><label>Notes</label><textarea id="ph-ev-notes" placeholder="Details, signup link, etc."></textarea></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ph-addevent'))">Cancel</button><button class="btn btn-p" onclick="phAddEvent()">Create Event</button></div>
+    </div></div>
+    <div class="mo" id="m-ph-loghours" onclick="closeM(event,this)"><div class="md"><div class="md-t" id="ph-loghours-title">Log Hours<button class="md-x" onclick="closeM(null,document.getElementById('m-ph-loghours'))"><i class="ti ti-x"></i></button></div>
+      <input type="hidden" id="ph-log-kind" value="service">
+      <div class="fr c2"><div class="fld"><label>Member</label><select id="ph-log-member"></select></div><div class="fld"><label>Hours</label><input id="ph-log-hours" type="number" min="0.5" step="0.5" placeholder="e.g. 4"></div></div>
+      <div class="fr c2"><div class="fld"><label>Event</label><select id="ph-log-event"><option value="">-- General / Other --</option></select></div><div class="fld"><label>Date</label><input id="ph-log-date" type="date"></div></div>
+      <div class="fr"><div class="fld"><label>Notes</label><input id="ph-log-notes" placeholder="Optional notes"></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ph-loghours'))">Cancel</button><button class="btn btn-p" onclick="phLogHours()">Log Hours</button></div>
+    </div></div>
+    <div class="mo" id="m-ph-logfunds" onclick="closeM(event,this)"><div class="md"><div class="md-t">Log Fundraising<button class="md-x" onclick="closeM(null,document.getElementById('m-ph-logfunds'))"><i class="ti ti-x"></i></button></div>
+      <div class="fr c2"><div class="fld"><label>Amount Raised ($)</label><input id="pf-amount" type="number" min="0" step="0.01" placeholder="e.g. 500"></div><div class="fld"><label>Date</label><input id="pf-date" type="date"></div></div>
+      <div class="fr c2"><div class="fld"><label>Donor / Member</label><select id="pf-member"><option value="">— Chapter / External —</option></select></div><div class="fld"><label>Event / Campaign</label><select id="pf-event"><option value="">-- General --</option></select></div></div>
+      <div class="fr"><div class="fld"><label>Notes</label><input id="pf-notes" placeholder="How raised, donor info, etc."></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ph-logfunds'))">Cancel</button><button class="btn btn-p" onclick="phLogFunds()">Log Funds</button></div>
+    </div></div>
+
+    <!-- ═══════════ ALUMNI RELATIONS ═══════════ -->
+    <div class="page" id="page-alumni">
+      <div class="g4" id="al-kpi" style="margin-bottom:13px"></div>
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:11px;flex-wrap:wrap">
+        <div style="display:flex;gap:5px"><button class="btn btn-p" data-tab="al-directory" onclick="alTab(this,'al-directory')">Directory</button><button class="btn" data-tab="al-events" onclick="alTab(this,'al-events')">Events</button><button class="btn" data-tab="al-outreach" onclick="alTab(this,'al-outreach')">Outreach Log</button></div>
+        <div class="sbar" style="max-width:220px;margin-bottom:0;margin-left:auto"><i class="ti ti-search"></i><input id="al-search" placeholder="Search alumni..." oninput="alFilter()"></div>
+        <button class="btn btn-p" id="al-add-btn" onclick="alOpenAdd()"><i class="ti ti-plus"></i>Add Alumni</button>
+      </div>
+      <div id="al-directory"><div class="card" style="padding:0;overflow:hidden"><div class="tw"><table class="tbl" id="al-table"></table></div></div></div>
+      <div id="al-events" style="display:none">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:11px"><button class="btn btn-p" onclick="alOpenAddEvent()"><i class="ti ti-plus"></i>Add Alumni Event</button></div>
+        <div class="card"><div class="card-hd"><span class="card-t">Alumni Events</span></div><div class="tw"><table class="tbl" id="al-events-table"></table></div></div>
+      </div>
+      <div id="al-outreach" style="display:none">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:11px"><button class="btn btn-p" onclick="alOpenLogContact()"><i class="ti ti-plus"></i>Log Contact</button></div>
+        <div class="card"><div class="card-hd"><span class="card-t">Recent Outreach</span></div><div id="al-outreach-list"></div></div>
+      </div>
+    </div>
+    <div class="mo" id="m-al-add" onclick="closeM(event,this)"><div class="md">
+      <div class="md-t">Add Alumni<button class="md-x" onclick="closeM(null,document.getElementById('m-al-add'))">&#x00D7;</button></div>
+      <div class="fr c2"><div class="fld"><label>Full Name</label><input id="al-name" placeholder="First Last"></div><div class="fld"><label>Grad Year</label><input id="al-gradyear" type="number" placeholder="e.g. 2022" min="1950" max="2030"></div></div>
+      <div class="fr c2"><div class="fld"><label>Email</label><input id="al-email" type="email" placeholder="name@email.com"></div><div class="fld"><label>Phone</label><input id="al-phone" placeholder="Optional"></div></div>
+      <div class="fr c2"><div class="fld"><label>Employer / Company</label><input id="al-employer" placeholder="Where they work"></div><div class="fld"><label>Industry</label><select id="al-industry"><option value="">-- Select --</option><option>Finance</option><option>Technology</option><option>Engineering</option><option>Healthcare</option><option>Law</option><option>Business</option><option>Education</option><option>Consulting</option><option>Other</option></select></div></div>
+      <div class="fr c2"><div class="fld"><label>City, State</label><input id="al-location" placeholder="e.g. Chicago, IL"></div><div class="fld"><label>Engagement</label><select id="al-engage"><option value="Active">Active</option><option value="Occasional">Occasional</option><option value="Inactive">Inactive</option></select></div></div>
+      <div class="fr"><div class="fld"><label>Notes</label><textarea id="al-notes" placeholder="Chapter positions held, relationship notes, etc."></textarea></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-al-add'))">Cancel</button><button class="btn btn-p" onclick="alAddAlumni()">Add Alumni</button></div>
+    </div></div>
+    <div class="mo" id="m-al-addevent" onclick="closeM(event,this)"><div class="md">
+      <div class="md-t">Add Alumni Event<button class="md-x" onclick="closeM(null,document.getElementById('m-al-addevent'))">&#x00D7;</button></div>
+      <div class="fr c2"><div class="fld"><label>Event Name</label><input id="ale-title" placeholder="e.g. Homecoming Tailgate"></div><div class="fld"><label>Date</label><input id="ale-date" type="date"></div></div>
+      <div class="fr c2"><div class="fld"><label>Type</label><select id="ale-type"><option value="social">Social</option><option value="networking">Networking</option><option value="philanthropy">Philanthropy</option><option value="homecoming">Homecoming</option><option value="other">Other</option></select></div><div class="fld"><label>Location</label><input id="ale-location" placeholder="Venue or virtual"></div></div>
+      <div class="fr"><div class="fld"><label>Notes</label><textarea id="ale-notes" placeholder="Details, RSVP info, etc."></textarea></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-al-addevent'))">Cancel</button><button class="btn btn-p" onclick="alAddEvent()">Create Event</button></div>
+    </div></div>
+    <div class="mo" id="m-al-contact" onclick="closeM(event,this)"><div class="md">
+      <div class="md-t">Log Alumni Contact<button class="md-x" onclick="closeM(null,document.getElementById('m-al-contact'))">&#x00D7;</button></div>
+      <div class="fr c2"><div class="fld"><label>Alumni</label><select id="alc-alumni"></select></div><div class="fld"><label>Date</label><input id="alc-date" type="date"></div></div>
+      <div class="fr c2"><div class="fld"><label>Method</label><select id="alc-method"><option>Email</option><option>Phone</option><option>In Person</option><option>LinkedIn</option><option>Text</option></select></div><div class="fld"><label>By (Officer)</label><select id="alc-by"></select></div></div>
+      <div class="fr"><div class="fld"><label>Summary</label><textarea id="alc-notes" placeholder="What was discussed, any follow-up needed..."></textarea></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-al-contact'))">Cancel</button><button class="btn btn-p" onclick="alLogContact()">Save Log</button></div>
+    </div></div>
+
+    <!-- ═══════════ RITUAL & EDUCATION ═══════════ -->
+    <div class="page" id="page-ritual">
+      <div class="g4" id="ri-kpi" style="margin-bottom:13px"></div>
+
+      <!-- Split screen: left = Ritual, right = New Member Education -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+
+        <!-- ── LEFT: RITUAL ── -->
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="width:30px;height:30px;background:#fbeaf0;border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-book" style="color:#993556;font-size:15px"></i></div>
+              <div><div style="font-size:13px;font-weight:600">Ritual</div><div style="font-size:10px;color:var(--mt)">Ceremonies &amp; traditions</div></div>
+            </div>
+            <button class="btn btn-p" style="height:26px;font-size:11px" onclick="riOpenAddItem()"><i class="ti ti-plus"></i>Add Item</button>
+          </div>
+
+          <!-- Ritual checklist -->
+          <div class="card">
+            <div class="card-hd">
+              <span class="card-t">Ritual Checklist</span>
+              <span id="ri-prog-pct" style="font-size:12px;font-weight:600;color:var(--navy)"></span>
+            </div>
+            <div id="ri-program-list"></div>
+          </div>
+
+          <!-- Class overview -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Category Progress</span></div>
+            <div id="ri-class-stats"></div>
+          </div>
+        </div>
+
+        <!-- ── RIGHT: NEW MEMBER EDUCATION ── -->
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="width:30px;height:30px;background:var(--bl-bg);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-school" style="color:var(--bl-tx);font-size:15px"></i></div>
+              <div><div style="font-size:13px;font-weight:600">New Member Education</div><div style="font-size:10px;color:var(--mt)">Progress tracker &amp; sessions</div></div>
+            </div>
+            <button class="btn btn-p" style="height:26px;font-size:11px" onclick="riOpenAddSession()"><i class="ti ti-plus"></i>Add Session</button>
+          </div>
+
+          <!-- NME Member Progress -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">New Member Progress</span></div>
+            <div class="tw"><table class="tbl" id="ri-members-table"></table></div>
+          </div>
+
+          <!-- Education Sessions -->
+          <div class="card">
+            <div class="card-hd"><span class="card-t">Education Sessions</span></div>
+            <div class="tw"><table class="tbl" id="ri-schedule-table"></table></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="mo" id="m-ri-additem" onclick="closeM(event,this)"><div class="md">
+      <div class="md-t">Add Program Item<button class="md-x" onclick="closeM(null,document.getElementById('m-ri-additem'))">&#x00D7;</button></div>
+      <input type="hidden" id="ri-item-id">
+      <div class="fr c2"><div class="fld"><label>Item / Milestone</label><input id="ri-item-title" placeholder="e.g. Big/Little Reveal"></div><div class="fld"><label>Category</label><select id="ri-item-cat"><option value="ritual">Ritual</option><option value="education">Education</option><option value="brotherhood">Brotherhood</option><option value="service">Service</option><option value="administrative">Administrative</option></select></div></div>
+      <div class="fr c2"><div class="fld"><label>Week Target</label><input id="ri-item-week" type="number" min="1" max="16" placeholder="e.g. 3"></div><div class="fld"><label>Required?</label><select id="ri-item-req"><option value="1">Yes</option><option value="0">No</option></select></div></div>
+      <div class="fr"><div class="fld"><label>Description</label><textarea id="ri-item-desc" placeholder="Details about this milestone..."></textarea></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ri-additem'))">Cancel</button><button class="btn btn-p" onclick="riAddItem()">Add Item</button></div>
+    </div></div>
+    <div class="mo" id="m-ri-addsession" onclick="closeM(event,this)"><div class="md">
+      <div class="md-t">Add Education Session<button class="md-x" onclick="closeM(null,document.getElementById('m-ri-addsession'))">&#x00D7;</button></div>
+      <input type="hidden" id="ris-id">
+      <div class="fr c2"><div class="fld"><label>Session Title</label><input id="ris-title" placeholder="e.g. Fraternity History 101"></div><div class="fld"><label>Date</label><input id="ris-date" type="date"></div></div>
+      <div class="fr c2"><div class="fld"><label>Facilitator</label><select id="ris-facilitator"></select></div><div class="fld"><label>Type</label><select id="ris-type"><option value="education">Education</option><option value="ritual">Ritual</option><option value="brotherhood">Brotherhood</option><option value="test">Standards Test</option></select></div></div>
+      <div class="fr"><div class="fld"><label>Notes</label><textarea id="ris-notes" placeholder="Topics, materials needed, etc."></textarea></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ri-addsession'))">Cancel</button><button class="btn btn-p" onclick="riAddSession()">Add Session</button></div>
+    </div></div>
+
+    <!-- ═══════════ VENDORS / CONTACTS ═══════════ -->
+
+    <!-- ═══════════ CHAPTER HEALTH SCORECARD ═══════════ -->
+    <div class="page" id="page-healthscore">
+
+      <!-- Page Header — warm green tone, distinct from navy analytics -->
+      <div style="background:linear-gradient(135deg,#0f5c3a 0%,#1d9e75 100%);border-radius:12px;padding:20px 24px;margin-bottom:13px;color:#fff">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:11px">
+          <div style="display:flex;align-items:center;gap:13px">
+            <div style="position:relative;width:80px;height:80px;flex-shrink:0">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="9"/>
+                <circle id="hs-ring" cx="40" cy="40" r="33" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-dasharray="207.3" stroke-dashoffset="207.3" transform="rotate(-90 40 40)" style="transition:stroke-dashoffset .8s ease"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div id="hs-score-val" style="font-size:22px;font-weight:800;color:#fff;line-height:1">--</div>
+                <div style="font-size:8px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em">/100</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Chapter Health Scorecard</div>
+              <div id="hs-grade" style="font-size:28px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px">--</div>
+              <div id="hs-summary" style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.4;max-width:320px"></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+            <div id="hs-updated" style="font-size:10px;color:rgba(255,255,255,.6)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="g4" id="hs-kpi" style="margin-bottom:13px"></div>
+
+      <!-- Dimension Breakdown — horizontal bar format -->
+      <div class="g2" style="margin-bottom:13px">
+        <div class="card">
+          <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gn-tx)">Dimension Scores</span><span style="font-size:10px;color:var(--mt)">Each dimension / 100</span></div>
+          <div id="hs-dims" style="display:flex;flex-direction:column;gap:11px"></div>
+        </div>
+
+        <!-- Strengths + Improvements stacked -->
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gn-tx)">✅ Strengths</span></div>
+            <div id="hs-strengths"></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--am-tx)">⚠️ Areas to Improve</span></div>
+            <div id="hs-improvements"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommended Actions + Score History -->
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rd-tx)">🎯 Recommended Actions</span></div>
+          <div id="hs-actions"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gn-tx)">📉 Score History</span></div>
+          <div id="hs-history-chart" style="display:flex;align-items:flex-end;gap:3px;height:70px;margin-bottom:5px"></div>
+          <div id="hs-history-labels" style="display:flex;justify-content:space-between;font-size:9.5px;color:var(--ht)"></div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="page" id="page-transition">
+
+      <!-- ── HUB ROOT VIEW ── -->
+      <div id="tr-root-view">
+
+        <!-- Breadcrumb + actions -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:16px;font-weight:600;color:var(--tx)">Officer Transition Hub</div>
+            <div style="font-size:11.5px;color:var(--mt);margin-top:2px">Handoff center for every exec role — notes, contacts, deadlines, and docs.</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn" onclick="trShowSection('tr-sec-deadlines')"><i class="ti ti-calendar-due"></i>Deadlines</button>
+            <button class="btn" onclick="trShowSection('tr-sec-openissues')"><i class="ti ti-alert-circle"></i>Open Issues</button>
+            <button class="btn" onclick="trShowSection('tr-sec-archive')"><i class="ti ti-archive"></i>Archive</button>
+            <button class="btn btn-p" onclick="openM('m-addtrans')"><i class="ti ti-plus"></i>Add Role</button>
+          </div>
+        </div>
+
+        <!-- Overall progress bar -->
+        <div class="card" style="margin-bottom:13px">
+          <div class="card-hd" style="margin-bottom:8px"><span class="card-t">Transition Progress</span><span id="tr-pct-label" style="font-size:12px;font-weight:600;color:var(--navy)"></span></div>
+          <div class="pb" style="height:7px;margin-bottom:6px"><div id="tr-bar" class="pf" style="background:var(--navy);transition:width .5s ease"></div></div>
+          <div style="font-size:11px;color:var(--mt)" id="tr-sub"></div>
+        </div>
+
+        <!-- Role cards grid -->
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:8px">Officer Roles</div>
+        <div id="tr-folders" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px"></div>
+
+        <!-- Recurring Semester Deadlines -->
+        <div id="tr-sec-deadlines" style="margin-bottom:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);display:flex;align-items:center;gap:6px"><i class="ti ti-calendar-due" style="font-size:13px;color:var(--navy)"></i>Recurring Semester Deadlines</div>
+            <button class="btn" style="height:25px;font-size:11px" onclick="trOpenAddDeadline()"><i class="ti ti-plus"></i>Add</button>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden"><div class="tw"><table class="tbl" id="tr-deadlines-table"></table></div></div>
+        </div>
+
+        <!-- Open Issues for Next Exec -->
+        <div id="tr-sec-openissues" style="margin-bottom:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);display:flex;align-items:center;gap:6px"><i class="ti ti-alert-circle" style="font-size:13px;color:var(--rd)"></i>Open Issues for Next Exec Team</div>
+            <button class="btn" style="height:25px;font-size:11px" onclick="trOpenAddIssue()"><i class="ti ti-plus"></i>Add Issue</button>
+          </div>
+          <div id="tr-issues-list"></div>
+        </div>
+
+        <!-- Previous Semester Archive -->
+        <div id="tr-sec-archive" style="margin-bottom:13px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);display:flex;align-items:center;gap:6px"><i class="ti ti-archive" style="font-size:13px;color:var(--mt)"></i>Previous Semester Archive</div>
+            <button class="btn" style="height:25px;font-size:11px" onclick="trArchiveSemester()"><i class="ti ti-archive"></i>Archive Current Semester</button>
+          </div>
+          <div id="tr-archive-list"></div>
+        </div>
+
+      </div>
+
+      <!-- ── ROLE DETAIL VIEW ── -->
+      <div id="tr-folder-view" style="display:none">
+
+        <!-- Back nav + actions -->
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;flex-wrap:wrap">
+          <button class="btn" onclick="trNavRoot()"><i class="ti ti-arrow-left"></i>All Roles</button>
+          <span id="tr-bc-name" style="font-size:12.5px;font-weight:600;color:var(--tx)"></span>
+          <span id="tr-role-status-badge" class="badge bm2" style="font-size:10px"></span>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <button class="btn" onclick="trPrintRole()"><i class="ti ti-printer"></i>Print</button>
+            <button class="btn btn-p" onclick="openEditTransCurrent()"><i class="ti ti-pencil"></i>Edit Handoff</button>
+          </div>
+        </div>
+
+        <!-- Role detail body — rendered by JS -->
+        <div id="tr-folder-body"></div>
+      </div>
+
+    </div>
+
+    <!-- Add/Edit Deadline modal -->
+    <div class="mo" id="m-tr-deadline" onclick="closeM(event,this)"><div class="md" style="width:480px">
+      <div class="md-t"><span id="tr-dl-modal-title">Add Recurring Deadline</span><button class="md-x" onclick="closeM(null,document.getElementById('m-tr-deadline'))">&#x00D7;</button></div>
+      <input type="hidden" id="tr-dl-id">
+      <div class="fr c2">
+        <div class="fld"><label>Task / Deadline</label><input id="tr-dl-title" placeholder="e.g. Submit IFC report"></div>
+        <div class="fld"><label>Owner</label><input id="tr-dl-owner" placeholder="e.g. Secretary"></div>
+      </div>
+      <div class="fr c2">
+        <div class="fld"><label>When</label><input id="tr-dl-when" placeholder="e.g. Week 2 of every semester"></div>
+        <div class="fld"><label>Priority</label><select id="tr-dl-pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div>
+      </div>
+      <div class="fr"><div class="fld"><label>Notes</label><input id="tr-dl-notes" placeholder="Additional context or instructions"></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px">
+        <button class="btn" onclick="closeM(null,document.getElementById('m-tr-deadline'))">Cancel</button>
+        <button class="btn btn-p" onclick="trSaveDeadline()">Save</button>
+      </div>
+    </div></div>
+
+    <!-- Add/Edit Open Issue modal -->
+    <div class="mo" id="m-tr-issue" onclick="closeM(event,this)"><div class="md" style="width:480px">
+      <div class="md-t"><span id="tr-iss-modal-title">Add Open Issue</span><button class="md-x" onclick="closeM(null,document.getElementById('m-tr-issue'))">&#x00D7;</button></div>
+      <input type="hidden" id="tr-iss-id">
+      <div class="fr c2">
+        <div class="fld"><label>Issue / Item</label><input id="tr-iss-title" placeholder="e.g. Finalize new member education plan"></div>
+        <div class="fld"><label>Assigned To</label><input id="tr-iss-owner" placeholder="e.g. Incoming VP"></div>
+      </div>
+      <div class="fr c2">
+        <div class="fld"><label>Priority</label><select id="tr-iss-pri"><option value="urgent">Urgent</option><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div>
+        <div class="fld"><label>Status</label><select id="tr-iss-status"><option value="open">Open</option><option value="in_progress">In Progress</option><option value="resolved">Resolved</option></select></div>
+      </div>
+      <div class="fr"><div class="fld"><label>Context / Notes</label><textarea id="tr-iss-notes" placeholder="What the next team needs to know to handle this..."></textarea></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px">
+        <button class="btn" onclick="closeM(null,document.getElementById('m-tr-issue'))">Cancel</button>
+        <button class="btn btn-p" onclick="trSaveIssue()">Save Issue</button>
+      </div>
+    </div></div>
+
+    <!-- Add Contact modal (Transition Hub) -->
+    <div class="mo" id="m-tr-contact" onclick="closeM(event,this)"><div class="md" style="width:440px">
+      <div class="md-t">Add Contact<button class="md-x" onclick="closeM(null,document.getElementById('m-tr-contact'))">&#x00D7;</button></div>
+      <input type="hidden" id="tr-contact-role-enc">
+      <div class="fr c2">
+        <div class="fld"><label>Name *</label><input id="tr-c-name" placeholder="e.g. ATO National HQ"></div>
+        <div class="fld"><label>Role / Title</label><input id="tr-c-role" placeholder="e.g. National Office"></div>
+      </div>
+      <div class="fr c2">
+        <div class="fld"><label>Email</label><input id="tr-c-email" type="email" placeholder="contact@example.com"></div>
+        <div class="fld"><label>Phone</label><input id="tr-c-phone" placeholder="(555) 000-0000"></div>
+      </div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px">
+        <button class="btn" onclick="closeM(null,document.getElementById('m-tr-contact'))">Cancel</button>
+        <button class="btn btn-p" onclick="trSaveContact()"><i class="ti ti-plus"></i>Add Contact</button>
+      </div>
+    </div></div>
+
+    <!-- Edit List modal (Responsibilities / Recurring Tasks) -->
+    <div class="mo" id="m-tr-list" onclick="closeM(event,this)"><div class="md" style="width:520px">
+      <div class="md-t"><span id="tr-list-modal-title">Edit List</span><button class="md-x" onclick="closeM(null,document.getElementById('m-tr-list'))">&#x00D7;</button></div>
+      <input type="hidden" id="tr-list-role-enc">
+      <input type="hidden" id="tr-list-field">
+      <div class="fr">
+        <div class="fld">
+          <label id="tr-list-hint">One item per line.</label>
+          <textarea id="tr-list-textarea" style="height:220px;font-size:12px" placeholder="Enter each item on its own line..."></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px">
+        <button class="btn" onclick="closeM(null,document.getElementById('m-tr-list'))">Cancel</button>
+        <button class="btn btn-p" onclick="trSaveList()"><i class="ti ti-device-floppy"></i>Save</button>
+      </div>
+    </div></div>
+
+    <div class="page" id="page-settings">
+      <div class="g2">
+        <div>
+          <div class="card" style="margin-bottom:11px">
+            <div class="card-hd"><span class="card-t">My Profile</span></div>
+            <div class="fr"><div class="fld"><label>Full name</label><input id="se-name"></div></div>
+            <div class="fr c2"><div class="fld"><label>Grad year</label><input id="se-year" type="number"></div><div class="fld"><label>Class year</label><select id="se-class"><option>Senior</option><option>Junior</option><option>Sophomore</option><option>Freshman</option></select></div></div>
+            <button class="btn btn-p" onclick="saveProf()"><i class="ti ti-device-floppy"></i>Save Changes</button>
+          </div>
+          <div class="card" style="margin-bottom:11px">
+            <div class="card-hd"><span class="card-t">Chapter Settings</span></div>
+            <div id="se-chapter-info"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:11px"><div class="card-hd"><span class="card-t">System Info</span></div><div id="se-info"></div></div>
+          <div class="card" style="margin-bottom:11px">
+            <div class="card-hd"><span class="card-t">Exec Users</span></div>
+            <div style="font-size:11px;color:var(--mt);margin-bottom:9px">Login accounts for executive officers. User credentials are configured in the platform source.</div>
+            <div id="se-users"></div>
+          </div>
+          <div class="card"><div class="card-hd"><span class="card-t">Data Management</span></div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <button class="btn" onclick="xport('all')"><i class="ti ti-download"></i>Export all data (JSON)</button>
+              <button class="btn btn-d" onclick="confirmDialog('Reset All Data','This will permanently erase all chapter data. This cannot be undone.','Reset',true).then(ok=>{if(ok)resetData();})"><i class="ti ti-trash"></i>Reset all data</button>
+              <button class="btn" onclick="handleLogout()"><i class="ti ti-logout"></i>Log Out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-reports">
+
+      <!-- Header -->
+      <div class="rp-header">
+        <div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:3px">Chapter Reports</div>
+          <div style="font-size:11.5px;opacity:.75">Generate, preview, and print structured reports from live chapter data</div>
+        </div>
+        <div style="font-size:11px;opacity:.6" id="rp-semester-lbl"></div>
+      </div>
+
+      <div class="rp-body">
+
+        <!-- LEFT: Report Type Selector -->
+        <div class="rp-sidebar">
+          <div class="rp-sidebar-lbl">Report Type</div>
+          <div id="rp-menu">
+            <div class="rp-item active" onclick="rpSelect(this,'weekly')" data-rp="weekly">
+              <div class="rp-item-ic" style="background:#e8eef7;color:var(--navy)"><i class="ti ti-layout-dashboard"></i></div>
+              <div><div class="rp-item-title">Weekly Exec Summary</div><div class="rp-item-sub">KPIs, alerts, tasks, events</div></div>
+            </div>
+            <div class="rp-item" onclick="rpSelect(this,'attendance')" data-rp="attendance">
+              <div class="rp-item-ic" style="background:var(--bl-bg);color:var(--bl)"><i class="ti ti-users"></i></div>
+              <div><div class="rp-item-title">Attendance Report</div><div class="rp-item-sub">Member rates, risk tiers, events</div></div>
+            </div>
+            <div class="rp-item" onclick="rpSelect(this,'recruitment')" data-rp="recruitment">
+              <div class="rp-item-ic" style="background:var(--gn-bg);color:var(--gn)"><i class="ti ti-user-plus"></i></div>
+              <div><div class="rp-item-title">Recruitment Report</div><div class="rp-item-sub">Pipeline, funnel, prospects</div></div>
+            </div>
+            <div class="rp-item" onclick="rpSelect(this,'finance')" data-rp="finance">
+              <div class="rp-item-ic" style="background:var(--gn-bg);color:var(--gn-tx)"><i class="ti ti-cash"></i></div>
+              <div><div class="rp-item-title">Finance Snapshot</div><div class="rp-item-sub">Dues, budget, collections</div></div>
+            </div>
+            <div class="rp-item" onclick="rpSelect(this,'academics')" data-rp="academics">
+              <div class="rp-item-ic" style="background:var(--am-bg);color:var(--am-tx)"><i class="ti ti-school"></i></div>
+              <div><div class="rp-item-title">Academic Standing</div><div class="rp-item-sub">GPA distribution, warnings</div></div>
+            </div>
+            <div class="rp-item" onclick="rpSelect(this,'full')" data-rp="full">
+              <div class="rp-item-ic" style="background:#f0f0ee;color:var(--mt)"><i class="ti ti-file-text"></i></div>
+              <div><div class="rp-item-title">Full Chapter Report</div><div class="rp-item-sub">All sections combined</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Preview + Actions -->
+        <div class="rp-preview-col">
+          <div class="rp-actions-bar">
+            <div style="font-size:13px;font-weight:600" id="rp-preview-title">Weekly Exec Summary</div>
+            <div style="display:flex;gap:7px">
+              <button class="btn" onclick="rpCopy()"><i class="ti ti-clipboard"></i>Copy Text</button>
+              <button class="btn btn-p" onclick="rpPrint()"><i class="ti ti-printer"></i>Print / PDF</button>
+            </div>
+          </div>
+          <div class="rp-preview-wrap">
+            <div id="rp-preview" class="rp-preview"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="page" id="page-access-denied">
+      <div class="access-denied">
+        <i class="ti ti-lock"></i>
+        <h3>Access Restricted</h3>
+        <p>You don't have permission to view <strong id="ad-role"></strong>. Contact the President or Vice President if you need access.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── NATIONAL DUES PAYMENT MODAL ── -->
+<div class="mo" id="m-fin-national" onclick="closeM(event,this)"><div class="md">
+  <div class="md-t">Record National Dues Payment<button class="md-x" onclick="closeM(null,document.getElementById('m-fin-national'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr"><div class="fld"><label>Member</label><select id="fnatl-member"></select></div></div>
+  <div class="fr c2">
+    <div class="fld"><label>Amount ($)</label><input id="fnatl-amount" type="number" min="0" step="1" placeholder="e.g. 200"></div>
+    <div class="fld"><label>Date</label><input id="fnatl-date" type="date"></div>
+  </div>
+  <div class="fr"><div class="fld"><label>Notes</label><input id="fnatl-notes" placeholder="Optional notes"></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px">
+    <button class="btn" onclick="closeM(null,document.getElementById('m-fin-national'))">Cancel</button>
+    <button class="btn btn-p" onclick="finRecordNationalPayment()"><i class="ti ti-check"></i>Record Payment</button>
+  </div>
+</div></div>
+
+<!-- ── NOTE DETAIL VIEW ── -->
+<!-- ── MEMBER FINANCIAL PROFILE ── -->
+<div class="mo" id="m-fin-profile" onclick="closeM(event,this)"><div class="md" style="width:620px;max-height:90vh;padding:0;display:flex;flex-direction:column">
+  <div style="padding:14px 19px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="sh-av" id="fmp-av" style="width:34px;height:34px;font-size:11px"></div>
+      <div><div style="font-size:14px;font-weight:600" id="fmp-name"></div><div style="font-size:11px;color:var(--mt)" id="fmp-role"></div></div>
+    </div>
+    <div style="display:flex;gap:7px;align-items:center">
+      <span id="fmp-status-badge" class="badge"></span>
+      <button class="md-x" onclick="closeM(null,document.getElementById('m-fin-profile'))"><i class="ti ti-x"></i></button>
+    </div>
+  </div>
+  <div id="fmp-body" style="overflow-y:auto;padding:18px 19px;flex:1"></div>
+</div></div>
+
+<!-- ── RECORD PAYMENT MODAL ── -->
+<div class="mo" id="m-fin-payment" onclick="closeM(event,this)"><div class="md">
+  <div class="md-t">Record Payment<button class="md-x" onclick="closeM(null,document.getElementById('m-fin-payment'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr"><div class="fld"><label>Member *</label><select id="fpay-member"></select></div></div>
+  <div class="fr c2"><div class="fld"><label>Amount ($) *</label><input id="fpay-amount" type="number" step="0.01" placeholder="0.00"></div><div class="fld"><label>Date</label><input id="fpay-date" type="date"></div></div>
+  <div class="fr c2"><div class="fld"><label>Type</label><select id="fpay-type"><option value="dues">Dues Payment</option><option value="fine">Fine Payment</option><option value="plan">Payment Plan Installment</option><option value="other">Other</option></select></div><div class="fld"><label>Method</label><select id="fpay-method"><option value="Venmo">Venmo</option><option value="Cash">Cash</option><option value="Check">Check</option><option value="Zelle">Zelle</option></select></div></div>
+  <div class="fr"><div class="fld"><label>Notes</label><input id="fpay-notes" placeholder="Optional note..."></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-fin-payment'))">Cancel</button><button class="btn btn-p" onclick="finRecordPayment()"><i class="ti ti-check"></i>Record Payment</button></div>
+</div></div>
+
+<!-- ── ADD FINE MODAL ── -->
+<div class="mo" id="m-fin-fine" onclick="closeM(event,this)"><div class="md">
+  <div class="md-t">Add Fine<button class="md-x" onclick="closeM(null,document.getElementById('m-fin-fine'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr c2"><div class="fld"><label>Member *</label><select id="ffine-member"></select></div><div class="fld"><label>Amount ($) *</label><input id="ffine-amount" type="number" step="0.01" placeholder="25.00"></div></div>
+  <div class="fr c2"><div class="fld"><label>Type</label><select id="ffine-type"><option value="Attendance">Attendance Fine</option><option value="Late Payment">Late Payment Fee</option><option value="Damage">Damage Fine</option><option value="Judicial">Judicial Board Fine</option><option value="Other">Other</option></select></div><div class="fld"><label>Date</label><input id="ffine-date" type="date"></div></div>
+  <div class="fr"><div class="fld"><label>Reason</label><input id="ffine-reason" placeholder="Brief description..."></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-fin-fine'))">Cancel</button><button class="btn btn-p" onclick="finAddFine()"><i class="ti ti-gavel"></i>Issue Fine</button></div>
+</div></div>
+
+<!-- ── LOG EXPENSE MODAL ── -->
+<div class="mo" id="m-fin-expense" onclick="closeM(event,this)"><div class="md">
+  <div class="md-t">Log Expense<button class="md-x" onclick="closeM(null,document.getElementById('m-fin-expense'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr c2"><div class="fld"><label>Category *</label><select id="fexp-cat"><option value="Social">Social</option><option value="Recruitment">Recruitment</option><option value="Philanthropy">Philanthropy</option><option value="House">House Operations</option><option value="Brotherhood">Brotherhood</option><option value="Operations">Operations</option><option value="Risk">Risk Management</option></select></div><div class="fld"><label>Amount ($) *</label><input id="fexp-amount" type="number" step="0.01" placeholder="0.00"></div></div>
+  <div class="fr c2"><div class="fld"><label>Description *</label><input id="fexp-desc" placeholder="What was purchased?"></div><div class="fld"><label>Date</label><input id="fexp-date" type="date"></div></div>
+  <div class="fr"><div class="fld"><label>Approved by</label><select id="fexp-officer"></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-fin-expense'))">Cancel</button><button class="btn btn-p" onclick="finLogExpense()"><i class="ti ti-receipt"></i>Log Expense</button></div>
+</div></div>
+
+<!-- ── PAYMENT PLAN MODAL ── -->
+<div class="mo" id="m-fin-plan" onclick="closeM(event,this)"><div class="md">
+  <div class="md-t">Create Payment Plan<button class="md-x" onclick="closeM(null,document.getElementById('m-fin-plan'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr"><div class="fld"><label>Member *</label><select id="fplan-member"></select></div></div>
+  <div class="fr c2"><div class="fld"><label>Total Amount ($) *</label><input id="fplan-total" type="number" step="0.01" placeholder="250.00"></div><div class="fld"><label>Installments</label><select id="fplan-inst"><option value="2">2 payments</option><option value="3">3 payments</option><option value="4">4 payments</option></select></div></div>
+  <div class="fr"><div class="fld"><label>First payment due</label><input id="fplan-start" type="date"></div></div>
+  <div class="fr"><div class="fld"><label>Notes</label><input id="fplan-notes" placeholder="Reason for payment plan..."></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-fin-plan'))">Cancel</button><button class="btn btn-p" onclick="finCreatePlan()">Create Plan</button></div>
+</div></div>
+
+<!-- ── RUSHEE PROFILE MODAL ── -->
+<div class="mo" id="m-rc-profile" onclick="closeM(event,this)"><div class="md" style="width:680px;max-height:90vh;padding:0;display:flex;flex-direction:column">
+  <div style="padding:15px 19px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="sh-av" id="rcp-av" style="width:36px;height:36px;font-size:12px"></div>
+      <div><div style="font-size:14px;font-weight:600" id="rcp-name"></div><div style="font-size:11px;color:var(--mt)" id="rcp-sub"></div></div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span id="rcp-stage-badge" class="badge"></span>
+      <span id="rcp-score-badge" class="rc-score"></span>
+      <button class="md-x" onclick="closeM(null,document.getElementById('m-rc-profile'))"><i class="ti ti-x"></i></button>
+    </div>
+  </div>
+  <div id="rcp-body" style="overflow-y:auto;padding:18px 19px;flex:1"></div>
+</div></div>
+
+<!-- ── ADD RUSHEE MODAL ── -->
+<div class="mo" id="m-rc-add" onclick="closeM(event,this)"><div class="md" style="width:520px">
+  <div class="md-t">Add Rushee<button class="md-x" onclick="closeM(null,document.getElementById('m-rc-add'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr c2"><div class="fld"><label>Full name *</label><input id="rca-name" placeholder="John Smith"></div><div class="fld"><label>School year</label><select id="rca-year"><option>Freshman</option><option>Sophomore</option><option>Junior</option><option>Senior</option></select></div></div>
+  <div class="fr c2"><div class="fld"><label>Major</label><input id="rca-major" placeholder="Engineering"></div><div class="fld"><label>Hometown</label><input id="rca-home" placeholder="Des Moines, IA"></div></div>
+  <div class="fr c2"><div class="fld"><label>Assigned recruiter</label><select id="rca-rec"></select></div><div class="fld"><label>Pipeline stage</label><select id="rca-stage"><option value="New Lead">New Lead</option><option value="Contacted">Contacted</option><option value="Attended Event">Attended Event</option><option value="Active Rush">Active Rush</option><option value="Interviewed">Interviewed</option><option value="Bid Ready">Bid Ready</option></select></div></div>
+  <div class="fr"><div class="fld"><label>Interests / notes</label><textarea id="rca-notes" placeholder="What do we know about this person?"></textarea></div></div>
+  <div class="fr"><div class="fld"><label>Tags (click to select)</label><div id="rca-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px"></div></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-rc-add'))">Cancel</button><button class="btn btn-p" onclick="rcAddRushee()"><i class="ti ti-user-plus"></i>Add Rushee</button></div>
+</div></div>
+
+<!-- ── ADD RUSH EVENT MODAL ── -->
+<div class="mo" id="m-rc-event" onclick="closeM(event,this)"><div class="md">
+  <div class="md-t">Add Rush Event<button class="md-x" onclick="closeM(null,document.getElementById('m-rc-event'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr c2"><div class="fld"><label>Event name *</label><input id="rce-name" placeholder="Open House"></div><div class="fld"><label>Type</label><select id="rce-type"><option>Open House</option><option>Brotherhood Event</option><option>Invite Only</option><option>Philanthropy</option><option>Athletics</option><option>Study Event</option><option>Rush Dinner</option></select></div></div>
+
+<div class="mo" id="m-rc-goal" onclick="closeM(event,this)"><div class="md" style="width:420px">
+  <div class="md-t">Edit Recruitment Goal<button class="md-x" onclick="closeM(null,document.getElementById('m-rc-goal'))">&#x00D7;</button></div>
+  <div style="font-size:12px;color:var(--mt);margin-bottom:13px;line-height:1.5">Set your semester recruitment target. This updates the progress bar and KPIs in the Recruiter Leaderboard.</div>
+  <div class="fr">
+    <div class="fld"><label>Goal Label</label><input id="rcg-label" placeholder="e.g. New Members This Semester" maxlength="60"></div>
+  </div>
+  <div class="fr">
+    <div class="fld"><label>Target (new members)</label><input id="rcg-target" type="number" min="1" max="200" placeholder="e.g. 20"></div>
+  </div>
+  <div style="display:flex;gap:7px;justify-content:flex-end">
+    <button class="btn" onclick="closeM(null,document.getElementById('m-rc-goal'))">Cancel</button>
+    <button class="btn btn-p" onclick="rcSaveGoal()"><i class="ti ti-check"></i>Save Goal</button>
+  </div>
+</div></div>
+
+  <div class="fr c2"><div class="fld"><label>Date</label><input id="rce-date" type="date"></div><div class="fld"><label>Time</label><input id="rce-time" placeholder="7:00 PM"></div></div>
+  <div class="fr c2"><div class="fld"><label>Location</label><input id="rce-loc" placeholder="Chapter house"></div><div class="fld"><label>RSVP estimate</label><input id="rce-rsvp" type="number" placeholder="20"></div></div>
+  <div class="fr"><div class="fld"><label>Notes</label><textarea id="rce-notes" placeholder="Goals for this event..."></textarea></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-rc-event'))">Cancel</button><button class="btn btn-p" onclick="rcAddEvent()">Save Event</button></div>
+</div></div>
+
+<div class="mo" id="m-notedetail" onclick="closeM(event,this)">
+  <div class="md" style="width:680px;max-height:88vh;padding:0;overflow:hidden;display:flex;flex-direction:column">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <span style="font-size:12px;font-weight:500;color:var(--mt)">Meeting Note</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn" style="height:26px;font-size:11px" onclick="exportNote(window._activeNoteId)"><i class="ti ti-file-type-pdf"></i>Export PDF</button>
+        <button class="md-x" onclick="closeM(null,document.getElementById('m-notedetail'))"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+    <div id="nd-body" style="overflow-y:auto;padding:20px 24px;flex:1"></div>
+  </div>
+</div>
+
+<div class="mo" id="m-addmember" onclick="closeM(event,this)"><div class="md"><div class="md-t">Add Member<button class="md-x" onclick="closeM(null,document.getElementById('m-addmember'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr"><div class="fld"><label>Full name *</label><input id="nm-n" placeholder="John Smith"></div></div>
+  <div class="fr c2"><div class="fld"><label>Grad year</label><input id="nm-y" type="number" value="2027"></div><div class="fld"><label>Class</label><select id="nm-c"><option>Freshman</option><option>Sophomore</option><option>Junior</option><option>Senior</option></select></div></div>
+  <div class="fr c2"><div class="fld"><label>Live-in?</label><select id="nm-l"><option value="0">No</option><option value="1">Yes</option></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addmember'))">Cancel</button><button class="btn btn-p" onclick="addMem()">Add Member</button></div>
+</div></div>
+
+<div class="mo" id="m-addevent" onclick="closeM(event,this)"><div class="md"><div class="md-t">New Event<button class="md-x" onclick="closeM(null,document.getElementById('m-addevent'))"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="ne-edit-id">
+  <div class="fr"><div class="fld"><label>Event title *</label><input id="ne-t" placeholder="Chapter Meeting"></div></div>
+  <div class="fr c2"><div class="fld"><label>Type</label><select id="ne-tp"><option value="chapter">Chapter</option><option value="exec">Exec</option><option value="recruitment">Recruitment</option><option value="philanthropy">Philanthropy</option><option value="brotherhood">Brotherhood</option><option value="retreat">Retreat</option><option value="mandatory">Mandatory</option></select></div><div class="fld"><label>Date</label><input id="ne-d" type="date"></div></div>
+  <div class="fr c2"><div class="fld"><label>Start time</label><input id="ne-st" type="time" value="19:00"></div><div class="fld"><label>Location</label><input id="ne-l" placeholder="Chapter House"></div></div>
+  <div class="fr"><div class="fld"><label>Mandatory?</label><select id="ne-m"><option value="1">Yes — Required</option><option value="0">No — Optional</option></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addevent'))">Cancel</button><button class="btn btn-p" onclick="addEv()">Create Event</button></div>
+</div></div>
+
+<div class="mo" id="m-addtask" onclick="closeM(event,this)"><div class="md"><div class="md-t">New Task<button class="md-x" onclick="closeM(null,document.getElementById('m-addtask'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr"><div class="fld"><label>Task title *</label><input id="nt-t" placeholder="Submit philanthropy budget"></div></div>
+  <div class="fr c2"><div class="fld"><label>Assigned to</label><select id="nt-a"></select></div><div class="fld"><label>Priority</label><select id="nt-p"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option><option value="urgent">Urgent</option></select></div></div>
+  <div class="fr c2"><div class="fld"><label>Due date</label><input id="nt-d" type="date"></div><div class="fld"><label>Status</label><select id="nt-s"><option value="todo">To Do</option><option value="in_progress">In Progress</option><option value="blocked">Blocked</option></select></div></div>
+  <div class="fr"><div class="fld"><label>Description</label><textarea id="nt-ds" placeholder="Optional details..."></textarea></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addtask'))">Cancel</button><button class="btn btn-p" onclick="addTask()">Create Task</button></div>
+</div></div>
+
+<div class="mo" id="m-addgoal" onclick="closeM(event,this)"><div class="md"><div class="md-t">New Semester Goal<button class="md-x" onclick="closeM(null,document.getElementById('m-addgoal'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr"><div class="fld"><label>Goal title *</label><input id="ng-t" placeholder="Recruit 30 new pledges"></div></div>
+  <div class="fr c3"><div class="fld"><label>Target</label><input id="ng-tg" type="number" value="100"></div><div class="fld"><label>Current</label><input id="ng-cu" type="number" value="0"></div><div class="fld"><label>Unit</label><input id="ng-u" placeholder="pledges"></div></div>
+  <div class="fr"><div class="fld"><label>Category</label><select id="ng-c"><option value="recruitment">Recruitment</option><option value="philanthropy">Philanthropy</option><option value="attendance">Attendance</option><option value="risk">Risk</option><option value="finance">Finance</option><option value="brotherhood">Brotherhood</option><option value="other">Other</option></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addgoal'))">Cancel</button><button class="btn btn-p" onclick="addGoal()">Add Goal</button></div>
+</div></div>
+
+<div class="mo" id="m-addnote" onclick="closeM(event,this)"><div class="md" style="width:620px;max-height:90vh">
+  <div class="md-t">New Meeting Note<button class="md-x" onclick="closeM(null,document.getElementById('m-addnote'))"><i class="ti ti-x"></i></button></div>
+
+  <!-- Header info -->
+  <div class="fr c2" style="margin-bottom:4px">
+    <div class="fld"><label>Chapter *</label><input id="mn-chapter" value="Alpha Tau Omega - Beta Chapter" placeholder="Chapter name"></div>
+    <div class="fld"><label>Date</label><input id="mn-d" type="date"></div>
+  </div>
+  <div class="fr c2" style="margin-bottom:11px">
+    <div class="fld"><label>Meeting Title *</label><input id="mn-t" placeholder="e.g. Chapter Meeting — Feb 15th, 2026"></div>
+    <div class="fld"><label>Type</label><select id="mn-tp"><option value="chapter">Chapter</option><option value="exec">Exec</option><option value="committee">Committee</option><option value="retreat">Retreat</option></select></div>
+  </div>
+
+  <!-- Officer Reports -->
+  <div style="font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;border-top:1px solid var(--bdr);padding-top:11px">Officer Reports</div>
+  <div id="mn-officers-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+
+  <!-- Standard sections -->
+  <div style="font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;border-top:1px solid var(--bdr);padding-top:11px">Meeting Sections</div>
+  <div class="fr"><div class="fld"><label>Announcements</label><textarea id="mn-announcements" style="height:52px" placeholder="• ..."></textarea></div></div>
+  <div class="fr c2">
+    <div class="fld"><label>Old Business</label><textarea id="mn-oldbiz" style="height:52px" placeholder="• ..."></textarea></div>
+    <div class="fld"><label>New Business</label><textarea id="mn-newbiz" style="height:52px" placeholder="• ..."></textarea></div>
+  </div>
+
+  <!-- Weekly honors -->
+  <div style="font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;border-top:1px solid var(--bdr);padding-top:11px">Weekly Honors</div>
+  <div class="fr c3">
+    <div class="fld"><label>OOH of the Week</label><input id="mn-ooh" placeholder="Name"></div>
+    <div class="fld"><label>Brother of the Week</label><input id="mn-botw" placeholder="Name"></div>
+    <div class="fld"><label>Buffon of the Week</label><input id="mn-buffon" placeholder="Name"></div>
+  </div>
+
+  <!-- Action items -->
+  <div style="font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;border-top:1px solid var(--bdr);padding-top:11px">Action Items</div>
+  <div class="fr"><div class="fld"><label>Action items (one per line)</label><textarea id="mn-a" style="height:52px" placeholder="Submit budget by Friday&#10;Schedule philanthropy event"></textarea></div></div>
+
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addnote'))">Cancel</button><button class="btn btn-p" onclick="addNote()"><i class="ti ti-device-floppy"></i>Save Note</button></div>
+</div></div>
+
+<div class="mo" id="m-addcase" onclick="closeM(event,this)"><div class="md"><div class="md-t">New Case<button class="md-x" onclick="closeM(null,document.getElementById('m-addcase'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr c2"><div class="fld"><label>Member *</label><select id="nc-m"></select></div><div class="fld"><label>Type</label><select id="nc-t"><option value="conduct">Conduct violation</option><option value="attendance">Attendance</option><option value="academic">Academic violation</option><option value="financial">Financial</option><option value="hazing">Hazing</option><option value="risk">Risk management</option><option value="other">Other</option></select></div></div>
+  <div class="fr"><div class="fld"><label>Description *</label><textarea id="nc-d" placeholder="Brief description of the incident..."></textarea></div></div>
+  <div class="fr c2"><div class="fld"><label>Hearing date</label><input id="nc-h" type="date"></div><div class="fld"><label>Status</label><select id="nc-s"><option value="open">Open</option><option value="scheduled">Hearing scheduled</option><option value="pending">Pending</option></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addcase'))">Cancel</button><button class="btn btn-p" onclick="addCase()">File Case</button></div>
+</div></div>
+
+<div class="mo" id="m-addshift" onclick="closeM(event,this)"><div class="md"><div class="md-t">Add Social Monitor Shift<button class="md-x" onclick="closeM(null,document.getElementById('m-addshift'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr c2"><div class="fld"><label>Event name *</label><input id="ns-e" placeholder="Friday Mixer"></div><div class="fld"><label>Date *</label><input id="ns-d" type="date"></div></div>
+  <div class="fr c2"><div class="fld"><label>Start time</label><input id="ns-st" type="time" value="22:00"></div><div class="fld"><label>End time</label><input id="ns-en" type="time" value="02:00"></div></div>
+  <div class="fr"><div class="fld"><label>Assigned member</label><select id="ns-m"><option value="">— Unassigned —</option></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addshift'))">Cancel</button><button class="btn btn-p" onclick="addShift()">Add Shift</button></div>
+</div></div>
+
+<div class="mo" id="m-simport" onclick="closeM(event,this)"><div class="md"><div class="md-t">Import Social Monitor Schedule<button class="md-x" onclick="closeM(null,document.getElementById('m-simport'))"><i class="ti ti-x"></i></button></div>
+  <div style="border:2px dashed var(--bdr);border-radius:10px;padding:26px;text-align:center;margin-bottom:13px">
+    <i class="ti ti-file-spreadsheet" style="font-size:26px;color:var(--ht);display:block;margin:0 auto 7px"></i>
+    <div style="font-size:13px;font-weight:500;margin-bottom:4px">Drop .xlsx or .csv here</div>
+    <div style="font-size:11px;color:var(--mt);margin-bottom:11px">Expected columns: Event, Date, Start, End, Member</div>
+    <label class="btn btn-p" style="cursor:pointer"><i class="ti ti-upload"></i>Browse File<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleSI(this)"></label>
+  </div>
+  <div id="si-prev"></div>
+</div></div>
+
+<!-- ── UPDATE GPA MODAL ── -->
+<div class="mo" id="m-updategpa" onclick="closeM(event,this)"><div class="md" style="width:700px;max-height:88vh">
+  <div class="md-t">Update Member GPAs<button class="md-x" onclick="closeM(null,document.getElementById('m-updategpa'))"><i class="ti ti-x"></i></button></div>
+  <div style="font-size:11.5px;color:var(--mt);margin-bottom:11px">Enter each member's Cumulative GPA and Last Semester GPA. Leave blank to keep unchanged. Chapter GPA is the average of Last Semester GPAs.</div>
+
+  <!-- Column legend -->
+  <div style="display:grid;grid-template-columns:1fr 68px 68px;gap:8px;align-items:center;padding:6px 9px;background:#f5f5f3;border-radius:7px;margin-bottom:9px;font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em">
+    <span>Member</span>
+    <span style="text-align:center">Cumulative</span>
+    <span style="text-align:center">Last Semester</span>
+  </div>
+
+  <div style="display:flex;gap:7px;margin-bottom:9px">
+    <div class="sbar" style="flex:1;margin-bottom:0"><i class="ti ti-search"></i><input id="gpa-search" placeholder="Search member..." oninput="filterGpaModal()"></div>
+    <select id="gpa-class-filter" onchange="filterGpaModal()" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none">
+      <option value="all">All classes</option>
+      <option value="Senior">Seniors</option>
+      <option value="Junior">Juniors</option>
+      <option value="Sophomore">Sophomores</option>
+      <option value="Freshman">Freshmen</option>
+    </select>
+  </div>
+
+  <div id="gpa-modal-list" style="display:flex;flex-direction:column;gap:4px;max-height:380px;overflow-y:auto;padding-right:3px"></div>
+
+  <div style="margin-top:11px;padding-top:11px;border-top:1px solid var(--bdr)">
+    <div class="fld">
+      <label>Semester label (for history)</label>
+      <input id="gpa-semester" placeholder="e.g. Fall 2026" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none;width:200px" onfocus="if(!this.value)this.value=getSemester()">
+    </div>
+  </div>
+  <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:9px">
+    <button class="btn" onclick="closeM(null,document.getElementById('m-updategpa'))">Cancel</button>
+    <button class="btn btn-p" onclick="saveGPAs()"><i class="ti ti-device-floppy"></i>Save GPAs</button>
+  </div>
+</div></div>
+
+<div class="mo" id="m-addcomm" onclick="closeM(event,this)"><div class="md"><div class="md-t">New Committee<button class="md-x" onclick="closeM(null,document.getElementById('m-addcomm'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr"><div class="fld"><label>Committee name *</label><input id="nco-n" placeholder="Philanthropy Committee"></div></div>
+  <div class="fr"><div class="fld"><label>Description</label><input id="nco-d" placeholder="Brief description"></div></div>
+  <div class="fr"><div class="fld"><label>Chair</label><select id="nco-c"></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addcomm'))">Cancel</button><button class="btn btn-p" onclick="addComm()">Create</button></div>
+</div></div>
+
+<div class="mo" id="m-addtrans" onclick="closeM(event,this)"><div class="md"><div class="md-t">Add Transition Doc<button class="md-x" onclick="closeM(null,document.getElementById('m-addtrans'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr c2"><div class="fld"><label>Role *</label><input id="ntr-r" placeholder="President"></div><div class="fld"><label>Outgoing member</label><select id="ntr-o"></select></div></div>
+  <div class="fr"><div class="fld"><label>Transition notes</label><textarea id="ntr-c" style="height:95px" placeholder="Key responsibilities, contacts, workflows, advice for successor..."></textarea></div></div>
+  <div class="fr"><div class="fld"><label>Status</label><select id="ntr-s"><option value="not_started">Not started</option><option value="in_progress">In progress</option><option value="review">In review</option><option value="complete">Complete</option></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addtrans'))">Cancel</button><button class="btn btn-p" onclick="addTrans()">Save</button></div>
+</div></div>
+<!-- ── EDIT TASK ── -->
+<div class="mo" id="m-edittask" onclick="closeM(event,this)"><div class="md"><div class="md-t">Edit Task<button class="md-x" onclick="closeM(null,document.getElementById('m-edittask'))"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="et-id">
+  <div class="fr"><div class="fld"><label>Task title *</label><input id="et-t" placeholder="Task title"></div></div>
+  <div class="fr c2"><div class="fld"><label>Assigned to</label><select id="et-a"></select></div><div class="fld"><label>Priority</label><select id="et-p"><option value="urgent">Urgent</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div></div>
+  <div class="fr c2"><div class="fld"><label>Due date</label><input id="et-d" type="date"></div><div class="fld"><label>Status</label><select id="et-s"><option value="todo">To Do</option><option value="in_progress">In Progress</option><option value="blocked">Blocked</option><option value="done">Done</option></select></div></div>
+  <div class="fr"><div class="fld"><label>Description</label><textarea id="et-ds" placeholder="Optional details..."></textarea></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn btn-d" onclick="deleteTask(document.getElementById('et-id').value)"><i class="ti ti-trash"></i>Delete</button><button class="btn" onclick="closeM(null,document.getElementById('m-edittask'))">Cancel</button><button class="btn btn-p" onclick="saveTask()">Save</button></div>
+</div></div>
+
+<!-- ── EDIT MEMBER ── -->
+<div class="mo" id="m-editmember" onclick="closeM(event,this)"><div class="md"><div class="md-t">Edit Member<button class="md-x" onclick="closeM(null,document.getElementById('m-editmember'))"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="em-id">
+  <div class="fr c2"><div class="fld"><label>Full name *</label><input id="em-n"></div><div class="fld"><label>Grad year</label><input id="em-y" type="number"></div></div>
+  <div class="fr c2"><div class="fld"><label>Class</label><select id="em-c"><option>Freshman</option><option>Sophomore</option><option>Junior</option><option>Senior</option></select></div><div class="fld"><label>Live-in?</label><select id="em-l"><option value="0">No</option><option value="1">Yes</option></select></div></div>
+  <div class="fr"><div class="fld"><label>Role</label><input id="em-r" placeholder="Member"></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn btn-d" onclick="deleteMember(document.getElementById('em-id').value)"><i class="ti ti-trash"></i>Remove</button><button class="btn" onclick="closeM(null,document.getElementById('m-editmember'))">Cancel</button><button class="btn btn-p" onclick="saveMember()">Save</button></div>
+</div></div>
+
+<!-- ── RESOLVE CASE ── -->
+<div class="mo" id="m-resolvecase" onclick="closeM(event,this)"><div class="md"><div class="md-t">Resolve Case<button class="md-x" onclick="closeM(null,document.getElementById('m-resolvecase'))"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="rc-id">
+  <div class="fr"><div class="fld"><label>Outcome / Resolution *</label><textarea id="rc-r" placeholder="Describe the outcome, sanctions, or reason for dismissal..."></textarea></div></div>
+  <div class="fr"><div class="fld"><label>Status</label><select id="rc-s"><option value="resolved">Resolved</option><option value="dismissed">Dismissed</option><option value="appealed">Appealed</option></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-resolvecase'))">Cancel</button><button class="btn btn-p" onclick="resolveCase()">Save Resolution</button></div>
+</div></div>
+
+<!-- ── MARK ATTENDANCE ── -->
+<div class="mo" id="m-markatt" onclick="closeM(event,this)"><div class="md" style="width:520px"><div class="md-t"><span id="ma-title">Mark Attendance</span><button class="md-x" onclick="closeM(null,document.getElementById('m-markatt'))"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="ma-evid">
+  <div style="font-size:11.5px;color:var(--mt);margin-bottom:11px">Click each member to cycle: Present → Absent → Excused → (unset)</div>
+  <div id="ma-list" style="max-height:400px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:5px"></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:13px"><button class="btn" onclick="closeM(null,document.getElementById('m-markatt'))">Cancel</button><button class="btn btn-p" onclick="saveAttendance()">Save Attendance</button></div>
+</div></div>
+
+<!-- ── EDIT COMMITTEE MEMBERS ── -->
+<div class="mo" id="m-editcomm" onclick="closeM(event,this)"><div class="md"><div class="md-t">Edit Committee<button class="md-x" onclick="closeM(null,document.getElementById('m-editcomm'))"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="eco-id">
+  <div class="fr"><div class="fld"><label>Committee name *</label><input id="eco-n"></div></div>
+  <div class="fr"><div class="fld"><label>Description</label><input id="eco-d"></div></div>
+  <div class="fr"><div class="fld"><label>Chair</label><select id="eco-c"></select></div></div>
+  <div style="font-size:11.5px;font-weight:500;margin-bottom:6px">Members</div>
+  <div id="eco-members" style="max-height:220px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:13px"></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn btn-d" onclick="deleteComm(document.getElementById('eco-id').value)"><i class="ti ti-trash"></i>Delete</button><button class="btn" onclick="closeM(null,document.getElementById('m-editcomm'))">Cancel</button><button class="btn btn-p" onclick="saveComm()">Save</button></div>
+</div></div>
+
+<!-- ── EDIT TRANSITION ── -->
+<div class="mo" id="m-edittrans" onclick="closeM(event,this)"><div class="md"><div class="md-t">Edit Transition Doc<button class="md-x" onclick="closeM(null,document.getElementById('m-edittrans'))"><i class="ti ti-x"></i></button></div>
+  <input type="hidden" id="etr-id">
+  <div class="fr c2"><div class="fld"><label>Role *</label><input id="etr-r"></div><div class="fld"><label>Outgoing member</label><select id="etr-o"></select></div></div>
+  <div class="fr"><div class="fld"><label>Incoming member</label><select id="etr-i"><option value="">— TBD —</option></select></div></div>
+  <div class="fr"><div class="fld"><label>Transition notes</label><textarea id="etr-c" style="height:95px"></textarea></div></div>
+  <div class="fr"><div class="fld"><label>Status</label><select id="etr-s"><option value="not_started">Not started</option><option value="in_progress">In progress</option><option value="review">In review</option><option value="complete">Complete</option></select></div></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-edittrans'))">Cancel</button><button class="btn btn-p" onclick="saveTrans()">Save</button></div>
+</div></div>
+
+<!-- Firebase stub (no real Firebase — in-memory only) -->
+<script src="js/firebase-stub.js"></script>
+
+<!-- Application scripts (order matters) -->
+<script src="js/data.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/attendance.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/members.js"></script>
+<script src="js/recruitment.js"></script>
+<script src="js/finance.js"></script>
+<script src="js/operations.js"></script>
+<script src="js/search.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/router.js"></script>
+<script src="js/auth.js"></script>
+
+<!-- Demo mode: overrides persistence, seeds data, auto-logs in -->
+<script src="js/demo.js"></script>
+
+</body>
+</html>
