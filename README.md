@@ -68,7 +68,7 @@ Having view access to a page doesn't mean full write access. Add/edit/delete con
 | Feature | Who can add / edit / delete |
 |---|---|
 | Meeting Notes | President, Vice President, Secretary |
-| Sober Shifts | President, Vice President, Risk Manager |
+| Social Monitor Shifts | President, Vice President, Risk Manager |
 | Attendance | President, Vice President, Secretary |
 | Members & Committees | President, Vice President, Secretary |
 | Academics (view) | President, Vice President, Scholarship Chair, Risk Manager |
@@ -97,7 +97,7 @@ The demo auto-logs in as **James Mitchell, President** with a complete seed data
 - **Finance** — dues for all 18 members, 7 expenses, budget allocations, payment history, 2 outstanding fines
 - **14 rushees** — across 5 funnel stages with bid scores, recruiter assignments, and 5 rush events
 - **Judicial cases** — 3 cases (2 active, 1 resolved) with case types, status, and member lookup
-- **5 sober shifts** — across upcoming events, one unassigned to show coverage alerts
+- **5 social monitor shifts** — across upcoming events, one unassigned to show coverage alerts
 - **4 committees** — with chairs and member rosters
 - **Philanthropy** — 3 events, hours logged per member, funds raised
 - **5 alumni contacts** — with engagement status, outreach log, and upcoming alumni event
