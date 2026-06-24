@@ -1,0 +1,326 @@
+/* OpsCore 2.0 Demo — Responsive Breakpoints */
+@media(max-width:900px){
+  .rp-body{grid-template-columns:1fr}
+  .rp-sidebar{position:static}
+  .rp-kpi-row{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  .rp-kpi-row{grid-template-columns:1fr 1fr}
+}
+
+/* ── ATTENDANCE ANALYTICS ── */
+.att-tabs{display:flex;gap:0;border-bottom:2px solid var(--bdr);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.att-tabs::-webkit-scrollbar{display:none}
+@media(max-width:1100px){
+  #rc-row2,#rc-row3{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:768px){
+  #rc-row2,#rc-row3{grid-template-columns:1fr!important}
+  .rc-hfunnel-row{grid-template-columns:80px minmax(0,1fr) 60px}
+  .rc-hfunnel-label{font-size:9.5px}
+}
+
+/* ── RECRUITMENT FUNNEL 2.0 ── */
+.rc-funnel{display:flex;gap:0;margin-bottom:13px}
+.rc-funnel-stage{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.rc-funnel-bar{height:32px;width:100%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:600;color:#fff;position:relative;cursor:pointer;transition:filter .15s}
+.rc-funnel-bar:hover{filter:brightness(1.08)}
+.rc-funnel-bar::after{content:'';position:absolute;right:-8px;top:0;bottom:0;width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;z-index:2}
+.rc-funnel-stage:last-child .rc-funnel-bar::after{display:none}
+.rc-funnel-label{font-size:9px;color:var(--mt);margin-top:5px;text-align:center;line-height:1.3}
+.rc-funnel-count{font-size:13px;font-weight:700;margin-top:1px}
+
+.rc-card{background:var(--bg);border:1px solid var(--bdr);border-radius:9px;padding:9px 11px;cursor:pointer;transition:border-color .15s,box-shadow .12s,transform .12s;user-select:none}
+.rc-card:hover{border-color:var(--navy);box-shadow:0 2px 8px rgba(12,29,86,.09);transform:translateY(-1px)}
+.rc-card.dragging{opacity:.5;transform:scale(.97)}
+.rc-col-drop{transition:background .12s}
+.rc-col-drop.drag-over{background:#e8eef7}
+
+.rc-score{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:20px;border-radius:5px;font-size:10px;font-weight:700;padding:0 6px}
+.rc-score.hot{background:#ffecb3;color:#7a5200}
+.rc-score.good{background:var(--gn-bg);color:var(--gn-tx)}
+.rc-score.mid{background:var(--bl-bg);color:var(--bl-tx)}
+.rc-score.low{background:#f0f0ee;color:var(--ht)}
+.rc-score.dnb{background:var(--rd-bg);color:var(--rd-tx)}
+
+.rc-tag{display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:99px;font-size:9.5px;font-weight:500;background:#f0f0ee;color:var(--mt);cursor:pointer;transition:background .1s}
+.rc-tag.active{background:var(--bl-bg);color:var(--bl-tx)}
+.rc-tag.hot{background:#ffecb3;color:#7a5200}
+.rc-tag.legacy{background:var(--navy);color:#fff}
+.rc-tag.athlete{background:var(--gn-bg);color:var(--gn-tx)}
+.rc-tag.leader{background:var(--am-bg);color:var(--am-tx)}
+.rc-tag.dnb{background:var(--rd-bg);color:var(--rd-tx)}
+
+.rc-note{background:#f8f8f7;border-radius:7px;padding:8px 10px;font-size:11.5px;line-height:1.5}
+.rc-note-meta{font-size:10px;color:var(--ht);margin-bottom:4px;display:flex;justify-content:space-between}
+.rc-kanban{display:grid;gap:9px;overflow-x:auto;padding-bottom:4px}
+.rc-col{background:var(--bg);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;min-width:160px}
+.rc-col-head{padding:9px 11px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;border-top:2px solid transparent}
+.rc-col-body{padding:7px;min-height:180px;display:flex;flex-direction:column;gap:5px}
+.rc-profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.rc-stat{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.rc-stat:last-child{border-bottom:none}
+.rc-ldr-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--bdr)}
+.rc-ldr-row:last-child{border-bottom:none}
+.rc-medal{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+
+@media(max-width:1100px){
+  .sb{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .22s cubic-bezier(.4,0,.2,1);height:100dvh;box-shadow:4px 0 24px rgba(0,0,0,.15)}
+  .sb.open{transform:translateX(0)}
+  #sb-close-btn{display:flex!important}
+  .sb-hamburger{display:flex}
+  .main{width:100%}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fg{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g21{grid-template-columns:1fr}
+  .md{width:min(470px,calc(100vw - 32px));max-height:88vh}
+  #d-quick-actions{grid-template-columns:repeat(3,1fr)!important}
+  #tr-folders{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  #fi-folders{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  /* New components */
+  .d2-kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .d2-body{grid-template-columns:1fr}
+  .d2-hero{grid-template-columns:1fr;gap:14px}
+  .d2-hero-div{display:none}
+  #rc-row2,#rc-row3{grid-template-columns:1fr 1fr!important}
+  .rp-body{grid-template-columns:1fr}
+  .rp-sidebar{position:static}
+}
+
+@media(max-width:768px){
+  /* ── CORE ── */
+  body{font-size:12.5px}
+  .content{padding:11px 12px}
+  .topbar{padding:0 12px;gap:7px}
+  .tb-date{display:none}
+  .g4,.g3,.g2,.g21,.gg{grid-template-columns:1fr!important}
+  #d-officer-row{grid-template-columns:1fr!important}
+  #page-ritual>div:last-child,#page-philanthropy>div:last-child{grid-template-columns:1fr!important}
+  .fg{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .pl{width:110px}
+  .card{padding:11px 12px}
+  .card-hd{flex-wrap:wrap;gap:6px}
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tbl{min-width:480px}
+  .mo{align-items:flex-end;padding:0}
+  .md{width:100%!important;max-width:100%!important;border-radius:var(--rl) var(--rl) 0 0;max-height:92dvh;padding:16px 15px;border-left:none;border-right:none;border-bottom:none}
+  .confirm-box{width:calc(100vw - 28px);max-width:380px}
+  .kb,#t-kb{grid-template-columns:1fr!important}
+  .fr.c2,.fr.c3{grid-template-columns:1fr!important}
+  .cal-cell{min-height:54px;padding:3px}
+  .cal-pip{font-size:8.5px;padding:1px 3px}
+  .cal-day-num{font-size:10.5px;width:18px;height:18px}
+  .kv{font-size:19px}
+  #d-quick-actions{grid-template-columns:repeat(2,1fr)!important}
+  #tr-folders{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #fi-folders{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .btn{max-width:100%}
+  .card-hd .btn{height:26px;font-size:11px;padding:0 9px}
+  .rw{flex-wrap:wrap}
+  #notes-g{grid-template-columns:1fr!important}
+  .case-actions{flex-wrap:wrap}
+  #ma-list{grid-template-columns:1fr!important}
+  .tbl td,.tbl th{padding:5px 7px;font-size:11px}
+  .lg-box{width:calc(100vw - 32px);padding:28px 20px}
+  #ac-table th:nth-child(3),#ac-table td:nth-child(3){display:none}
+  .an-off-row{grid-template-columns:100px 1fr 1fr!important}
+  .an-off-row>div:last-child{display:none}
+
+  /* ── TOPBAR: hide title when search is open ── */
+  .gs-wrap{max-width:none;flex:1}
+
+  /* ── FINANCE TABS: scrollable on mobile ── */
+  #fin-tabs-bar{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  #fin-tabs-bar::-webkit-scrollbar{display:none}
+  #rc-tabs-bar::-webkit-scrollbar{display:none}
+  .fin-tab{white-space:nowrap;flex-shrink:0;padding:7px 11px;font-size:11.5px}
+  .fin-profile-grid{grid-template-columns:1fr!important}
+
+  /* ── DASHBOARD 2.0 ── */
+  .d2-hero{padding:14px 15px;grid-template-columns:1fr}
+  .d2-hero-div{display:none}
+  .d2-hero-health{gap:12px}
+  .d2-qa-grid{grid-template-columns:repeat(2,1fr)}
+  .d2-kpi-row{grid-template-columns:repeat(2,1fr)}
+  .d2-body{grid-template-columns:1fr}
+  .d2-off-card{grid-template-columns:minmax(0,1fr) 44px 44px 72px;gap:6px;padding:7px 8px}
+
+  /* ── ATTENDANCE ANALYTICS ── */
+  #att-row1,#att-row2{grid-template-columns:1fr!important}
+  #att-risk-grid{grid-template-columns:1fr!important}
+  .att-tab{white-space:nowrap;flex-shrink:0;padding:7px 11px;font-size:11.5px}
+  .att-ev-label{width:90px}
+
+  /* ── RECRUITMENT FUNNEL ── */
+  #rc-row2,#rc-row3{grid-template-columns:1fr!important}
+  .rc-hfunnel-row{grid-template-columns:80px minmax(0,1fr) 60px}
+  .rc-hfunnel-label{font-size:9.5px}
+  .rc-kanban{grid-template-columns:repeat(3,minmax(150px,1fr))!important}
+
+  /* ── REPORTS ── */
+  .rp-body{grid-template-columns:1fr}
+  .rp-sidebar{position:static}
+  .rp-header{flex-direction:column;align-items:flex-start;gap:6px}
+  .rp-preview-wrap{padding:14px 13px}
+  .rp-kpi-row{grid-template-columns:repeat(2,1fr)!important}
+  .rp-actions-bar{flex-wrap:wrap;gap:7px}
+  #rp-menu{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px}
+  .rp-item{border-left:none;border-radius:8px;border:1px solid var(--bdr)}
+  .rp-item.active{border-color:var(--navy);background:#f0f4ff}
+  .rp-sidebar-lbl{display:none}
+
+  /* ── PAGE-SPECIFIC TOOLBARS: wrap gracefully ── */
+  #att-toolbar,#sober-toolbar{flex-wrap:wrap}
+  .page-toolbar{flex-wrap:wrap;gap:7px}
+}
+
+@media(max-width:480px){
+  /* ── CORE ── */
+  #fi-folders,#tr-folders{grid-template-columns:1fr 1fr!important}
+  .folder-icon{width:32px;height:32px;font-size:16px}
+  .folder-name{font-size:11.5px}
+  .kv{font-size:17px}
+  .topbar{padding:0 10px;height:48px}
+  .cal-cell{min-height:38px}
+  .cal-day-num{font-size:9px;width:15px;height:15px}
+
+  /* ── DASHBOARD HERO: stack health ring above dims ── */
+  .d2-hero-health{flex-direction:column;align-items:flex-start;gap:10px}
+  .d2-qa-grid{grid-template-columns:1fr 1fr}
+  .d2-kpi-row{grid-template-columns:1fr 1fr}
+  .d2-off-card{grid-template-columns:minmax(0,1fr) 38px 38px 62px;gap:4px;padding:6px 7px}
+  .d2-off-stat-val{font-size:11px}
+
+  /* ── REPORTS ── */
+  #rp-menu{grid-template-columns:1fr}
+  .rp-kpi-row{grid-template-columns:1fr 1fr!important}
+
+  /* ── RECRUITMENT ── */
+  .rc-scorecard{padding:9px 10px}
+  #rc-row2,#rc-row3{grid-template-columns:1fr!important}
+
+  /* ── TABLES: hide lower priority columns ── */
+  .tbl th:last-child,.tbl td:last-child{display:none}
+  .tbl th:nth-child(4),.tbl td:nth-child(4){display:none}
+
+  /* ── MODALS ── */
+  .md{padding:13px 12px}
+  .md-t{font-size:13px}
+
+  /* ── BUTTONS: icon-only on very small ── */
+  .btn-icon-label{display:none}
+}
+
+@media(max-width:380px){
+  .content{padding:8px 9px}
+  .topbar{gap:5px}
+  .d2-off-card{grid-template-columns:minmax(0,1fr) 36px 56px;gap:3px}
+  .d2-off-card>.d2-off-stat:first-of-type{display:none} /* hide attendance col, keep tasks + status */
+  .att-tabs .att-tab{padding:0 9px;font-size:11px}
+  .rp-item-sub{display:none}
+}
+
+@media(max-width:1100px){
+  .d2-hero{grid-template-columns:1fr;gap:14px}
+  .d2-hero-div{display:none}
+  .d2-kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .d2-body{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .d2-hero{padding:14px 15px}
+  .d2-qa-grid{grid-template-columns:repeat(2,1fr)}
+  .d2-kpi-row{grid-template-columns:repeat(2,1fr)}
+  .d2-off-card{grid-template-columns:minmax(0,1fr) 44px 44px 72px;gap:6px;padding:7px 8px}
+}
+@media(max-width:480px){
+  .d2-qa-grid{grid-template-columns:1fr 1fr}
+  .d2-kpi-row{grid-template-columns:1fr 1fr}
+}
+
+@media(max-width:768px){.gs-wrap{max-width:none;flex:1}.tb-date{display:none}}
+
+/* ── MOBILE BOTTOM NAVIGATION ── */
+.mobile-bnav{display:none}
+
+@media(max-width:768px){
+  .mobile-bnav{
+    display:flex;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    z-index:150;
+    background:var(--surf);
+    border-top:1px solid var(--bdr);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    box-shadow:0 -2px 16px rgba(0,0,0,.08);
+  }
+  .mbn-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    padding:8px 4px 6px;
+    border:none;
+    background:none;
+    cursor:pointer;
+    color:var(--ht);
+    font-size:9.5px;
+    font-weight:500;
+    font-family:inherit;
+    transition:color .15s;
+    min-height:54px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .mbn-item i{font-size:22px;line-height:1}
+  .mbn-item.active{color:var(--navy)}
+  .mbn-item:active{opacity:.65}
+
+  /* push scrollable content above the bottom bar */
+  .content{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px) + 10px)!important}
+
+  /* hamburger replaced by bottom nav on phones */
+  .sb-hamburger{display:none!important}
+
+  /* compact demo banner — hide the text label, keep role switcher */
+  .demo-banner-label{display:none!important}
+  #demo-banner{padding:6px 12px}
+}
+
+@media(max-width:480px){
+  /* icon-only bottom nav on very small phones */
+  .mbn-item span{display:none}
+  .mbn-item{min-height:50px}
+  .mbn-item i{font-size:24px}
+}
+
+/* ── CALENDAR DAY NAME HEADERS ── */
+.cal-dn{padding:8px;text-align:center;font-size:10px;font-weight:600;color:var(--mt);text-transform:uppercase;letter-spacing:.06em}
+.cal-dn-s{display:none}
+
+/* ── CALENDAR MOBILE ── */
+@media(max-width:768px){
+  /* filter row scrolls, no clipping */
+  #cal-filt{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;gap:4px}
+  #cal-filt::-webkit-scrollbar{display:none}
+  #cal-filt .btn{flex-shrink:0;white-space:nowrap;height:26px;font-size:10.5px;padding:0 9px}
+}
+
+@media(max-width:480px){
+  /* single-letter day names */
+  .cal-dn{padding:5px 2px;font-size:8.5px;letter-spacing:0}
+  .cal-dn-l{display:none}
+  .cal-dn-s{display:inline}
+  /* icon-only New Event button */
+  .cal-ev-label{display:none}
+  #cal-filt .btn{height:24px;font-size:10px;padding:0 7px}
+}
+
+/* ── COMMITTEES GRID MOBILE ── */
+@media(max-width:768px){
+  #co-grid{grid-template-columns:1fr!important}
+}
+@media(min-width:481px) and (max-width:768px){
+  #co-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+</style>
