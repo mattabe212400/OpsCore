@@ -325,24 +325,52 @@
 }
 
 /* ── HOUSE MANAGEMENT (KCREW) ── */
+
+/* KPI: force 3-across at all sizes — 3 small cards fit fine even on 375px */
+#kc-kpi{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+
+/* Chore manager: 5-column editor row scrolls rather than overflows */
+#kc-chore-manager{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#kc-chore-rows,
+#kc-chore-manager>div:first-child{min-width:520px}
+
 @media(max-width:768px){
-  /* KPI row: 3 cards in a row is tight — let them wrap to 2-across */
-  #kc-kpi{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  /* Chores table: hide Notes column — drops required min-width from 680→440px */
+  #kc-chores table th:nth-child(2),
+  #kc-chores table td:nth-child(2){display:none}
+  #kc-chores table{min-width:440px!important}
 
-  /* Chore manager editor: 5-col grid overflows — make it horizontally scrollable */
-  #kc-chore-manager{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  #kc-chore-rows{min-width:560px}
-  #kc-chore-manager>div:first-child{min-width:560px}
+  /* Read-only bar: let long text wrap gracefully */
+  #kc-ro-bar{flex-wrap:wrap;gap:4px}
 }
-@media(max-width:480px){
-  #kc-kpi{grid-template-columns:1fr 1fr!important}
 
-  /* Schedule card: card header label wraps instead of overflowing */
-  #kc-schedule .ti-sun,#kc-schedule .ti-moon{display:none}
+@media(max-width:480px){
+  /* Chores table: also hide Day badge column — drops to ~320px min-width */
+  #kc-chores table th:nth-child(3),
+  #kc-chores table td:nth-child(3){display:none}
+  #kc-chores table{min-width:320px!important}
+
+  /* Schedule tables: smaller selects + narrower Slot label column */
+  #kc-schedule select{font-size:10px!important;padding:3px 4px!important}
+  #kc-schedule table{min-width:340px!important}
+  #kc-schedule td:first-child,
+  #kc-schedule th:first-child{width:46px!important;font-size:10px!important}
+
+  /* Schedule section headers: drop icon to save horizontal space */
+  #kc-schedule .ti-sun,
+  #kc-schedule .ti-moon{display:none}
+
+  /* KPI: stack to 1-col only on very small phones */
+  #kc-kpi{grid-template-columns:1fr!important}
+}
+
+@media(max-width:380px){
+  #kc-kpi{grid-template-columns:1fr!important}
+  #kc-chores table{min-width:280px!important}
 }
 
 /* ── OTIS WIDGET POSITION ── */
 @media(max-width:768px){
-  /* On mobile, sit above the bottom nav bar */
+  /* Float above the mobile bottom nav bar */
   #otis-widget{bottom:calc(60px + env(safe-area-inset-bottom,0px) + 10px)!important}
 }
