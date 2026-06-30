@@ -44,7 +44,6 @@ function initDataDefaults(){
   if(!D.alumni)D.alumni={contacts:[],events:[],outreach:[]};
   if(!D.ritual)D.ritual={items:[],sessions:[],nmProgress:{}};
   if(!D.vendors)D.vendors=[];
-  if(!D.playbooks)D.playbooks=[];
   if(!D.transitionHub)D.transitionHub={deadlines:[],issues:[],archive:[]};
   if(!D.settings)D.settings={name:'',year:'',classYear:'Senior',notifAttendance:true,notifTasks:true,notifSober:true,notifWeekly:true,chapterName:'Beta Chapter',university:'State University',chapterSize:'',chapterFounded:''};
 }
@@ -140,7 +139,6 @@ async function _saveDFlush(){
       alumni:       D.alumni||{contacts:[],events:[],outreach:[]},
       ritual:       D.ritual||{items:[],sessions:[],nmProgress:{}},
       vendors:      D.vendors||[],
-      playbooks:    D.playbooks||[],
       transitionHub:D.transitionHub||{deadlines:[],issues:[],archive:[]},
       settings:     D.settings||{},
       updatedAt:    Date.now()

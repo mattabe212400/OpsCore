@@ -73,7 +73,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-const PAGE_TITLES={dashboard:'Executive Dashboard',attendance:'Attendance',finance:'Finance',calendar:'Calendar',tasks:'Tasks & Goals',notes:'Meeting Notes',judicial:'Judicial Board',sober:'Social Monitor Scheduling',members:'Members',recruitment:'Recruitment CRM',academics:'Academics',committees:'Committees',analytics:'Analytics & Reporting',files:'Files & Documents',notifications:'Notifications',transition:'Officer Transition Hub',settings:'Settings',philanthropy:'Philanthropy & Service',alumni:'Alumni Relations',ritual:'Ritual & Education',vendors:'Vendors & Contacts',healthscore:'Chapter Health Scorecard',playbooks:'SOPs & Playbooks',reports:'Reports'};
+const PAGE_TITLES={dashboard:'Executive Dashboard',attendance:'Attendance',finance:'Finance',calendar:'Calendar',tasks:'Tasks & Goals',notes:'Meeting Notes',judicial:'Judicial Board',sober:'Social Monitor Scheduling',members:'Members',recruitment:'Recruitment CRM',academics:'Academics',committees:'Committees',analytics:'Analytics & Reporting',files:'Files & Documents',notifications:'Notifications',transition:'Officer Transition Hub',settings:'Settings',philanthropy:'Philanthropy & Service',alumni:'Alumni Relations',ritual:'Ritual & Education',vendors:'Vendors & Contacts',healthscore:'Chapter Health Scorecard',kcrew:'House Management',reports:'Reports'};
 
 function getMember(id){if(!id)return{name:'Unassigned',initials:'—'};return D.members.find(m=>m.id===id)||{name:'Unknown',initials:'??'};}
 function formatDate(d){if(!d)return'—';try{return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch{return'—';}}

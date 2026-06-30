@@ -336,6 +336,19 @@ function loadDemoData(){
     ],
   };
 
+  // ── HOUSE MANAGEMENT: meal crew schedule + chore assignments ──
+  const liveInPool = ['m01','m02','m04','m06','m09','m14','m16'];
+  const kcSchedule = {
+    lunch:  { mon:['m01','m02'], tue:['m04','m06'], wed:['m09','m14'], thu:['m16','m01'], fri:['m02','m04'] },
+    dinner: { mon:['m01','m02','m04','m06'], tue:['m09','m14','m16','m01'], wed:['m02','m04','m06','m09'], thu:['m14','m16','m01','m02'] },
+  };
+  const choresList = KC_DEFAULT_CHORES.map((c,i)=>({...c, memberIds:[liveInPool[i%liveInPool.length]]}));
+  const choresChecks = {};
+  choresList.forEach((c,i)=>{
+    if((c.day==='both'||c.day==='tuesday'||c.day==='daily')&&i%3!==0) choresChecks[c.id+'_tue']=true;
+    if((c.day==='both'||c.day==='thursday'||c.day==='daily')&&i%4===0) choresChecks[c.id+'_thu']=true;
+  });
+
   D = {
     members, events, attendance, tasks, goals, notes,
     cases, shifts, transitions,
@@ -362,7 +375,9 @@ function loadDemoData(){
       {id:'phg5',label:'Total Funds Raised',target:2000,unit:'$'},
     ]},
     alumni, ritual: {items:[],sessions:[],nmProgress:{}},
-    vendors: [], playbooks: [], files: [],
+    vendors: [], files: [],
+    kcrew: { schedule: kcSchedule },
+    chores: { list: choresList, checks: { [kcWeekKey()]: choresChecks } },
     transitionHub,
     notifs: [], agenda: {items:[],archived:[]},
     settings,
@@ -419,6 +434,9 @@ async function init(){
   rbacApplySidebar();
   resetInactivityTimer();
 
+  // Otis AI assistant widget (simulated — no real backend)
+  otisInit(CURRENT_USER);
+
   // Set mobile bottom nav active state to dashboard on load
   const _mbnDash = document.getElementById('mbn-dashboard');
   if(_mbnDash) _mbnDash.classList.add('active');
@@ -462,6 +480,11 @@ function switchDemoRole(role) {
   if (sel) sel.selectedIndex = 0;
   nav('dashboard', null);
   toast(`Now viewing as ${role} — sidebar and edit controls reflect this role`, 'info', 3500);
+
+  // Otis AI assistant: hidden for general members, visible for everyone else
+  const widget = document.getElementById('otis-widget');
+  if (widget) widget.style.display = (role === 'viewer') ? 'none' : 'block';
+  otisGreet(name);
 }
 
 init();

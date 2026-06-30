@@ -5,10 +5,10 @@ let _fbAuth = null;
 let _inactTimer;
 
 // ── ROLE ACCESS MAP ──
-const ALL_PAGES = ['dashboard','attendance','calendar','tasks','notes','finance','judicial','sober','members','recruitment','academics','committees','analytics','files','transition','settings','philanthropy','alumni','ritual','healthscore','reports'];
+const ALL_PAGES = ['dashboard','attendance','calendar','tasks','notes','finance','judicial','sober','members','recruitment','academics','committees','analytics','files','transition','settings','philanthropy','alumni','ritual','healthscore','reports','kcrew'];
 
 // Pages every exec officer gets regardless of title
-const EXEC_BASE = ['dashboard','calendar','tasks','files','settings','analytics','reports','healthscore','transition','committees','notes','sober','attendance','members'];
+const EXEC_BASE = ['dashboard','calendar','tasks','files','settings','analytics','reports','healthscore','transition','committees','notes','sober','attendance','members','kcrew'];
 
 const ROLE_ACCESS = {
   'admin':                  ALL_PAGES,

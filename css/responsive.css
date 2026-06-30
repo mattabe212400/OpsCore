@@ -323,4 +323,26 @@
 @media(min-width:481px) and (max-width:768px){
   #co-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
-</style>
+
+/* ── HOUSE MANAGEMENT (KCREW) ── */
+@media(max-width:768px){
+  /* KPI row: 3 cards in a row is tight — let them wrap to 2-across */
+  #kc-kpi{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+  /* Chore manager editor: 5-col grid overflows — make it horizontally scrollable */
+  #kc-chore-manager{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #kc-chore-rows{min-width:560px}
+  #kc-chore-manager>div:first-child{min-width:560px}
+}
+@media(max-width:480px){
+  #kc-kpi{grid-template-columns:1fr 1fr!important}
+
+  /* Schedule card: card header label wraps instead of overflowing */
+  #kc-schedule .ti-sun,#kc-schedule .ti-moon{display:none}
+}
+
+/* ── OTIS WIDGET POSITION ── */
+@media(max-width:768px){
+  /* On mobile, sit above the bottom nav bar */
+  #otis-widget{bottom:calc(60px + env(safe-area-inset-bottom,0px) + 10px)!important}
+}

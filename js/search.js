@@ -12,14 +12,13 @@ const GS_CATS = {
   files:       {icon:'ti-file',          bg:'#f0f0ee',       ic:'var(--mt)', bs:'background:#f0f0ee;color:var(--mt)',          bl:'File'},
   recruitment: {icon:'ti-user-plus',     bg:'var(--gn-bg)',  ic:'var(--gn-tx)', bs:'background:var(--gn-bg);color:var(--gn-tx)', bl:'Rushee'},
   cases:       {icon:'ti-scale',         bg:'var(--rd-bg)',  ic:'var(--rd-tx)', bs:'background:var(--rd-bg);color:var(--rd-tx)', bl:'J-Board Case'},
-  playbooks:   {icon:'ti-checklist',     bg:'var(--bl-bg)',  ic:'var(--bl-tx)', bs:'background:var(--bl-bg);color:var(--bl-tx)', bl:'Playbook'},
   finance:     {icon:'ti-cash',          bg:'var(--gn-bg)',  ic:'var(--gn-tx)', bs:'background:var(--gn-bg);color:var(--gn-tx)', bl:'Finance'},
   alumni:      {icon:'ti-users-group',   bg:'var(--am-bg)',  ic:'var(--am-tx)', bs:'background:var(--am-bg);color:var(--am-tx)', bl:'Alumni'},
 };
 
 const GS_CAT_LABELS = {
   members:'Members', tasks:'Tasks', notes:'Meeting Notes', events:'Calendar Events',
-  files:'Files', recruitment:'Recruitment', cases:'Judicial Board', playbooks:'SOPs & Playbooks',
+  files:'Files', recruitment:'Recruitment', cases:'Judicial Board',
   finance:'Finance', alumni:'Alumni',
 };
 
@@ -122,19 +121,6 @@ function gsSearch(q) {
         title: c.caseNum + ' — ' + memberName,
         sub: c.type + ' · ' + c.status + (c.hearingDate?' · '+formatDateShort(c.hearingDate):''),
         action: () => { rbacNav('judicial', null); }
-      });
-    }
-  });
-
-  // ── Playbooks / SOPs ──
-  (D.playbooks || []).forEach(p => {
-    const searchText = p.title + ' ' + (p.purpose||'') + ' ' + (p.owner||'') + ' ' + (p.steps||[]).join(' ');
-    if (searchText.toLowerCase().includes(lq)) {
-      results.push({
-        cat: 'playbooks', id: p.id,
-        title: p.title,
-        sub: GS_CATS.playbooks.bl + ' · ' + p.owner + ' · ' + (p.steps||[]).length + ' steps',
-        action: () => { rbacNav('files', null); }
       });
     }
   });

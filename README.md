@@ -13,7 +13,7 @@
 
 ---
 
-## 21 Operational Modules
+## 22 Operational Modules
 
 | Module | What it does |
 |---|---|
@@ -38,6 +38,8 @@
 | **Reports** | Exportable summaries: semester report, officer report, financial summary, attendance report |
 | **Files** | Document storage by category, upload simulation, folder view |
 | **Settings** | Chapter profile, notification preferences, academic year configuration |
+| **House Management** | Weekly meal-prep crew schedule (lunch/dinner slot assignment), 29-item chore checklist across 7 house areas with day-specific recurrence, admin chore manager |
+| **Otis AI Assistant** | Simulated chapter-ops chatbot — event brainstorming, task/event/finance/academics summaries, draft announcements; fully local with canned, keyword-matched responses |
 
 ---
 
@@ -51,7 +53,7 @@ All 15 officer roles share a common **exec base** — Dashboard, Calendar, Tasks
 
 | Role | Additional Access |
 |---|---|
-| President / Vice President | All 21 modules |
+| President / Vice President | All 23 modules |
 | Treasurer | Finance |
 | Risk Manager | Academics |
 | Scholarship Chair | Academics |
@@ -59,7 +61,10 @@ All 15 officer roles share a common **exec base** — Dashboard, Calendar, Tasks
 | Chaplain / New Member Educator | Ritual & Education |
 | Philanthropy Chair / Community Service | Philanthropy & Service |
 | Alumni Relations Chair | Alumni Relations |
-| Secretary / Social Chair / House Manager / Public Relations | Exec base only |
+| House Manager | House Management (edit access) |
+| Secretary / Social Chair / Public Relations | Exec base only |
+
+All roles also see House Management (view-only for most; edit access limited per below), since it's an operational reference tool rather than officer-specific data.
 
 ### Edit Access (within-page RBAC)
 
@@ -74,6 +79,7 @@ Having view access to a page doesn't mean full write access. Add/edit/delete con
 | Academics (view) | President, Vice President, Scholarship Chair, Risk Manager |
 | Finance | President, Vice President, Treasurer |
 | Judicial Board | President, Vice President + authorized emails |
+| House Management (schedule, chores, chore manager) | President, Vice President, House Manager |
 
 All others can **view** but not modify. Edit buttons, import controls, and add actions are hidden — not just disabled.
 
@@ -84,6 +90,8 @@ All others can **view** but not modify. Edit buttons, import controls, and add a
 > **What you're seeing is a fully client-side demo.** All data is fictional seed data loaded in-memory — no login required, nothing is persisted, and no Firebase calls are made.
 >
 > The production system replaces the demo stub with a live Firebase backend: **Firestore** for real-time document storage and **Firebase Authentication** for identity. RBAC is enforced server-side — role assignments live in Firestore `users/{uid}` documents and are read on login, so no client-side role can be spoofed. The offline cache (localStorage) syncs back to Firestore when connectivity is restored.
+>
+> **Otis AI is simulated in this demo.** In production, Otis calls a live backend AI service for real generated responses. Here, every reply comes from local keyword-matched templates running entirely in the browser — no API calls, no AI backend, no data ever leaves the page.
 
 ---
 
@@ -103,6 +111,7 @@ The demo auto-logs in as **James Mitchell, President** with a complete seed data
 - **5 alumni contacts** — with engagement status, outreach log, and upcoming alumni event
 - **15 transition hub entries** — handoff docs for all officer positions, with role-specific content and key contacts
 - **3 meeting notes** — structured chapter minutes with officer reports, honors, and action items
+- **House Management** — weekly meal-prep crew schedule across 7 live-in members, 29 default chores across 7 house areas with seeded weekly check-ins
 
 ---
 
@@ -117,7 +126,7 @@ The demo auto-logs in as **James Mitchell, President** with a complete seed data
 | Auth | Firebase Authentication + custom RBAC layer |
 | Hosting | Vercel (demo) · Firebase Hosting (production) |
 | Data Layer | LocalStorage offline cache + Firestore real-time sync |
-| Architecture | Single-page app, 21 modules, no build step |
+| Architecture | Single-page app, 23 modules, no build step |
 
 No npm, no build tools, no framework. Loads instantly from a single `index.html`.
 
@@ -125,7 +134,7 @@ No npm, no build tools, no framework. Loads instantly from a single `index.html`
 
 ## Skills Demonstrated
 
-- **System design** — 21-module SPA built around a single `D{}` global data store with modular render functions and a debounced batched save layer
+- **System design** — 23-module SPA built around a single `D{}` global data store with modular render functions and a debounced batched save layer
 - **Role-based access control** — 15 role types with two-layer RBAC: page whitelists drive sidebar visibility, and per-feature `canEdit()` guards drive in-page button rendering and write protection
 - **Data modeling** — members, events, attendance, finance, judicial, and recruitment all relationally linked by member ID; no ORM, pure object references
 - **Firebase integration** — Firestore real-time sync, Firebase Auth, stub/override pattern for offline and demo modes
