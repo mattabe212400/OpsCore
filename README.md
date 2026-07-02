@@ -145,9 +145,9 @@ No npm, no build tools, no framework. Loads instantly from a single `index.html`
 
 ## Screenshots
 
-| Dashboard | Attendance | Recruitment |
-|---|---|---|
-| ![Dashboard](screenshots/dashboard.png) | ![Attendance](screenshots/attendance.png) | ![Recruitment](screenshots/recruitment.png) |
+| Dashboard | Attendance | Recruitment | Otis AI |
+|---|---|---|---|
+| ![Dashboard](screenshots/dashboard.png) | ![Attendance](screenshots/attendance.png) | ![Recruitment](screenshots/recruitment.png) | ![Otis AI](screenshots/otis-ai.png) |
 
 ---
 
