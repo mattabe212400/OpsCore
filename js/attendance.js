@@ -59,7 +59,7 @@ function attDrawTrend(){
   if(lbl)lbl.textContent=mandPast.length+' mandatory events';
 
   if(mandPast.length<2){
-    svg.innerHTML=`<text x="50%" y="75" text-anchor="middle" fill="#a0a09d" font-family="DM Sans,system-ui,sans-serif" font-size="12">Mark attendance for mandatory events to see the trend.</text>`;
+    svg.innerHTML=`<text x="50%" y="75" text-anchor="middle" fill="#6B7280" font-family="Satoshi,system-ui,sans-serif" font-size="12">Mark attendance for mandatory events to see the trend.</text>`;
     if(xaxis)xaxis.innerHTML='';return;
   }
 
@@ -84,13 +84,13 @@ function attDrawTrend(){
     if(g<minV-5||g>maxV+5)return;
     const y=yS(g);
     html+=`<line x1="${PAD.l}" y1="${y}" x2="${PAD.l+CW}" y2="${y}" stroke="#e5e5e3" stroke-width="1"/>`;
-    html+=`<text x="${PAD.l-5}" y="${y+4}" text-anchor="end" fill="#a0a09d" font-size="9" font-family="DM Sans,system-ui,sans-serif">${g}%</text>`;
+    html+=`<text x="${PAD.l-5}" y="${y+4}" text-anchor="end" fill="#6B7280" font-size="9" font-family="Satoshi,system-ui,sans-serif">${g}%</text>`;
   });
   // 85% target
   if(85>=minV&&85<=maxV){
     const y=yS(85);
     html+=`<line x1="${PAD.l}" y1="${y}" x2="${PAD.l+CW}" y2="${y}" stroke="#e24b4a" stroke-width="1.5" stroke-dasharray="5 4" opacity=".5"/>`;
-    html+=`<text x="${PAD.l+CW+4}" y="${y+3.5}" fill="#e24b4a" font-size="8.5" font-family="DM Sans,system-ui,sans-serif" opacity=".8">85%</text>`;
+    html+=`<text x="${PAD.l+CW+4}" y="${y+3.5}" fill="#e24b4a" font-size="8.5" font-family="Satoshi,system-ui,sans-serif" opacity=".8">85%</text>`;
   }
   // Area fill
   const areaPath=pts.map((p,i)=>(i===0?`M${xS(i)},${yS(p.val)}`:`L${xS(i)},${yS(p.val)}`)).join(' ')+` L${xS(pts.length-1)},${PAD.t+CH} L${xS(0)},${PAD.t+CH} Z`;

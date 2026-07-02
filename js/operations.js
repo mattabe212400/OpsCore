@@ -470,14 +470,14 @@ function vnRenderGrid(){
       <div onclick="vnOpenEdit('${v.id}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:7px">
         <div style="display:flex;align-items:center;gap:9px">
-          <div style="width:36px;height:36px;border-radius:9px;background:#e8eef7;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${catIcon[v.category]||'ti-package'}" style="font-size:17px;color:var(--navy)"></i></div>
+          <div style="width:36px;height:36px;border-radius:9px;background:var(--sky-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${catIcon[v.category]||'ti-package'}" style="font-size:17px;color:var(--sky-tx)"></i></div>
           <div><div class="folder-name">${v.name}</div><span class="badge" style="${catColors[v.category]||'background:#f0f0ee;color:var(--mt)'};font-size:9px">${v.category||'Other'}</span></div>
         </div>
         <div style="font-size:12px;color:#f5a623;white-space:nowrap;flex-shrink:0">${stars}</div>
       </div>
       ${v.contact?`<div style="font-size:11px;color:var(--mt)"><i class="ti ti-user" style="font-size:10px;margin-right:3px"></i>${v.contact}</div>`:''}
       ${v.phone?`<div style="font-size:11px;color:var(--mt)"><i class="ti ti-phone" style="font-size:10px;margin-right:3px"></i>${v.phone}</div>`:''}
-      ${v.cost?`<div style="font-size:11px;font-weight:500;color:var(--navy)">${v.cost}</div>`:''}
+      ${v.cost?`<div style="font-size:11px;font-weight:500;color:var(--sky-tx)">${v.cost}</div>`:''}
       ${v.notes?`<div style="font-size:10.5px;color:var(--ht);line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${v.notes}</div>`:''}
       ${v.lastUsed?`<div style="font-size:9.5px;color:var(--ht)">Last used: ${v.lastUsed}</div>`:''}
       </div>

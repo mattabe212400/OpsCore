@@ -1,6 +1,6 @@
 /* OpsCore 2.0 Demo — Recruitment CRM */
 const RC_STAGES=['New Lead','Contacted','Attended Event','Active Rush','Interviewed','Bid Ready','Bid Extended','Accepted'];
-const RC_STAGE_COLORS=['#9eb5d8','#378add','#ef9f27','#1d9e75','#7b5ea7','#e24b4a','#0c1d56','#1d9e75'];
+const RC_STAGE_COLORS=['#9eb5d8','#378add','#ef9f27','#1d9e75','#7b5ea7','#e24b4a','#D6AD4E','#1d9e75'];
 const RC_TAGS=['Athlete','Legacy','Leadership','Good Fit','Needs Follow-up','Academics','Social Fit','Hot Prospect','Greek Life','Community'];
 const RC_TAG_CLASSES={Athlete:'athlete',Legacy:'legacy',Leadership:'leader','Hot Prospect':'hot','Good Fit':'active','Needs Follow-up':'dnb'};
 
@@ -186,7 +186,7 @@ function rcDrawLeaderboard(rushees){
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
         <div style="text-align:center;background:#f8f8f7;border-radius:7px;padding:6px 4px">
-          <div style="font-size:15px;font-weight:700;color:var(--navy)">${d.assigned}</div>
+          <div style="font-size:15px;font-weight:700;color:var(--sky-tx)">${d.assigned}</div>
           <div style="font-size:9px;color:var(--ht);text-transform:uppercase;letter-spacing:.05em">Total</div>
         </div>
         <div style="text-align:center;background:#f8f8f7;border-radius:7px;padding:6px 4px">
@@ -219,7 +219,7 @@ function rcDrawQuality(rushees){
   const tot=rushees.length;
   const avgScore=Math.round(rushees.reduce((s,r)=>s+(r.bidScore||0),0)/tot);
   el.innerHTML=`<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:11px">
-    <span style="font-size:24px;font-weight:700;color:var(--navy)">${avgScore}</span>
+    <span style="font-size:24px;font-weight:700;color:var(--sky-tx)">${avgScore}</span>
     <span style="font-size:11px;color:var(--mt)">avg bid score</span>
   </div>`+tiers.map(t=>{
     const n=rushees.filter(r=>{const s=r.bidScore||0;return s>=t.min&&(t===tiers[tiers.length-1]||s<tiers[tiers.indexOf(t)-1]?.min+100);}).length;
@@ -252,11 +252,11 @@ function rcDrawGoal(rushees, RCG){
   const closePct=Math.min(100,Math.round((accepted+bidExt)/RCG.target*100));
 
   el.innerHTML=`
-    <div style="text-align:center;margin-bottom:14px;padding:12px;background:linear-gradient(135deg,var(--navy) 0%,#1a3a8c 100%);border-radius:10px;color:#fff">
+    <div style="text-align:center;margin-bottom:14px;padding:12px;background:radial-gradient(140% 160% at 0% 0%,rgba(214,173,78,.16) 0%,transparent 50%),linear-gradient(135deg,var(--surf2) 0%,var(--bg) 100%);border:1px solid var(--bdr2);border-radius:10px;color:var(--tx)">
       <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;opacity:.7;margin-bottom:4px">${RCG.label}</div>
       <div style="font-size:32px;font-weight:700;line-height:1">${rushees.length}<span style="font-size:14px;opacity:.6"> / ${RCG.target}</span></div>
-      <div style="height:5px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;margin:8px 0 5px">
-        <div style="height:100%;background:#fff;border-radius:99px;width:${pct}%;transition:width .7s ease"></div>
+      <div style="height:5px;background:rgba(0,0,0,.08);border-radius:99px;overflow:hidden;margin:8px 0 5px">
+        <div style="height:100%;background:var(--gold);border-radius:99px;width:${pct}%;transition:width .7s ease"></div>
       </div>
       <div style="font-size:10px;opacity:.75">${pct}% of goal · ${Math.max(0,RCG.target-rushees.length)} to go</div>
     </div>

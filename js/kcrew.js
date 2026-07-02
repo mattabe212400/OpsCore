@@ -212,7 +212,7 @@ function renderKcChores(wk){
     const areaChores=D.chores.list.filter(c=>c.area===area);
     if(!areaChores.length)return;
     html+=`<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);padding:6px 0 7px;border-bottom:2px solid var(--navy);margin-bottom:0;opacity:.7">${area}</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--sky-tx);padding:6px 0 7px;border-bottom:2px solid var(--sky);margin-bottom:0;opacity:.7">${area}</div>
       <table style="width:100%;border-collapse:collapse;min-width:680px">
         <thead><tr style="background:var(--surf)">
           <th style="text-align:left;padding:6px 8px;font-size:10.5px;color:var(--ht);font-weight:600">Chore</th>
@@ -238,7 +238,7 @@ function renderKcChores(wk){
         const memberChecks=D.members.map(m=>{
           const checked=(c.memberIds||[]).includes(m.id)?'checked':'';
           return`<label style="display:flex;align-items:center;gap:7px;padding:5px 10px;cursor:pointer;font-size:11.5px;white-space:nowrap" onmouseover="this.style.background='rgba(0,0,0,.04)'" onmouseout="this.style.background=''">
-            <input type="checkbox" ${checked} onchange="kcChoreToggle('${c.id}','${m.id}',this.checked)" style="accent-color:var(--navy);width:14px;height:14px;flex-shrink:0">
+            <input type="checkbox" ${checked} onchange="kcChoreToggle('${c.id}','${m.id}',this.checked)" style="accent-color:var(--sky);width:14px;height:14px;flex-shrink:0">
             ${m.name}
           </label>`;
         }).join('');
@@ -259,11 +259,11 @@ function renderKcChores(wk){
         <td style="padding:7px 8px;text-align:center">${dayBadge[c.day]||dayBadge.both}</td>
         <td style="padding:4px 8px;position:relative">${assignCell}</td>
         <td style="padding:7px 8px;text-align:center">
-          ${showTue?`<input type="checkbox" ${tueOk?'checked':''} ${ro?'disabled':` onchange="kcCheck('${c.id}','tue',this.checked,this)"`} style="width:16px;height:16px;accent-color:var(--navy);cursor:${ro?'not-allowed':'pointer'};${ro?'opacity:.45':''}">`:
+          ${showTue?`<input type="checkbox" ${tueOk?'checked':''} ${ro?'disabled':` onchange="kcCheck('${c.id}','tue',this.checked,this)"`} style="width:16px;height:16px;accent-color:var(--sky);cursor:${ro?'not-allowed':'pointer'};${ro?'opacity:.45':''}">`:
                    `<span style="color:var(--bdr)">—</span>`}
         </td>
         <td style="padding:7px 8px;text-align:center">
-          ${showThu?`<input type="checkbox" ${thuOk?'checked':''} ${ro?'disabled':` onchange="kcCheck('${c.id}','thu',this.checked,this)"`} style="width:16px;height:16px;accent-color:var(--navy);cursor:${ro?'not-allowed':'pointer'};${ro?'opacity:.45':''}">`:
+          ${showThu?`<input type="checkbox" ${thuOk?'checked':''} ${ro?'disabled':` onchange="kcCheck('${c.id}','thu',this.checked,this)"`} style="width:16px;height:16px;accent-color:var(--sky);cursor:${ro?'not-allowed':'pointer'};${ro?'opacity:.45':''}">`:
                    `<span style="color:var(--bdr)">—</span>`}
         </td>
       </tr>`;

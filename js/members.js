@@ -120,7 +120,7 @@ function renderSober(){
   const shiftRows=ups.map(s=>{
     const m=s.memberId?getMember(s.memberId):null;
     const actionCell=ro?'':'<td style="white-space:nowrap">'+(m&&!s.confirmed?`<button class="btn" style="height:23px;font-size:10.5px;margin-right:4px" onclick="confirmShift('${s.id}')">Confirm</button>`:'')+`<button class="btn btn-d" style="height:23px;font-size:10.5px;padding:0 7px" onclick="deleteShift('${s.id}')"><i class="ti ti-trash"></i></button></td>`;
-    return`<tr><td style="font-weight:500">${s.event}</td><td style="color:var(--mt)">${formatDate(s.date)}</td><td style="font-family:'DM Mono',monospace;font-size:11px">${s.start}–${s.end}</td><td>${m?`<span style="font-weight:500">${m.name}</span>`:'<span style="color:var(--rd);font-weight:500">Unassigned</span>'}</td><td>${!m?'<span class="badge br2">Needed</span>':s.confirmed?'<span class="badge bg2">Confirmed</span>':'<span class="badge ba2">Pending</span>'}</td>${actionCell}</tr>`;
+    return`<tr><td style="font-weight:500">${s.event}</td><td style="color:var(--mt)">${formatDate(s.date)}</td><td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${s.start}–${s.end}</td><td>${m?`<span style="font-weight:500">${m.name}</span>`:'<span style="color:var(--rd);font-weight:500">Unassigned</span>'}</td><td>${!m?'<span class="badge br2">Needed</span>':s.confirmed?'<span class="badge bg2">Confirmed</span>':'<span class="badge ba2">Pending</span>'}</td>${actionCell}</tr>`;
   }).join('');
   const emptyAddBtn=ro?'':'<button class="btn btn-p" onclick="openM(\'m-addshift\')"><i class="ti ti-plus"></i>Add Shift</button>';
   const emptyRow=`<tr><td colspan="${ro?5:6}"><div style="padding:8px">${es('ti-shield-check','green','No upcoming social monitor shifts','Add shifts for upcoming events to track coverage.',emptyAddBtn)}</div></td></tr>`;
@@ -900,7 +900,7 @@ function trOpenFolder(encodedRole){
   // Build contacts list from stored transitions data
   const roleContacts=(tr&&tr.contacts)||[];
   const contactsHtml=roleContacts.length?roleContacts.map((c,ci)=>`<div class="sh-row">
-    <div class="sh-av" style="background:#e8eef7;color:var(--navy);font-size:9px;font-weight:700">${c.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+    <div class="sh-av" style="background:var(--sky-bg);color:var(--sky-tx);font-size:9px;font-weight:700">${c.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
     <div style="flex:1;min-width:0">
       <div style="font-size:12px;font-weight:500">${c.name}</div>
       <div style="font-size:10.5px;color:var(--mt)">${c.role||''}${c.email?' · '+c.email:''}${c.phone?' · '+c.phone:''}</div>
@@ -918,7 +918,7 @@ function trOpenFolder(encodedRole){
     <div class="g2" style="margin-bottom:13px">
       <!-- Handoff Details -->
       <div class="card">
-        <div class="card-hd"><span class="card-t"><i class="ti ti-arrow-right-circle" style="font-size:12px;color:var(--navy);margin-right:4px"></i>Handoff Details</span>
+        <div class="card-hd"><span class="card-t"><i class="ti ti-arrow-right-circle" style="font-size:12px;color:var(--sky-tx);margin-right:4px"></i>Handoff Details</span>
           <button class="btn" style="height:24px;font-size:10.5px" onclick="openEditTransCurrent()"><i class="ti ti-pencil"></i>Edit</button>
         </div>
         ${tr?`
@@ -947,12 +947,12 @@ function trOpenFolder(encodedRole){
 
       <!-- Key Responsibilities -->
       <div class="card">
-        <div class="card-hd"><span class="card-t"><i class="ti ti-list" style="font-size:12px;color:var(--navy);margin-right:4px"></i>Key Responsibilities</span>
+        <div class="card-hd"><span class="card-t"><i class="ti ti-list" style="font-size:12px;color:var(--sky-tx);margin-right:4px"></i>Key Responsibilities</span>
           <button class="btn" style="height:24px;font-size:10.5px" onclick="trEditList('${encodeURIComponent(role)}','responsibilities')"><i class="ti ti-pencil"></i>Edit</button>
         </div>
         <div style="display:flex;flex-direction:column;gap:0">
           ${responsibilities.map((r,i)=>`<div style="display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:${i<responsibilities.length-1?'1px solid var(--bdr)':'none'}">
-            <div style="width:20px;height:20px;border-radius:50%;background:#e8eef7;color:var(--navy);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+            <div style="width:20px;height:20px;border-radius:50%;background:var(--sky-bg);color:var(--sky-tx);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
             <div style="font-size:12px;line-height:1.5;color:var(--tx)">${r}</div>
           </div>`).join('')||'<div style="font-size:12px;color:var(--ht);padding:8px 0">No responsibilities defined. Click Edit to add.</div>'}
         </div>
@@ -963,7 +963,7 @@ function trOpenFolder(encodedRole){
     <div class="g2" style="margin-bottom:13px">
       <!-- Recurring Tasks -->
       <div class="card">
-        <div class="card-hd"><span class="card-t"><i class="ti ti-refresh" style="font-size:12px;color:var(--navy);margin-right:4px"></i>Important Recurring Tasks</span>
+        <div class="card-hd"><span class="card-t"><i class="ti ti-refresh" style="font-size:12px;color:var(--sky-tx);margin-right:4px"></i>Important Recurring Tasks</span>
           <button class="btn" style="height:24px;font-size:10.5px" onclick="trEditList('${encodeURIComponent(role)}','recurringTasks')"><i class="ti ti-pencil"></i>Edit</button>
         </div>
         ${recurringTasks.map(t=>`<div class="tk-row" style="padding:7px 0">
@@ -974,7 +974,7 @@ function trOpenFolder(encodedRole){
 
       <!-- What I Wish I Knew -->
       <div class="card" style="background:linear-gradient(135deg,#f8f9ff 0%,#eef1fb 100%);border-color:#d0d8f0">
-        <div class="card-hd"><span class="card-t" style="color:var(--navy)"><i class="ti ti-bulb" style="font-size:12px;color:#f5a623;margin-right:4px"></i>What I Wish I Knew</span>
+        <div class="card-hd"><span class="card-t" style="color:var(--sky-tx)"><i class="ti ti-bulb" style="font-size:12px;color:#f5a623;margin-right:4px"></i>What I Wish I Knew</span>
           <button class="btn" style="height:24px;font-size:10.5px" onclick="trEditWishIKnew('${encodeURIComponent(role)}')"><i class="ti ti-pencil"></i>Edit</button>
         </div>
         <p id="tr-wish-text-${role.replace(/\s+/g,'_')}" style="font-size:13px;line-height:1.8;color:var(--tx);font-style:${tr&&tr.wishIKnew?'normal':'italic'}">${(tr&&tr.wishIKnew)||posData.wishIKnew||'No advice written yet. Click Edit to add wisdom for your successor.'}</p>
@@ -985,7 +985,7 @@ function trOpenFolder(encodedRole){
     <div class="g2" style="margin-bottom:13px">
       <!-- Important Contacts -->
       <div class="card">
-        <div class="card-hd"><span class="card-t"><i class="ti ti-address-book" style="font-size:12px;color:var(--navy);margin-right:4px"></i>Important Contacts</span>
+        <div class="card-hd"><span class="card-t"><i class="ti ti-address-book" style="font-size:12px;color:var(--sky-tx);margin-right:4px"></i>Important Contacts</span>
           <button class="btn" style="height:24px;font-size:10.5px" onclick="trOpenAddContact('${encodeURIComponent(role)}')"><i class="ti ti-plus"></i>Add</button>
         </div>
         ${contactsHtml}
@@ -993,7 +993,7 @@ function trOpenFolder(encodedRole){
 
       <!-- Key Documents / Files -->
       <div class="card">
-        <div class="card-hd"><span class="card-t"><i class="ti ti-files" style="font-size:12px;color:var(--navy);margin-right:4px"></i>Key Documents</span><span style="font-size:10.5px;color:var(--mt)">${memberFiles.length} file${memberFiles.length!==1?'s':''}</span></div>
+        <div class="card-hd"><span class="card-t"><i class="ti ti-files" style="font-size:12px;color:var(--sky-tx);margin-right:4px"></i>Key Documents</span><span style="font-size:10.5px;color:var(--mt)">${memberFiles.length} file${memberFiles.length!==1?'s':''}</span></div>
         ${memberFiles.length?memberFiles.map(f=>{const ext=(f.name.split('.').pop()||'').toLowerCase();const icon=iconMap[ext]||'ti-file';const col=colorMap[ext]||'color:var(--ht)';return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr)">
           <i class="ti ${icon}" style="font-size:16px;${col};flex-shrink:0"></i>
           <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name}</div><div style="font-size:10px;color:var(--mt)">${f.size} · ${formatDateShort(f.date)}</div></div>

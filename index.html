@@ -7,7 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>OpsCore 2.0 — Live Demo</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
 
 <!-- Styles -->
@@ -26,9 +28,9 @@
 <body>
 
 <!-- Demo banner -->
-<div id="demo-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#0c1d56,#1a3a8c);color:#fff;font-size:11.5px;font-family:'DM Sans',system-ui,sans-serif;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)">
+<div id="demo-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#1A1F2B,#242B3A);color:#fff;font-size:11.5px;font-family:'Satoshi',system-ui,sans-serif;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:5px;padding:2px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Demo Mode</span>
+    <span style="background:rgba(214,173,78,.2);border:1px solid rgba(214,173,78,.4);color:#E4C06B;border-radius:5px;padding:2px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Demo Mode</span>
     <span class="demo-banner-label" style="opacity:.9">OpsCore 2.0 · Viewing as <strong id="demo-role-label">President</strong> · All data is fictional</span>
     <select id="demo-role-switcher" onchange="switchDemoRole(this.value)" title="Switch role to explore RBAC access control" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:5px;font-size:10.5px;padding:2px 6px;cursor:pointer;outline:none;max-width:210px">
       <option value="" disabled selected style="color:#1e293b;background:#fff">Switch role…</option>
@@ -231,7 +233,7 @@
           <!-- Officer Accountability -->
           <div class="card d2-card" style="margin-bottom:11px">
             <div class="card-hd">
-              <span class="card-t d2-card-t"><i class="ti ti-users d2-card-ico" style="color:var(--navy)"></i>Officer KPIs</span>
+              <span class="card-t d2-card-t"><i class="ti ti-users d2-card-ico" style="color:var(--sky-tx)"></i>Officer KPIs</span>
               <button class="card-a" onclick="rbacNav('analytics',null)">Full report →</button>
             </div>
             <div id="d-officers-v2" class="d2-officer-grid"></div>
@@ -256,7 +258,7 @@
           <!-- Attendance Snapshot -->
           <div class="card d2-card" style="margin-bottom:11px">
             <div class="card-hd">
-              <span class="card-t d2-card-t"><i class="ti ti-chart-bar d2-card-ico" style="color:var(--navy)"></i>Attendance</span>
+              <span class="card-t d2-card-t"><i class="ti ti-chart-bar d2-card-ico" style="color:var(--sky-tx)"></i>Attendance</span>
               <button class="card-a" onclick="rbacNav('attendance',null)">Report →</button>
             </div>
             <div style="display:flex;align-items:center;gap:13px;padding:6px 0 10px">
@@ -346,7 +348,7 @@
           <!-- Trend line -->
           <div class="card">
             <div class="card-hd">
-              <span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-trending-up" style="font-size:12px;color:var(--navy)"></i>Attendance Trend</span>
+              <span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-trending-up" style="font-size:12px;color:var(--sky-tx)"></i>Attendance Trend</span>
               <span style="font-size:10px;color:var(--ht)" id="att-trend-lbl"></span>
             </div>
             <div style="position:relative">
@@ -445,7 +447,7 @@
       </div>
       <!-- Legend -->
       <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:13px;font-size:11px;color:var(--mt)">
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#e8eef7;border:1px solid #b5c8e8;flex-shrink:0"></span>Chapter event</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--sky-bg);border:1px solid var(--sky);flex-shrink:0"></span>Chapter event</span>
         <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--gn-bg);border:1px solid #a8d4a0;flex-shrink:0"></span>Recruitment</span>
         <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--am-bg);border:1px solid #f0c87a;flex-shrink:0"></span>Brotherhood</span>
         <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--rd-bg);border:1px solid #f0a8a8;flex-shrink:0"></span>Mandatory</span>
@@ -782,7 +784,7 @@
             <div style="font-size:11.5px;color:var(--mt);margin-bottom:13px">Set dues amounts for each member type. Members can have their type adjusted from the Members page.</div>
 
             <!-- In-House Dues -->
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr)">In-House Members</div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--sky-tx);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr)">In-House Members</div>
             <div class="fr c2">
               <div class="fld">
                 <label>In-House Dues Amount ($)</label>
@@ -795,7 +797,7 @@
             </div>
 
             <!-- Out-of-House Dues -->
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr);margin-top:11px">Out-of-House Members</div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--sky-tx);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr);margin-top:11px">Out-of-House Members</div>
             <div class="fr c2">
               <div class="fld">
                 <label>Out-of-House Dues Amount ($)</label>
@@ -808,7 +810,7 @@
             </div>
 
             <!-- New Member / Pledge Dues -->
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr);margin-top:11px">Pledges / New Members</div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--sky-tx);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr);margin-top:11px">Pledges / New Members</div>
             <div class="fr c2">
               <div class="fld">
                 <label>Pledge Dues Amount ($)</label>
@@ -821,7 +823,7 @@
             </div>
 
             <!-- National Dues -->
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr);margin-top:11px">National Dues (per member)</div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--sky-tx);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr);margin-top:11px">National Dues (per member)</div>
             <div class="fr c2">
               <div class="fld">
                 <label>National Dues Amount ($)</label>
@@ -860,7 +862,7 @@
     <div class="page" id="page-recruitment">
       <!-- Tab bar -->
       <div id="rc-tabs-bar" style="display:flex;gap:0;border-bottom:2px solid var(--bdr);margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-        <button class="rc-tab active" data-tab="rc-overview" onclick="rcTab(this,'rc-overview')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--navy);border-bottom:2px solid var(--navy);margin-bottom:-2px;font-family:inherit;white-space:nowrap;flex-shrink:0">Overview</button>
+        <button class="rc-tab active" data-tab="rc-overview" onclick="rcTab(this,'rc-overview')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--sky-tx);border-bottom:2px solid var(--navy);margin-bottom:-2px;font-family:inherit;white-space:nowrap;flex-shrink:0">Overview</button>
         <button class="rc-tab" data-tab="rc-rushees" onclick="rcTab(this,'rc-rushees')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0">Rushee Database</button>
         <button class="rc-tab" data-tab="rc-pipeline" onclick="rcTab(this,'rc-pipeline')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0">Pipeline Board</button>
         <button class="rc-tab" data-tab="rc-events" onclick="rcTab(this,'rc-events')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0">Rush Events</button>
@@ -875,7 +877,7 @@
         <div class="card" style="margin-bottom:11px">
           <div class="card-hd">
             <span class="card-t" style="display:flex;align-items:center;gap:5px">
-              <i class="ti ti-filter" style="font-size:12px;color:var(--navy)"></i>Recruitment Funnel
+              <i class="ti ti-filter" style="font-size:12px;color:var(--sky-tx)"></i>Recruitment Funnel
             </span>
             <div style="display:flex;align-items:center;gap:8px">
               <span style="font-size:10px;color:var(--ht)" id="rc-funnel-total"></span>
@@ -916,7 +918,7 @@
 
           <!-- Recruiter Scorecards -->
           <div class="card">
-            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-users" style="font-size:11px;color:var(--navy)"></i>Recruiter Performance</span></div>
+            <div class="card-hd"><span class="card-t" style="display:flex;align-items:center;gap:5px"><i class="ti ti-users" style="font-size:11px;color:var(--sky-tx)"></i>Recruiter Performance</span></div>
             <div id="rc-leaderboard"></div>
           </div>
 
@@ -1007,7 +1009,7 @@
 
       <!-- Row 1: Attendance Trend Line Chart (wide) -->
       <div class="card" style="margin-bottom:13px">
-        <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">📈 Attendance Trend</span><span id="an-trend-label" style="font-size:10.5px;color:var(--mt)"></span></div>
+        <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--sky-tx)">📈 Attendance Trend</span><span id="an-trend-label" style="font-size:10.5px;color:var(--mt)"></span></div>
         <div style="position:relative">
           <svg id="an-line-chart" width="100%" height="150" style="overflow:visible;display:block"></svg>
           <div id="an-line-tooltip" style="display:none;position:absolute;background:#1a1a18;color:#fff;font-size:11px;padding:5px 9px;border-radius:6px;pointer-events:none;white-space:nowrap;z-index:10"></div>
@@ -1018,12 +1020,12 @@
       <!-- Row 2: Task Completion Donut + GPA Distribution (2 col) -->
       <div class="g2" style="margin-bottom:13px">
         <div class="card">
-          <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">✅ Task Completion</span></div>
+          <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--sky-tx)">✅ Task Completion</span></div>
           <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
             <div style="position:relative;flex-shrink:0">
               <svg id="an-donut" width="110" height="110" viewBox="0 0 110 110"></svg>
               <div id="an-donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-                <div id="an-donut-pct" style="font-size:18px;font-weight:700;color:var(--navy)"></div>
+                <div id="an-donut-pct" style="font-size:18px;font-weight:700;color:var(--sky-tx)"></div>
                 <div style="font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.05em">done</div>
               </div>
             </div>
@@ -1031,7 +1033,7 @@
           </div>
         </div>
         <div class="card">
-          <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">🎓 GPA Distribution</span><span style="font-size:10px;color:var(--mt)" id="an-gpa-count"></span></div>
+          <div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--sky-tx)">🎓 GPA Distribution</span><span style="font-size:10px;color:var(--mt)" id="an-gpa-count"></span></div>
           <div id="an-gpa-chart" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
       </div>
@@ -1039,7 +1041,7 @@
       <!-- Row 3: Officer Engagement Matrix (full width) -->
       <div class="card" style="margin-bottom:13px">
         <div class="card-hd">
-          <span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">👥 Officer Engagement Matrix</span>
+          <span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--sky-tx)">👥 Officer Engagement Matrix</span>
           <div style="display:flex;gap:13px;font-size:10px;color:var(--mt)">
             <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--navy);display:inline-block"></span>Attendance</span>
             <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--gn);display:inline-block"></span>Tasks</span>
@@ -1051,15 +1053,15 @@
 
       <!-- Row 4: Member Engagement Tiers + Semester Goals -->
       <div class="g2">
-        <div class="card"><div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">📊 Member Engagement Tiers</span></div><div id="an-eng"></div></div>
-        <div class="card"><div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--navy)">🎯 Semester Goals</span></div><div class="gg" id="an-goals"></div></div>
+        <div class="card"><div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--sky-tx)">📊 Member Engagement Tiers</span></div><div id="an-eng"></div></div>
+        <div class="card"><div class="card-hd"><span class="card-t" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--sky-tx)">🎯 Semester Goals</span></div><div class="gg" id="an-goals"></div></div>
       </div>
     </div>
 
     <div class="page" id="page-files">
       <!-- Breadcrumb nav -->
       <div style="display:flex;align-items:center;gap:5px;margin-bottom:11px;font-size:12px">
-        <span style="color:var(--navy);font-weight:500;cursor:pointer" onclick="fiNavRoot()"><i class="ti ti-folder" style="font-size:13px;margin-right:3px"></i>Files & Documents</span>
+        <span style="color:var(--sky-tx);font-weight:500;cursor:pointer" onclick="fiNavRoot()"><i class="ti ti-folder" style="font-size:13px;margin-right:3px"></i>Files & Documents</span>
         <span id="fi-bc-folder" style="display:none;color:var(--mt)"> / <span id="fi-bc-name" style="color:var(--tx);font-weight:500"></span></span>
         <div style="margin-left:auto;display:flex;gap:6px">
           <button class="btn" id="fi-back-btn" style="display:none;font-size:11px" onclick="fiNavRoot()"><i class="ti ti-arrow-left"></i>Back</button>
@@ -1283,7 +1285,7 @@
           <div class="card">
             <div class="card-hd">
               <span class="card-t">Ritual Checklist</span>
-              <span id="ri-prog-pct" style="font-size:12px;font-weight:600;color:var(--navy)"></span>
+              <span id="ri-prog-pct" style="font-size:12px;font-weight:600;color:var(--sky-tx)"></span>
             </div>
             <div id="ri-program-list"></div>
           </div>
@@ -1428,7 +1430,7 @@
 
         <!-- Overall progress bar -->
         <div class="card" style="margin-bottom:13px">
-          <div class="card-hd" style="margin-bottom:8px"><span class="card-t">Transition Progress</span><span id="tr-pct-label" style="font-size:12px;font-weight:600;color:var(--navy)"></span></div>
+          <div class="card-hd" style="margin-bottom:8px"><span class="card-t">Transition Progress</span><span id="tr-pct-label" style="font-size:12px;font-weight:600;color:var(--sky-tx)"></span></div>
           <div class="pb" style="height:7px;margin-bottom:6px"><div id="tr-bar" class="pf" style="background:var(--navy);transition:width .5s ease"></div></div>
           <div style="font-size:11px;color:var(--mt)" id="tr-sub"></div>
         </div>
@@ -1440,7 +1442,7 @@
         <!-- Recurring Semester Deadlines -->
         <div id="tr-sec-deadlines" style="margin-bottom:18px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
-            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);display:flex;align-items:center;gap:6px"><i class="ti ti-calendar-due" style="font-size:13px;color:var(--navy)"></i>Recurring Semester Deadlines</div>
+            <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);display:flex;align-items:center;gap:6px"><i class="ti ti-calendar-due" style="font-size:13px;color:var(--sky-tx)"></i>Recurring Semester Deadlines</div>
             <button class="btn" style="height:25px;font-size:11px" onclick="trOpenAddDeadline()"><i class="ti ti-plus"></i>Add</button>
           </div>
           <div class="card" style="padding:0;overflow:hidden"><div class="tw"><table class="tbl" id="tr-deadlines-table"></table></div></div>
@@ -1609,7 +1611,7 @@
           <div class="rp-sidebar-lbl">Report Type</div>
           <div id="rp-menu">
             <div class="rp-item active" onclick="rpSelect(this,'weekly')" data-rp="weekly">
-              <div class="rp-item-ic" style="background:#e8eef7;color:var(--navy)"><i class="ti ti-layout-dashboard"></i></div>
+              <div class="rp-item-ic" style="background:var(--sky-bg);color:var(--sky-tx)"><i class="ti ti-layout-dashboard"></i></div>
               <div><div class="rp-item-title">Weekly Exec Summary</div><div class="rp-item-sub">KPIs, alerts, tasks, events</div></div>
             </div>
             <div class="rp-item" onclick="rpSelect(this,'attendance')" data-rp="attendance">

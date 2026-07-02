@@ -1,12 +1,37 @@
 /* OpsCore 2.0 Demo — CSS Variables & Reset */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#0c1d56;--navy-h:#152d73;
-  --bg:#f8f8f7;--surf:#fff;--bdr:#e5e5e3;
-  --tx:#1a1a18;--mt:#6b6b68;--ht:#a0a09d;
+  /* ── SURFACES (clean white, subtle cool-gray page bg for depth) ── */
+  --bg:#F7F8FA;--surf:#FFFFFF;--surf2:#F1F3F6;--surf-h:#EAEDF1;
+  --bdr:#E4E7EC;--bdr2:#D2D7E0;
+
+  /* ── TEXT ── */
+  --tx:#14171F;--mt:#475569;--ht:#6B7280;
+
+  /* ── BRAND ── */
+  --gold:#D6AD4E;--gold-h:#C99A2E;--gold-bg:rgba(214,173,78,.14);--gold-tx:#8A6212;
+  --sky:#4FB6EC;--sky-h:#2FA3E0;--sky-bg:rgba(79,182,236,.14);--sky-tx:#1A75A3;
+
+  /* legacy alias: --navy previously carried every "primary interactive" role. Kept pointing at gold. */
+  --navy:var(--gold);--navy-h:var(--gold-h);
+
+  /* ── STATUS (unchanged — already correct for white) ── */
   --gn:#1d9e75;--gn-bg:#eaf3de;--gn-tx:#3b6d11;
   --am:#ef9f27;--am-bg:#faeeda;--am-tx:#854f0b;
   --rd:#e24b4a;--rd-bg:#fcebeb;--rd-tx:#a32d2d;
-  --bl:#378add;--bl-bg:#e6f1fb;--bl-tx:#185fa5;
-  --r:8px;--rl:12px;
+  --bl:var(--sky-tx);--bl-bg:var(--sky-bg);--bl-tx:var(--sky-tx);
+
+  /* ── SHAPE / ELEVATION ── */
+  --r:10px;--rl:14px;
+  --shadow-sm:0 1px 3px rgba(16,24,40,.06);
+  --shadow-md:0 4px 16px rgba(16,24,40,.08);
+  --shadow-lg:0 16px 48px rgba(16,24,40,.14);
+  --glass-bg:rgba(255,255,255,.85);
+  --glass-blur:blur(20px) saturate(140%);
+
+  --focus:0 0 0 2px var(--surf),0 0 0 4px var(--sky);
+}
+:focus-visible{outline:none;box-shadow:var(--focus);border-radius:6px}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
