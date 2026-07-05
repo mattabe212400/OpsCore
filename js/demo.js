@@ -374,7 +374,36 @@ function loadDemoData(){
       {id:'phg4',label:'Philanthropy Events',target:4,unit:'events'},
       {id:'phg5',label:'Total Funds Raised',target:2000,unit:'$'},
     ]},
-    alumni, ritual: {items:[],sessions:[],nmProgress:{}},
+    alumni, ritual: {
+      items: [
+        {id:'ri01',title:'Chapter History & Founding Principles',category:'education',week:1,required:true,desc:'Overview of national history and the chapter\'s founding.',done:true},
+        {id:'ri02',title:'Ritual Book Introduction',category:'ritual',week:1,required:true,desc:'',done:true},
+        {id:'ri03',title:'Risk Management & FIPG Training',category:'administrative',week:2,required:true,desc:'',done:true},
+        {id:'ri04',title:'National Organization Structure',category:'education',week:2,required:true,desc:'',done:true},
+        {id:'ri05',title:'Meet Your Big Brother',category:'brotherhood',week:2,required:false,desc:'',done:true},
+        {id:'ri06',title:'Chapter Bylaws Review',category:'administrative',week:3,required:true,desc:'',done:true},
+        {id:'ri07',title:'Community Service Project',category:'service',week:4,required:true,desc:'',done:true},
+        {id:'ri08',title:'Brotherhood Retreat Attendance',category:'brotherhood',week:5,required:false,desc:'',done:false},
+        {id:'ri09',title:'Standards Test',category:'education',week:6,required:true,desc:'',done:false},
+        {id:'ri10',title:'Ritual Memorization',category:'ritual',week:6,required:true,desc:'',done:false},
+        {id:'ri11',title:'Big/Little Reveal',category:'brotherhood',week:7,required:false,desc:'',done:false},
+        {id:'ri12',title:'Initiation Ceremony Preparation',category:'ritual',week:8,required:true,desc:'',done:false},
+      ],
+      sessions: [
+        {id:'rs01',title:'New Member Orientation',date:past(35),type:'education',facilitatorId:'m16',notes:'Chapter history, organization overview, expectations for the semester.'},
+        {id:'rs02',title:'Ritual Book Session 1',date:past(28),type:'ritual',facilitatorId:'m17',notes:'Introduction to the ritual book and its significance.'},
+        {id:'rs03',title:'Risk Management & FIPG Training',date:past(21),type:'education',facilitatorId:'m06',notes:'FIPG guidelines and chapter risk policy walkthrough.'},
+        {id:'rs04',title:'Standards Test Review',date:future(10),type:'test',facilitatorId:'m16',notes:'Review session before the standards test in week 6.'},
+      ],
+      nmProgress: {
+        m07:{ri01:true,ri02:true,ri03:true,ri04:true,ri06:true,ri07:true},
+        m09:{ri01:true,ri02:true,ri03:true,ri04:true,ri06:true,ri07:true},
+        m10:{ri01:true,ri02:true,ri03:true,ri04:true,ri06:true,ri07:true},
+        m11:{ri01:true,ri02:true,ri03:true,ri04:true,ri06:true},
+        m12:{ri01:true,ri02:true,ri03:true},
+        m13:{ri01:true,ri02:true},
+      },
+    },
     vendors: [], files: [],
     kcrew: { schedule: kcSchedule },
     chores: { list: choresList, checks: { [kcWeekKey()]: choresChecks } },
@@ -402,7 +431,7 @@ async function init(){
     mid: 'm01',
     name: 'James Mitchell',
     role: 'President',
-    title: 'Chapter President',
+    title: 'President',
   };
 
   // Hide login gate, show app

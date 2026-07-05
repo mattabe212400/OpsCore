@@ -465,7 +465,7 @@
     <div class="page" id="page-tasks">
       <div class="ph">
         <div class="ph-left"><div class="ph-title">Tasks &amp; Goals</div><div class="ph-sub">Track officer tasks, semester goals, and chapter priorities</div></div>
-        <div class="ph-actions"><button class="btn btn-p" onclick="openM('m-addtask')"><i class="ti ti-plus"></i>New Task</button></div>
+        <div class="ph-actions"><button class="btn" onclick="openImportModal('tasks')"><i class="ti ti-table-import"></i>Import CSV</button><button class="btn btn-p" onclick="openM('m-addtask')"><i class="ti ti-plus"></i>New Task</button></div>
       </div>
       <div class="g4" id="t-kpi" style="margin-bottom:13px"></div>
       <div class="card" style="margin-bottom:13px"><div class="card-hd"><span class="card-t">Semester Goals</span><button class="card-a" onclick="openM('m-addgoal')">+ Add goal</button></div><div class="gg" id="t-goals"></div></div>
@@ -598,6 +598,7 @@
           <div class="card-hd">
             <span class="card-t">Chapter GPA — All Members</span>
             <button class="btn btn-p" style="height:26px;font-size:11px" onclick="openUpdateGpa()"><i class="ti ti-edit"></i>Update GPAs</button>
+            <button class="btn" style="height:26px;font-size:11px" onclick="openImportModal('grades')"><i class="ti ti-table-import"></i>Import CSV</button>
             <button class="btn" style="height:26px;font-size:11px" onclick="xport('academics')"><i class="ti ti-download"></i>Export</button>
           </div>
           <!-- Search + filter bar -->
@@ -2015,6 +2016,29 @@
   <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-edittrans'))">Cancel</button><button class="btn btn-p" onclick="saveTrans()">Save</button></div>
 </div></div>
 
+<!-- ── CSV IMPORT (Members / Grades / Tasks) ── -->
+<div class="mo" role="dialog" aria-modal="true" id="m-import" onclick="closeM(event,this)"><div class="md" style="width:600px;max-height:88vh;overflow-y:auto">
+  <div class="md-t"><span id="imp-title">Import</span><button class="md-x" onclick="closeM(null,document.getElementById('m-import'))"><i class="ti ti-x"></i></button></div>
+  <div id="imp-instructions" style="font-size:12px;color:var(--ht);margin-bottom:10px;line-height:1.6"></div>
+  <div id="imp-update-toggle" style="display:none;margin-bottom:12px;padding:8px 11px;background:var(--surf2);border:1px solid var(--bdr);border-radius:7px">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;user-select:none">
+      <input type="checkbox" id="imp-update-mode" onchange="impToggleUpdate()">
+      <span>Update existing members (match by name, overwrite their info)</span>
+    </label>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <input type="file" id="imp-file" accept=".csv,.txt" style="display:none" onchange="impHandleFile(this)">
+    <button class="btn" onclick="document.getElementById('imp-file').click()"><i class="ti ti-upload"></i>Choose CSV File</button>
+    <button class="btn" onclick="impDownloadTemplate(_importType)" style="font-size:11px"><i class="ti ti-download"></i>Download Template</button>
+    <span id="imp-fname" style="font-size:12px;color:var(--ht);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+  </div>
+  <div id="imp-preview" style="margin-bottom:14px"></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end">
+    <button class="btn" onclick="closeM(null,document.getElementById('m-import'))">Cancel</button>
+    <button id="imp-commit" class="btn btn-p" style="display:none" onclick="doImport()">Import</button>
+  </div>
+</div></div>
+
 <!-- Firebase stub (no real Firebase — in-memory only) -->
 <script src="js/firebase-stub.js"></script>
 
@@ -2030,6 +2054,7 @@
 <script src="js/finance.js"></script>
 <script src="js/operations.js"></script>
 <script src="js/kcrew.js"></script>
+<script src="js/import.js"></script>
 <script src="js/search.js"></script>
 <script src="js/reports.js"></script>
 <script src="js/router.js"></script>

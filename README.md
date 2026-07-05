@@ -13,26 +13,26 @@
 
 ---
 
-## 22 Operational Modules
+## 23 Operational Modules
 
 | Module | What it does |
 |---|---|
 | **Dashboard** | Chapter Health Score (0–100), KPI ring, upcoming events, overdue tasks, active alerts, attendance risk list |
 | **Attendance** | Per-event tracking, semester average, class-year breakdown, warning threshold alerts, trend chart |
 | **Calendar** | Month/week view, event creation with RSVP & mandatory flags, sober driver scheduling |
-| **Tasks** | Kanban + list view, priority levels, assignee, due dates, completion tracking |
+| **Tasks** | Kanban + list view, priority levels, assignee, due dates, completion tracking, CSV import |
 | **Notes** | Structured meeting minutes with officer reports, announcements, old/new business, weekly honors; branded PDF export |
 | **Finance** | Dues ledger, expense log, budget tracking, fine management, income/expense P&L, 7-tab layout |
 | **Recruitment CRM** | Rushee pipeline (prospect → bid → pledge), funnel chart, stage conversion rates, rush event schedule |
 | **Judicial Board** | Case management, member lookup, hearing scheduling, outcome logging, case status tracking |
-| **Social Event Safety** | Sober driver shift scheduling, shift status, event coverage overview, import from CSV |
-| **Members** | Full roster with GPA, class year, status, role, contact info, engagement score, mobile card view |
-| **Academics** | GPA distribution, chapter average, scholarship tracking, academic warning list — hard-gated to authorized roles |
+| **Social Event Safety** | Sober driver shift scheduling, shift status, event coverage overview, CSV import |
+| **Members** | Full roster with GPA, class year, status, role, contact info, engagement score, mobile card view, CSV import (add or bulk-update by name match) |
+| **Academics** | GPA distribution, chapter average, scholarship tracking, academic warning list, CSV grade import — hard-gated to authorized roles |
 | **Committees** | Committee roster, chair assignment, member selection, active project tracking |
 | **Analytics** | Engagement scoring, officer performance, event trend analysis, risk distribution charts |
 | **Philanthropy** | Service hours log, fundraising tracker, event management, by-member hour reporting |
 | **Alumni Relations** | Alumni directory, engagement tracking, mentorship connections, outreach log |
-| **Ritual** | Ceremony planning, ritual resource library, schedule management |
+| **Ritual & Education** | New member education program (weekly milestones by category, required-item tracking), per-member progress against required items, session scheduling, ceremony/ritual resource tracking |
 | **Health Score** | Composite chapter health (attendance 30%, finance 25%, academics 20%, engagement 15%, risk 10%) |
 | **Transition Hub** | Role handoff docs for all 15 officer positions — responsibilities, recurring tasks, key contacts, "wish I knew" notes |
 | **Reports** | Exportable summaries: semester report, officer report, financial summary, attendance report |
@@ -40,6 +40,10 @@
 | **Settings** | Chapter profile, notification preferences, academic year configuration |
 | **House Management** | Weekly meal-prep crew schedule (lunch/dinner slot assignment), 29-item chore checklist across 7 house areas with day-specific recurrence, admin chore manager |
 | **Otis AI Assistant** | Simulated chapter-ops chatbot — event brainstorming, task/event/finance/academics summaries, draft announcements; fully local with canned, keyword-matched responses |
+
+CSV import (Members, Academics, Tasks, Social Event Safety) parses the file entirely in the browser and merges rows into the in-memory demo dataset — nothing is uploaded anywhere, and nothing survives a page refresh, consistent with the rest of this demo.
+
+> **Not in this demo:** platform-level, multi-chapter administration (provisioning new chapters, cross-chapter officer approval). That capability exists in the production system this demo is based on, but is intentionally out of scope here since OpsCore demonstrates a single chapter's operations, not platform administration.
 
 ---
 
@@ -111,6 +115,7 @@ The demo auto-logs in as **James Mitchell, President** with a complete seed data
 - **5 alumni contacts** — with engagement status, outreach log, and upcoming alumni event
 - **15 transition hub entries** — handoff docs for all officer positions, with role-specific content and key contacts
 - **3 meeting notes** — structured chapter minutes with officer reports, honors, and action items
+- **New member education program** — 12 milestones across 5 categories (58% chapter-wide complete), 4 scheduled/past sessions, and per-member progress tracking for 6 new members
 - **House Management** — weekly meal-prep crew schedule across 7 live-in members, 29 default chores across 7 house areas with seeded weekly check-ins
 
 ---
@@ -137,6 +142,7 @@ No npm, no build tools, no framework. Loads instantly from a single `index.html`
 - **System design** — 23-module SPA built around a single `D{}` global data store with modular render functions and a debounced batched save layer
 - **Role-based access control** — 15 role types with two-layer RBAC: page whitelists drive sidebar visibility, and per-feature `canEdit()` guards drive in-page button rendering and write protection
 - **Data modeling** — members, events, attendance, finance, judicial, and recruitment all relationally linked by member ID; no ORM, pure object references
+- **Data import & validation** — client-side CSV parsing with fuzzy column-name matching, add/update merge logic against the existing roster, and a pre-commit preview across Members, Academics, and Tasks
 - **Firebase integration** — Firestore real-time sync, Firebase Auth, stub/override pattern for offline and demo modes
 - **Data visualization** — Chart.js bar, donut, line, and radar charts across 8+ modules with dynamic data binding
 - **UX engineering** — skeleton loaders, toast notifications, confirm dialogs, modal CRUD forms, keyboard shortcuts, mobile-responsive layout, offline detection banner
@@ -154,8 +160,8 @@ No npm, no build tools, no framework. Loads instantly from a single `index.html`
 ## Run Locally
 
 ```
-git clone https://github.com/your-username/opscore.git
-cd opscore
+git clone https://github.com/mattabe212400/OpsCore.git
+cd OpsCore
 open index.html   # no server needed — opens directly in any browser
 ```
 
