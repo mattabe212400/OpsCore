@@ -177,7 +177,7 @@ const OTIS_IDEAS = {
   brotherhood: [
     'Intramural league kickoff with a chapter draft night',
     'Cabin retreat weekend — unplugged, just the chapter',
-    'Big/little reveal with a themed banquet',
+    'Peer mentor group reveal with a themed banquet',
     'Game truck or bowling night, split into mixed-class teams to force new connections',
     'Alumni vs. actives flag football game',
   ],
