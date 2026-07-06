@@ -126,6 +126,7 @@ function otisGetContext() {
     openCases:   openCasesArr,
     rushees:     D.recruitment?.rushees || [],
     philanthropy: D.philanthropy || null,
+    communityService: D.communityService || null,
     academics:   D.academics || null,
   };
 }

@@ -22,6 +22,7 @@ function initDataDefaults(){
   if(!D.notifs)D.notifs=[];
   if(!D.committees)D.committees=[];
   if(!D.transitions)D.transitions=[];
+  if(!D.announcements)D.announcements=[];
   if(!D.attendance)D.attendance={};
   if(!D.academics)D.academics={gpas:{},history:[]};
   if(!D.finance)D.finance={dues:{},fines:[],expenses:[],plans:[],payments:[],nationalDues:{},nationalPayments:[],budget:{Social:0,Recruitment:0,Philanthropy:0,House:0,Brotherhood:0,Operations:0,Risk:0}};
@@ -32,17 +33,30 @@ function initDataDefaults(){
   if(!D.recruitment.rushees)D.recruitment.rushees=[];
   if(!D.recruitment.events)D.recruitment.events=[];
   if(!D.recruitment.goal)D.recruitment.goal={target:20,label:'New Members This Semester'};
-  if(!D.philanthropy)D.philanthropy={events:[],hours:[],funds:[],goals:[
-    {id:'phg1',label:'Total Service Hours',target:500,unit:'hrs'},
-    {id:'phg2',label:'Service Events',target:6,unit:'events'},
-    {id:'phg3',label:'Avg Hours / Member',target:4,unit:'hrs'},
-    {id:'phg4',label:'Philanthropy Events',target:4,unit:'events'},
-    {id:'phg5',label:'Total Funds Raised',target:2000,unit:'$'}
-  ]};
+  // Philanthropy (fundraising) — events live on the shared D.events calendar (type:'philanthropy'
+  // or 'fundraiser'); this object only holds fundraising logs, orgs, vendors/donors, and goals.
+  if(!D.philanthropy)D.philanthropy={funds:[],organizations:[],vendors:[],goals:{events:4,funds:2000}};
   if(!D.philanthropy.funds)D.philanthropy.funds=[];
+  if(!D.philanthropy.organizations)D.philanthropy.organizations=[];
+  if(!D.philanthropy.vendors)D.philanthropy.vendors=[];
+  if(!D.philanthropy.goals)D.philanthropy.goals={events:4,funds:2000};
+  // Community Service — events live on the shared D.events calendar (type:'service'); this
+  // object holds hour logs, service locations, and goals.
+  if(!D.communityService)D.communityService={hours:[],locations:[],goals:{totalHrs:500,events:6,avgHrs:4}};
+  if(!D.communityService.hours)D.communityService.hours=[];
+  if(!D.communityService.locations)D.communityService.locations=[];
+  if(!D.communityService.goals)D.communityService.goals={totalHrs:500,events:6,avgHrs:4};
   if(!D.agenda)D.agenda={items:[],archived:[]};
   if(!D.alumni)D.alumni={contacts:[],events:[],outreach:[]};
-  if(!D.ritual)D.ritual={items:[],sessions:[],nmProgress:{}};
+  // Ritual — narrowed to the ceremony/administrative checklist only; sessions/progress now
+  // live in D.newMemberEducation, and brotherhood/Bible study planning lives in D.chaplainHub.
+  if(!D.ritual)D.ritual={items:[]};
+  if(!D.chaplainHub)D.chaplainHub={bibleStudies:[],events:[],tasks:[]};
+  if(!D.newMemberEducation)D.newMemberEducation={sessions:[],requirements:[],progress:{},mentorGroups:[],mentorProgramAgenda:[]};
+  if(!D.social)D.social={planning:{},vendors:[],rsvps:[]};
+  if(!D.social.planning)D.social.planning={};
+  if(!D.social.vendors)D.social.vendors=[];
+  if(!D.social.rsvps)D.social.rsvps=[];
   if(!D.vendors)D.vendors=[];
   if(!D.transitionHub)D.transitionHub={deadlines:[],issues:[],archive:[]};
   if(!D.settings)D.settings={name:'',year:'',classYear:'Senior',notifAttendance:true,notifTasks:true,notifSober:true,notifWeekly:true,chapterName:'Beta Chapter',university:'State University',chapterSize:'',chapterFounded:''};
@@ -131,13 +145,18 @@ async function _saveDFlush(){
       notifs:       D.notifs||[],
       committees:   D.committees||[],
       transitions:  D.transitions||[],
+      announcements:D.announcements||[],
       academics:    D.academics||{gpas:{},history:[]},
       finance:      D.finance||{},
       recruitment:  D.recruitment||{rushees:[],events:[]},
-      philanthropy: D.philanthropy||{events:[],hours:[],funds:[],goals:[]},
+      philanthropy: D.philanthropy||{funds:[],organizations:[],vendors:[],goals:{events:4,funds:2000}},
+      communityService: D.communityService||{hours:[],locations:[],goals:{totalHrs:500,events:6,avgHrs:4}},
       agenda:       D.agenda||{items:[],archived:[]},
       alumni:       D.alumni||{contacts:[],events:[],outreach:[]},
-      ritual:       D.ritual||{items:[],sessions:[],nmProgress:{}},
+      ritual:       D.ritual||{items:[]},
+      chaplainHub:  D.chaplainHub||{bibleStudies:[],events:[],tasks:[]},
+      newMemberEducation: D.newMemberEducation||{sessions:[],requirements:[],progress:{},mentorGroups:[],mentorProgramAgenda:[]},
+      social:       D.social||{planning:{},vendors:[],rsvps:[]},
       vendors:      D.vendors||[],
       transitionHub:D.transitionHub||{deadlines:[],issues:[],archive:[]},
       settings:     D.settings||{},

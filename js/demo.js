@@ -21,25 +21,28 @@ function loadDemoData(){
   const uid = () => 'demo_' + Math.random().toString(36).slice(2,10);
 
   // ── MEMBERS (18 fake members) ──
+  // memberStatus is intentionally NOT derived from classYear — Logan Price is a Sophomore but
+  // a genuinely new member (spring transfer bid), while both Freshmen below are also new
+  // members. This demonstrates the same distinction the real ATO System dues engine enforces.
   const members = [
-    {id:'m01',name:'James Mitchell',initials:'JM',role:'President',classYear:'Senior',year:2025,liveIn:true},
-    {id:'m02',name:'Ryan Torres',initials:'RT',role:'Vice President',classYear:'Senior',year:2025,liveIn:true},
-    {id:'m03',name:'Connor Walsh',initials:'CW',role:'Treasurer',classYear:'Junior',year:2026,liveIn:false},
-    {id:'m04',name:'Daniel Park',initials:'DP',role:'Secretary',classYear:'Junior',year:2026,liveIn:true},
-    {id:'m05',name:'Alex Rivera',initials:'AR',role:'Recruitment Chair',classYear:'Junior',year:2026,liveIn:false},
-    {id:'m06',name:'Marcus Bell',initials:'MB',role:'Risk Manager',classYear:'Senior',year:2025,liveIn:true},
-    {id:'m07',name:'Tyler Brooks',initials:'TB',role:'Scholarship Chair',classYear:'Sophomore',year:2027,liveIn:false},
-    {id:'m08',name:'Jordan Hayes',initials:'JH',role:'Philanthropy Chair',classYear:'Junior',year:2026,liveIn:false},
-    {id:'m09',name:'Nathan Scott',initials:'NS',role:'Social Chair',classYear:'Sophomore',year:2027,liveIn:true},
-    {id:'m10',name:'Ethan Cole',initials:'EC',role:'Member',classYear:'Sophomore',year:2027,liveIn:false},
-    {id:'m11',name:'Logan Price',initials:'LP',role:'Member',classYear:'Sophomore',year:2027,liveIn:false},
-    {id:'m12',name:'Blake Foster',initials:'BF',role:'Member',classYear:'Freshman',year:2028,liveIn:false},
-    {id:'m13',name:'Owen Reed',initials:'OR',role:'Member',classYear:'Freshman',year:2028,liveIn:false},
-    {id:'m14',name:'Caleb Hughes',initials:'CH',role:'Member',classYear:'Junior',year:2026,liveIn:true},
-    {id:'m15',name:'Brody Clark',initials:'BC',role:'Member',classYear:'Senior',year:2025,liveIn:false},
-    {id:'m16',name:'Mason Evans',initials:'ME',role:'New Member Educator',classYear:'Senior',year:2025,liveIn:true},
-    {id:'m17',name:'Hunter James',initials:'HJ',role:'Chaplain',classYear:'Junior',year:2026,liveIn:false},
-    {id:'m18',name:'Drew Santos',initials:'DS',role:'Alumni Relations Chair',classYear:'Senior',year:2025,liveIn:false},
+    {id:'m01',name:'James Mitchell',initials:'JM',role:'President',classYear:'Senior',year:2025,liveIn:true,memberStatus:'Active'},
+    {id:'m02',name:'Ryan Torres',initials:'RT',role:'Vice President',classYear:'Senior',year:2025,liveIn:true,memberStatus:'Active'},
+    {id:'m03',name:'Connor Walsh',initials:'CW',role:'Treasurer',classYear:'Junior',year:2026,liveIn:false,memberStatus:'Active'},
+    {id:'m04',name:'Daniel Park',initials:'DP',role:'Secretary',classYear:'Junior',year:2026,liveIn:true,memberStatus:'Active'},
+    {id:'m05',name:'Alex Rivera',initials:'AR',role:'Recruitment Chair',classYear:'Junior',year:2026,liveIn:false,memberStatus:'Active'},
+    {id:'m06',name:'Marcus Bell',initials:'MB',role:'Risk Manager',classYear:'Senior',year:2025,liveIn:true,memberStatus:'Active'},
+    {id:'m07',name:'Tyler Brooks',initials:'TB',role:'Scholarship Chair',classYear:'Sophomore',year:2027,liveIn:false,memberStatus:'Active'},
+    {id:'m08',name:'Jordan Hayes',initials:'JH',role:'Philanthropy Chair',classYear:'Junior',year:2026,liveIn:false,memberStatus:'Active'},
+    {id:'m09',name:'Nathan Scott',initials:'NS',role:'Social Chair',classYear:'Sophomore',year:2027,liveIn:true,memberStatus:'Active'},
+    {id:'m10',name:'Ethan Cole',initials:'EC',role:'Member',classYear:'Sophomore',year:2027,liveIn:false,memberStatus:'Active'},
+    {id:'m11',name:'Logan Price',initials:'LP',role:'Member',classYear:'Sophomore',year:2027,liveIn:false,memberStatus:'New Member'},
+    {id:'m12',name:'Blake Foster',initials:'BF',role:'Member',classYear:'Freshman',year:2028,liveIn:false,memberStatus:'New Member'},
+    {id:'m13',name:'Owen Reed',initials:'OR',role:'Member',classYear:'Freshman',year:2028,liveIn:false,memberStatus:'New Member'},
+    {id:'m14',name:'Caleb Hughes',initials:'CH',role:'Member',classYear:'Junior',year:2026,liveIn:true,memberStatus:'Active'},
+    {id:'m15',name:'Brody Clark',initials:'BC',role:'Member',classYear:'Senior',year:2025,liveIn:false,memberStatus:'Active'},
+    {id:'m16',name:'Mason Evans',initials:'ME',role:'New Member Educator',classYear:'Senior',year:2025,liveIn:true,memberStatus:'Active'},
+    {id:'m17',name:'Hunter James',initials:'HJ',role:'Chaplain',classYear:'Junior',year:2026,liveIn:false,memberStatus:'Active'},
+    {id:'m18',name:'Drew Santos',initials:'DS',role:'Alumni Relations Chair',classYear:'Senior',year:2025,liveIn:false,memberStatus:'Active'},
   ];
 
   // ── EVENTS (past mandatory + upcoming) ──
@@ -50,14 +53,19 @@ function loadDemoData(){
     {id:'e04',title:'Chapter Meeting',type:'chapter',date:past(7),start:'7:00 PM',location:'Chapter House',mandatory:true},
     {id:'e05',title:'Risk Management Workshop',type:'mandatory',date:past(35),start:'6:00 PM',location:'Student Union',mandatory:true},
     {id:'e06',title:'New Member Education',type:'chapter',date:past(21),start:'8:00 PM',location:'Chapter House',mandatory:true},
-    {id:'e07',title:'Philanthropy 5K Run',type:'philanthropy',date:past(10),start:'9:00 AM',location:'Campus Rec',mandatory:false},
+    {id:'e07',title:'Philanthropy 5K Run',type:'philanthropy',date:past(10),start:'9:00 AM',location:'Campus Rec',mandatory:false,fundGoal:1000,org:'Local Food Bank',notes:'Annual 5K benefiting the local food bank.'},
     {id:'e08',title:'Brotherhood Retreat',type:'brotherhood',date:past(5),start:'10:00 AM',location:'State Park',mandatory:false},
     {id:'e09',title:'Chapter Meeting',type:'chapter',date:future(7),start:'7:00 PM',location:'Chapter House',mandatory:true},
-    {id:'e10',title:'Spring Formal',type:'brotherhood',date:future(14),start:'7:00 PM',location:'Grand Ballroom',mandatory:false},
+    {id:'e10',title:'Spring Formal',type:'social',date:future(14),start:'7:00 PM',location:'Grand Ballroom',mandatory:false},
     {id:'e11',title:'Recruitment Kickoff',type:'recruitment',date:future(3),start:'5:00 PM',location:'Chapter House',mandatory:false},
     {id:'e12',title:'Alumni Golf Outing',type:'chapter',date:future(21),start:'8:00 AM',location:'Riverside Golf Club',mandatory:false},
-    {id:'e13',title:'IFC Philanthropy Walk',type:'philanthropy',date:future(28),start:'11:00 AM',location:'Main Quad',mandatory:false},
+    {id:'e13',title:'IFC Philanthropy Walk',type:'philanthropy',date:future(28),start:'11:00 AM',location:'Main Quad',mandatory:false,fundGoal:800,org:'IFC Philanthropy Fund',notes:''},
     {id:'e14',title:'Exec Meeting',type:'exec',date:future(2),start:'6:00 PM',location:'Chapter House',mandatory:false},
+    {id:'e15',title:'Fall Mixer with Kappa Delta',type:'social',date:past(18),start:'8:00 PM',location:'Chapter House',mandatory:false},
+    {id:'e16',title:'Date Party',type:'social',date:future(35),start:'7:30 PM',location:'The Lakehouse',mandatory:false},
+    {id:'e17',title:'Food Bank Volunteer Day',type:'service',date:past(25),start:'10:00 AM',location:'Downtown Food Bank',mandatory:false,hourGoal:40,org:'Local Food Bank',notes:'Monthly volunteering at the campus-adjacent food bank.'},
+    {id:'e18',title:'Habitat for Humanity Build',type:'service',date:future(12),start:'9:00 AM',location:'Habitat Build Site',mandatory:false,hourGoal:30,org:'Habitat for Humanity',notes:''},
+    {id:'e19',title:'Spring Fundraiser Gala',type:'fundraiser',date:future(45),start:'7:00 PM',location:'Grand Ballroom',mandatory:false,fundGoal:2000,org:'Chapter Scholarship Fund',notes:'Annual gala raising funds for the chapter scholarship.'},
   ];
 
   // ── ATTENDANCE (realistic — some members miss events) ──
@@ -175,20 +183,22 @@ function loadDemoData(){
   };
 
   // ── FINANCE ──
-  const semDues = 425;
+  // Tiered by member type (matches getSemDues() in js/finance.js), not a flat rate.
+  const duesInHouse=525, duesOutOfHouse=425, duesPledge=350;
   const dues = {};
   members.forEach((m,i)=>{
-    const paid = i < 14 ? semDues : (i===14 ? 200 : (i===15 ? 0 : semDues));
-    dues[m.id]={semesterDues:semDues,paid,status:paid>=semDues?'Paid':paid>0?'Partial':'Unpaid',fineCount:0};
+    const tier = (m.memberStatus||'Active')==='New Member' ? duesPledge : (m.liveIn ? duesInHouse : duesOutOfHouse);
+    const paid = i < 14 ? tier : (i===14 ? Math.round(tier*0.47) : (i===15 ? 0 : tier));
+    dues[m.id]={semesterDues:tier,paid,status:paid>=tier?'Paid':paid>0?'Partial':'Unpaid',fineCount:0};
   });
   const expenses = [
-    {id:'ex01',desc:'Spring Formal venue deposit',category:'Social',amount:1200,date:past(18)},
-    {id:'ex02',desc:'DJ booking — Spring Formal',category:'Social',amount:650,date:past(10)},
-    {id:'ex03',desc:'Philanthropy 5K supplies',category:'Philanthropy',amount:280,date:past(12)},
-    {id:'ex04',desc:'Chapter house cleaning supplies',category:'House',amount:95,date:past(8)},
-    {id:'ex05',desc:'New member welcome gifts',category:'Brotherhood',amount:340,date:past(20)},
-    {id:'ex06',desc:'IFC dues payment',category:'Operations',amount:500,date:past(25)},
-    {id:'ex07',desc:'Recruitment event supplies',category:'Recruitment',amount:175,date:past(3)},
+    {id:'ex01',desc:'Spring Formal venue deposit',category:'Events Social',amount:1200,date:past(18)},
+    {id:'ex02',desc:'DJ booking — Spring Formal',category:'Events Social',amount:650,date:past(10)},
+    {id:'ex03',desc:'Philanthropy 5K supplies',category:'Events Philanthropy',amount:280,date:past(12)},
+    {id:'ex04',desc:'Chapter house cleaning supplies',category:'Housing Miscellaneous',amount:95,date:past(8)},
+    {id:'ex05',desc:'New member welcome gifts',category:'Miscellaneous',amount:340,date:past(20)},
+    {id:'ex06',desc:'IFC dues payment',category:'Administrative IFC Dues',amount:500,date:past(25)},
+    {id:'ex07',desc:'Recruitment event supplies',category:'Miscellaneous',amount:175,date:past(3)},
   ];
   const fines = [
     {id:'fi01',memberId:'m09',amount:25,reason:'Missed mandatory event without excuse',date:past(6),paid:false},
@@ -228,16 +238,26 @@ function loadDemoData(){
     {id:'com04',name:'Scholarship Committee',desc:'Monitors academic standing and supports members on academic probation.',chair:'m07',members:['m07','m04','m16']},
   ];
 
-  // ── PHILANTHROPY ──
-  const phEvents = [
-    {id:'ph01',title:'5K Charity Run',kind:'philanthropy',date:past(10),description:'Annual 5K benefiting local food bank.',hours:3,participants:14,fundsGoal:1000},
-    {id:'ph02',title:'Food Bank Volunteer Day',kind:'service',date:past(25),description:'Monthly volunteering at the campus-adjacent food bank.',hours:4,participants:10},
-    {id:'ph03',title:'Spring Fundraiser Gala',kind:'fundraiser',date:future(30),description:'Annual gala raising funds for chapter scholarship.',hours:4,participants:0,fundsGoal:2000},
-  ];
-  const phHours = members.slice(0,12).map(m=>({id:uid(),memberId:m.id,eventId:'ph01',hours:3,date:past(10)}));
+  // ── PHILANTHROPY (fundraising) — events live on the shared calendar (e07/e13/e19) ──
   const phFunds = [
-    {id:uid(),amount:840,memberId:null,date:past(10),eventId:'ph01',notes:'5K registration fees'},
+    {id:uid(),amount:840,memberId:null,date:past(10),eventId:'e07',notes:'5K registration fees'},
     {id:uid(),amount:250,memberId:'m08',date:past(8),eventId:null,notes:'Individual donor'},
+    {id:uid(),amount:180,memberId:null,date:past(27),eventId:'e13',notes:'IFC walk registration fees'},
+  ];
+  const phOrgs = [
+    {id:uid(),name:'Local Food Bank',contact:'volunteer@localfoodbank.org',notes:'Primary philanthropy partner'},
+    {id:uid(),name:'Chapter Scholarship Fund',contact:'',notes:'Internal scholarship fund for members'},
+  ];
+  const phVendors = [
+    {id:uid(),name:'Campus Print Shop',contact:'orders@campusprint.com',contribution:'Discounted event flyers and banners'},
+    {id:uid(),name:'Hometown Grocers',contact:'',contribution:'Donated $200 gift card for raffle'},
+  ];
+
+  // ── COMMUNITY SERVICE — events live on the shared calendar (e17/e18) ──
+  const csHours = members.slice(0,12).map((m,i)=>({id:uid(),memberId:m.id,hours:i<8?4:2,eventId:'e17',date:past(25),notes:''}));
+  const csLocations = [
+    {id:uid(),name:'Local Food Bank',address:'400 Center St',contactName:'Maria Lopez',contactInfo:'volunteer@localfoodbank.org',notes:'Regular Saturday shifts available'},
+    {id:uid(),name:'Habitat for Humanity ReStore',address:'210 Industrial Pkwy',contactName:'',contactInfo:'',notes:''},
   ];
 
   // ── ALUMNI ──
@@ -266,6 +286,7 @@ function loadDemoData(){
     notifAttendance:true,notifTasks:true,notifSober:true,notifWeekly:true,
     chapterName:'Beta Chapter',university:'State University',
     chapterSize:'18',chapterFounded:'1987',
+    duesInHouse,duesOutOfHouse,duesPledge,duesNational:100,
   };
 
   // ── ASSEMBLE D ──
@@ -364,17 +385,15 @@ function loadDemoData(){
         {id:'pay06',memberId:'m15',amount:200,type:'Partial Dues',method:'Venmo',date:past(11)},
       ],
       nationalDues: {}, nationalPayments: [],
-      budget: {Social:2500,Recruitment:1500,Philanthropy:800,House:600,Brotherhood:500,Operations:700,Risk:300},
+      budget: {'Housing Rent':8000,'Housing Upper Crust':1200,'Housing Mike':600,'Housing Miscellaneous':600,'Utilities Electric':900,'Utilities Alliant Energy':700,'Utilities Waste Management':300,'Administrative IFC Dues':500,'Administrative YouTube/TV':150,'Events Greek Week':800,'Events House Maintenance':500,'Events Social':2500,'Events Chaplain':300,'Events Philanthropy':800,'Events Moms Day':400,'Events Alumni':500,'Scholarship':600,'Miscellaneous':500},
     },
     recruitment: { rushees: rcEvents.concat([]).filter(()=>false).concat([]), events: rcEvents, goal: {target:20,label:'New Members This Semester'} },
-    committees, philanthropy: {events:phEvents, hours:phHours, funds:phFunds, goals:[
-      {id:'phg1',label:'Total Service Hours',target:500,unit:'hrs'},
-      {id:'phg2',label:'Service Events',target:6,unit:'events'},
-      {id:'phg3',label:'Avg Hours / Member',target:4,unit:'hrs'},
-      {id:'phg4',label:'Philanthropy Events',target:4,unit:'events'},
-      {id:'phg5',label:'Total Funds Raised',target:2000,unit:'$'},
-    ]},
-    alumni, ritual: {
+    committees,
+    philanthropy: {funds:phFunds, organizations:phOrgs, vendors:phVendors, goals:{events:4,funds:2000}},
+    communityService: {hours:csHours, locations:csLocations, goals:{totalHrs:500,events:6,avgHrs:4}},
+    alumni,
+    // Ritual — narrowed to the ceremony/administrative checklist only.
+    ritual: {
       items: [
         {id:'ri01',title:'Chapter History & Founding Principles',category:'education',week:1,required:true,desc:'Overview of national history and the chapter\'s founding.',done:true},
         {id:'ri02',title:'Ritual Book Introduction',category:'ritual',week:1,required:true,desc:'',done:true},
@@ -389,26 +408,149 @@ function loadDemoData(){
         {id:'ri11',title:'Big/Little Reveal',category:'brotherhood',week:7,required:false,desc:'',done:false},
         {id:'ri12',title:'Initiation Ceremony Preparation',category:'ritual',week:8,required:true,desc:'',done:false},
       ],
+    },
+    // Chaplain Hub — Bible study, brotherhood/morale events, and follow-up tasks.
+    chaplainHub: {
+      bibleStudies: [
+        {id:'bs01',date:past(21),time:'19:00',topic:'Faith and Brotherhood',scripture:'Proverbs 27:17',discussionQuestions:'What does iron sharpening iron look like in our chapter?',attendanceCount:14,notes:'',status:'completed'},
+        {id:'bs02',date:past(7),time:'19:00',topic:'Perseverance Through Challenges',scripture:'James 1:2-4',discussionQuestions:'',attendanceCount:11,notes:'',status:'completed'},
+        {id:'bs03',date:future(7),time:'19:30',topic:'Living with Integrity',scripture:'',discussionQuestions:'',attendanceCount:null,notes:'',status:'planned'},
+      ],
+      events: [
+        {id:'ce01',name:'Movie Night',type:'movie',date:past(14),time:'20:00',location:'Chapter House',estCost:60,expectedAttendance:20,actualAttendance:18,planningStatus:'completed',owner:'m17',notes:'',rating:4,reflection:'Great turnout, low cost.'},
+        {id:'ce02',name:'Golf Outing',type:'golf',date:past(30),time:'09:00',location:'Riverside Golf Club',estCost:350,expectedAttendance:12,actualAttendance:10,planningStatus:'completed',owner:'m17',notes:'',rating:5,reflection:'Great weather, everyone had fun.'},
+        {id:'ce03',name:'Bags Tournament',type:'bags',date:future(10),time:'14:00',location:'Chapter House',estCost:75,expectedAttendance:24,actualAttendance:null,planningStatus:'scheduled',owner:'m17',notes:'Bracket set, signage ordered.',rating:null,reflection:''},
+        {id:'ce04',name:'Brotherhood Retreat Planning',type:'retreat',date:future(25),time:'',location:'',estCost:1200,expectedAttendance:null,actualAttendance:null,planningStatus:'planning',owner:'m17',notes:'Comparing 2 cabin venues.',rating:null,reflection:''},
+        {id:'ce05',name:'Bowling Night',type:'custom',date:future(40),time:'',location:'',estCost:null,expectedAttendance:null,actualAttendance:null,planningStatus:'idea',owner:null,notes:'',rating:null,reflection:''},
+      ],
+      tasks: [
+        {id:'ct01',label:'Confirm venue',linkedType:'event',linkedId:'ce03',assignedTo:'m17',dueDate:future(3),done:false},
+        {id:'ct02',label:'Record attendance',linkedType:'bibleStudy',linkedId:'bs01',assignedTo:'m17',dueDate:null,done:true},
+        {id:'ct03',label:'Follow up with members who missed Bible study',linkedType:null,linkedId:null,assignedTo:'m17',dueDate:future(2),done:false},
+      ],
+    },
+    // New Member Education — education sessions + per-member requirement progress + Peer
+    // Mentor Program. Uses memberStatus==='New Member' (m11, m12, m13), NOT class year.
+    newMemberEducation: {
       sessions: [
         {id:'rs01',title:'New Member Orientation',date:past(35),type:'education',facilitatorId:'m16',notes:'Chapter history, organization overview, expectations for the semester.'},
         {id:'rs02',title:'Ritual Book Session 1',date:past(28),type:'ritual',facilitatorId:'m17',notes:'Introduction to the ritual book and its significance.'},
         {id:'rs03',title:'Risk Management & FIPG Training',date:past(21),type:'education',facilitatorId:'m06',notes:'FIPG guidelines and chapter risk policy walkthrough.'},
-        {id:'rs04',title:'Standards Test Review',date:future(10),type:'test',facilitatorId:'m16',notes:'Review session before the standards test in week 6.'},
+        {id:'rs04',title:'Standards Test Review',date:future(10),type:'test',facilitatorId:'m16',notes:'Review session before the standards test.'},
       ],
-      nmProgress: {
-        m07:{ri01:true,ri02:true,ri03:true,ri04:true,ri06:true,ri07:true},
-        m09:{ri01:true,ri02:true,ri03:true,ri04:true,ri06:true,ri07:true},
-        m10:{ri01:true,ri02:true,ri03:true,ri04:true,ri06:true,ri07:true},
-        m11:{ri01:true,ri02:true,ri03:true,ri04:true,ri06:true},
-        m12:{ri01:true,ri02:true,ri03:true},
-        m13:{ri01:true,ri02:true},
+      requirements: [
+        {id:'req01',title:'Attend Orientation Session',due:past(35),desc:''},
+        {id:'req02',title:'Pass Standards Test',due:future(14),desc:'Written test on chapter history and policies.'},
+        {id:'req03',title:'Complete 5 Community Service Hours',due:future(21),desc:''},
+        {id:'req04',title:'Submit Big/Little Application',due:future(28),desc:''},
+      ],
+      progress: {
+        m11:{req01:true,req02:true,req03:true,req04:false},
+        m12:{req01:true,req02:false,req03:false,req04:false},
+        m13:{req01:true,req02:true,req03:false,req04:false},
       },
+      mentorGroups: [
+        {id:'mg01',name:'Group 1',mentorIds:['m16'],newMemberIds:['m11','m12'],createdBy:'m16',createdAt:Date.now(),updatedAt:Date.now()},
+        {id:'mg02',name:'Group 2',mentorIds:['m07','m14'],newMemberIds:['m13'],createdBy:'m16',createdAt:Date.now(),updatedAt:Date.now()},
+      ],
+      mentorProgramAgenda: [
+        {id:'ag01',week:1,topic:'Welcome & Expectations',notes:'Icebreakers; why you joined; set expectations for the semester'},
+        {id:'ag02',week:2,topic:'Fraternity History & Founding Values',notes:'Review founding principles and what brotherhood means to you'},
+        {id:'ag03',week:3,topic:'Time Management & Academic Success',notes:'Study habits; campus resources; balancing classes and chapter life'},
+        {id:'ag04',week:4,topic:'Brotherhood & Building Relationships',notes:'Getting to know brothers outside your pledge class'},
+        {id:'ag05',week:5,topic:'Risk Management & Personal Responsibility',notes:'Chapter risk policies; making smart decisions'},
+        {id:'ag06',week:6,topic:'Community Service & Philanthropy',notes:'Upcoming service opportunities; why philanthropy matters'},
+        {id:'ag07',week:7,topic:'Financial Responsibility',notes:'Dues; budgeting; the chapter\'s finances'},
+        {id:'ag08',week:8,topic:'Leadership & Getting Involved',notes:'Committees and ways to get involved beyond new member status'},
+        {id:'ag09',week:9,topic:'Alumni Relations',notes:'Staying connected after graduation'},
+        {id:'ag10',week:10,topic:'Reflection & Initiation Prep',notes:'Reflect on the semester; what full membership means'},
+      ],
+    },
+    // Social Events & Formal Planning — events live on the shared calendar (e10/e15/e16,
+    // type:'social'); rich planning detail lives here keyed by the same event id.
+    social: {
+      planning: {
+        e15: {
+          status:'completed', eventCategory:'mixer',
+          expectedAttendance:40, capacity:60, rsvpDeadline:past(20), actualAttendance:38,
+          venue:{name:'Chapter House',address:'',contact:'',phone:'',deposit:0,totalCost:0,confirmed:true,contractStatus:'signed',notes:''},
+          transportation:{required:false,provider:'',contact:'',pickupLocation:'',departureTime:'',returnTime:'',vehicleCount:0,capacity:0,cost:0,confirmed:false,notes:''},
+          lodging:{required:false,hotel:'',contact:'',roomCount:0,bookingStatus:'not_started',cost:0,notes:''},
+          catering:{provider:'Campus Catering Co.',contact:'orders@campuscatering.com',serviceType:'buffet',cost:220,confirmed:true,dietaryNotes:'2 vegetarian trays'},
+          entertainment:{provider:'DJ Marcus',contact:'',cost:150,confirmed:true,equipmentNeeds:'',notes:''},
+          security:{provider:'',contact:'',staffCount:0,cost:0,confirmed:false,notes:''},
+          checklist:[
+            {id:'scl01',label:'Confirm catering headcount',assignedTo:'m10',dueDate:past(22),done:true,linkedTaskId:null},
+            {id:'scl02',label:'Book DJ',assignedTo:'m10',dueDate:past(25),done:true,linkedTaskId:null},
+          ],
+          budgetItems:[
+            {id:'sbi01',category:'Catering',description:'Buffet dinner',vendor:'Campus Catering Co.',estCost:220,actualCost:220,paymentStatus:'paid',notes:''},
+            {id:'sbi02',category:'Entertainment',description:'DJ for the night',vendor:'DJ Marcus',estCost:150,actualCost:150,paymentStatus:'paid',notes:''},
+          ],
+        },
+        e10: {
+          status:'rsvp_open', eventCategory:'formal',
+          expectedAttendance:80, capacity:100, rsvpDeadline:future(7), actualAttendance:null,
+          venue:{name:'Grand Ballroom',address:'400 Main St',contact:'Sasha Lin',phone:'555-0142',deposit:500,totalCost:2400,confirmed:true,contractStatus:'signed',notes:'Deposit paid, balance due week of event.'},
+          transportation:{required:true,provider:'Metro Charter Bus',contact:'dispatch@metrocharter.com',pickupLocation:'Chapter House',departureTime:'18:30',returnTime:'23:30',vehicleCount:2,capacity:100,cost:600,confirmed:true,notes:''},
+          lodging:{required:false,hotel:'',contact:'',roomCount:0,bookingStatus:'not_started',cost:0,notes:''},
+          catering:{provider:'Grand Ballroom Catering',contact:'events@grandballroom.com',serviceType:'plated',cost:3200,confirmed:false,dietaryNotes:'Awaiting final headcount for vegetarian/gluten-free counts'},
+          entertainment:{provider:'Live Wire Band',contact:'booking@livewireband.com',cost:1200,confirmed:true,equipmentNeeds:'Stage lighting, 2 mics',notes:''},
+          security:{provider:'Campus Event Security',contact:'',staffCount:4,cost:400,confirmed:false,notes:'Quote requested, awaiting confirmation'},
+          checklist:[
+            {id:'scl03',label:'Venue contract signed',assignedTo:'m10',dueDate:past(10),done:true,linkedTaskId:null},
+            {id:'scl04',label:'Send save-the-date',assignedTo:'m10',dueDate:past(5),done:true,linkedTaskId:null},
+            {id:'scl05',label:'Finalize catering headcount',assignedTo:'m10',dueDate:future(3),done:false,linkedTaskId:null},
+            {id:'scl06',label:'Confirm security staffing',assignedTo:'m10',dueDate:future(5),done:false,linkedTaskId:null},
+          ],
+          budgetItems:[
+            {id:'sbi03',category:'Venue',description:'Ballroom rental',vendor:'Grand Ballroom Events',estCost:2400,actualCost:2400,paymentStatus:'deposit_paid',notes:''},
+            {id:'sbi04',category:'Transportation',description:'Charter buses (2)',vendor:'Metro Charter Bus',estCost:600,actualCost:600,paymentStatus:'not_due',notes:''},
+            {id:'sbi05',category:'Catering',description:'Plated dinner, 80 guests',vendor:'Grand Ballroom Catering',estCost:3200,actualCost:0,paymentStatus:'deposit_due',notes:''},
+            {id:'sbi06',category:'Entertainment',description:'Live band',vendor:'Live Wire Band',estCost:1200,actualCost:1200,paymentStatus:'paid',notes:''},
+            {id:'sbi07',category:'Security/Staffing',description:'Event security staff',vendor:'Campus Event Security',estCost:400,actualCost:0,paymentStatus:'not_due',notes:''},
+          ],
+        },
+        e16: {
+          status:'planning', eventCategory:'date_party',
+          expectedAttendance:50, capacity:null, rsvpDeadline:null, actualAttendance:null,
+          venue:{name:'',address:'',contact:'',phone:'',deposit:0,totalCost:0,confirmed:false,contractStatus:'not_started',notes:'Comparing The Lakehouse vs. Overlook Pavilion'},
+          transportation:{required:false,provider:'',contact:'',pickupLocation:'',departureTime:'',returnTime:'',vehicleCount:0,capacity:0,cost:0,confirmed:false,notes:''},
+          lodging:{required:false,hotel:'',contact:'',roomCount:0,bookingStatus:'not_started',cost:0,notes:''},
+          catering:{provider:'',contact:'',serviceType:'',cost:0,confirmed:false,dietaryNotes:''},
+          entertainment:{provider:'',contact:'',cost:0,confirmed:false,equipmentNeeds:'',notes:''},
+          security:{provider:'',contact:'',staffCount:0,cost:0,confirmed:false,notes:''},
+          checklist:[
+            {id:'scl07',label:'Pick venue',assignedTo:'m10',dueDate:future(10),done:false,linkedTaskId:null},
+          ],
+          budgetItems:[],
+        },
+      },
+      vendors: [
+        {id:'sv01',name:'Grand Ballroom Events',type:'venue',contactName:'Sasha Lin',phone:'555-0142',email:'events@grandballroom.com',notes:'Preferred formal venue, books up early.',associatedEventIds:['e10']},
+        {id:'sv02',name:'Metro Charter Bus',type:'transportation',contactName:'',phone:'',email:'dispatch@metrocharter.com',notes:'',associatedEventIds:['e10']},
+        {id:'sv03',name:'Campus Catering Co.',type:'catering',contactName:'',phone:'',email:'orders@campuscatering.com',notes:'Good for mixers and smaller events.',associatedEventIds:['e15']},
+        {id:'sv04',name:'DJ Marcus',type:'entertainment',contactName:'',phone:'',email:'',notes:'',associatedEventIds:['e15']},
+      ],
+      rsvps: [
+        {id:'srv01',eventId:'e10',memberId:'m01',status:'yes',respondedAt:past(2)},
+        {id:'srv02',eventId:'e10',memberId:'m02',status:'yes',respondedAt:past(3)},
+        {id:'srv03',eventId:'e10',memberId:'m04',status:'yes',respondedAt:past(1)},
+        {id:'srv04',eventId:'e10',memberId:'m07',status:'maybe',respondedAt:past(1)},
+        {id:'srv05',eventId:'e10',memberId:'m09',status:'no',respondedAt:past(4)},
+        {id:'srv06',eventId:'e10',memberId:'m11',status:'yes',respondedAt:past(2)},
+      ],
     },
     vendors: [], files: [],
     kcrew: { schedule: kcSchedule },
     chores: { list: choresList, checks: { [kcWeekKey()]: choresChecks } },
     transitionHub,
     notifs: [], agenda: {items:[],archived:[]},
+    announcements: [
+      {id:'ann01',title:'Spring Formal tickets on sale now',body:'Grab your Spring Formal ticket before the RSVP deadline. Buses will pick up from the Chapter House — see the Social Events page for the full schedule.',postedBy:'m01',postedByName:'James Mitchell',postedAt:past(2),pinned:true,expiresAt:future(14)},
+      {id:'ann02',title:'Dues reminder — balance due this week',body:'A few members still have an outstanding balance for this semester. Please settle up with the Treasurer by Friday to avoid a late fee.',postedBy:'m03',postedByName:'Connor Walsh',postedAt:past(5),pinned:false,expiresAt:future(3)},
+      {id:'ann03',title:'Standards Test review session added',body:'New members: an extra review session has been added before the Standards Test. Check the New Member Education page for the date and location.',postedBy:'m16',postedByName:'Mason Evans',postedAt:past(9),pinned:false,expiresAt:null},
+    ],
     settings,
   };
   // fix recruitment rushees

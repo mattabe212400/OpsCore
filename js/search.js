@@ -78,7 +78,7 @@ function gsSearch(q) {
       results.push({
         cat: 'events', id: e.id,
         title: e.title,
-        sub: formatDateShort(e.date) + (e.start?' · '+e.start:'') + (e.location?' · '+e.location:'') + (e.mandatory?' · Required':''),
+        sub: formatDateShort(e.date) + (e.start?' · '+to12h(e.start):'') + (e.location?' · '+e.location:'') + (e.mandatory?' · Required':''),
         action: () => {
           const d = new Date(e.date + 'T12:00:00');
           CAL_YEAR = d.getFullYear(); CAL_MONTH = d.getMonth();

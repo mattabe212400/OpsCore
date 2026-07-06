@@ -1,226 +1,257 @@
 /* OpsCore 2.0 Demo — Operations: Philanthropy, Alumni, Ritual, Vendors, Health Score, Playbooks, Settings */
+// ══════════════════════════════════════════════════
+// PHILANTHROPY (fundraising)
+// ══════════════════════════════════════════════════
+// Events live on the shared D.events calendar (type:'philanthropy' or 'fundraiser') so
+// Philanthropy's event list always matches what's on the Calendar page, not a separate copy.
+function phEvents(){ return (D.events||[]).filter(e=>e.type==='philanthropy'||e.type==='fundraiser'); }
+
 function renderPhilanthropy(){
-  if(!D.philanthropy.funds)D.philanthropy.funds=[];
   const ph=D.philanthropy;
-  const serviceHrs=ph.hours.filter(h=>!h.kind||h.kind==='service').reduce((s,h)=>s+parseFloat(h.hours||0),0);
-  const philoHrs=ph.hours.filter(h=>h.kind==='philanthropy').reduce((s,h)=>s+parseFloat(h.hours||0),0);
-  const totalHrs=serviceHrs+philoHrs;
-  const svcEvs=ph.events.filter(e=>!e.kind||e.kind==='service').length;
-  const phEvs=ph.events.filter(e=>e.kind==='philanthropy'||e.kind==='fundraiser').length;
-  const totalFunds=ph.funds.reduce((s,f)=>s+parseFloat(f.amount||0),0);
-  const mbrCount=new Set(ph.hours.map(h=>h.memberId)).size;
+  const events=phEvents();
+  const funds=ph.funds||[];
+  const totalRaised=Math.round(funds.reduce((s,f)=>s+parseFloat(f.amount||0),0)*100)/100;
+  const avgPerEvent=events.length?Math.round(totalRaised/events.length*100)/100:0;
+  const goal=ph.goals||{events:4,funds:2000};
+  const goalProgress=goal.funds?Math.min(Math.round(totalRaised/goal.funds*100),999):0;
 
   document.getElementById('ph-kpi').innerHTML=
-    kpi('Total Service Hours',serviceHrs.toFixed(1),'Community service',serviceHrs>0?'up':'neutral')+
-    kpi('Service Events',svcEvs,'This semester','neutral')+
-    kpi('Members Participated',mbrCount,'Logged at least one hour','neutral')+
-    kpi('Funds Raised','$'+totalFunds.toLocaleString(),'Philanthropy fundraising',totalFunds>0?'up':'neutral');
+    kpi('Total Funds Raised','$'+totalRaised.toLocaleString(),getSemester(),'neutral')+
+    kpi('Philanthropy Events',events.length,events.length>=goal.events?'Goal met':'Toward '+goal.events+' events',events.length>=goal.events?'up':'neutral')+
+    kpi('Avg Raised / Event','$'+avgPerEvent.toLocaleString(),'Per event','neutral')+
+    kpi('Goal Progress',goalProgress+'%','Toward $'+goal.funds.toLocaleString(),goalProgress>=75?'up':'neutral');
 
-  // Community Service side
-  phRenderServiceGoals();
-  phRenderServiceLeaderboard();
-  phRenderServiceEvents();
-  csFilterHours();
+  const btn=document.getElementById('ph-goal-edit-btn'); if(btn)btn.style.display=canWrite()?'':'none';
+  const addEvBtn=document.getElementById('ph-add-event-btn'); if(addEvBtn)addEvBtn.style.display=canWrite()?'':'none';
+  const logFundsBtn=document.getElementById('ph-log-funds-btn'); if(logFundsBtn)logFundsBtn.style.display=canWrite()?'':'none';
 
-  // Philanthropy side
-  phRenderPhiloGoals();
-  phRenderPhiloLeaderboard();
-  phRenderPhiloEvents();
+  phRenderGoalBars();
+  phRenderChart();
+  phRenderEventRank();
+  phRenderEvents();
   phRenderFundsLog();
+  phRenderOrgs();
+  phRenderVendors();
 }
 
-function phRenderServiceGoals(){
+function phRenderGoalBars(){
   const ph=D.philanthropy;
-  const totalHrs=ph.hours.filter(h=>!h.kind||h.kind==='service').reduce((s,h)=>s+parseFloat(h.hours||0),0);
-  const evCount=ph.events.filter(e=>!e.kind||e.kind==='service').length;
-  const mbrCount=D.members.length||1;
-  // Load stored targets or use defaults
-  if(!ph.serviceTargets)ph.serviceTargets={totalHrs:500,events:6,avgHrs:4};
-  const t=ph.serviceTargets;
-  const goals=[
-    {id:'phg1',label:'Total Service Hours',target:t.totalHrs||500,unit:'hrs',val:totalHrs,key:'totalHrs'},
-    {id:'phg2',label:'Service Events',target:t.events||6,unit:'events',val:evCount,key:'events'},
-    {id:'phg3',label:'Avg Hours / Member',target:t.avgHrs||4,unit:'hrs',val:Math.round(totalHrs/mbrCount*10)/10,key:'avgHrs'},
+  const goal=ph.goals||{events:4,funds:2000};
+  const totalRaised=(ph.funds||[]).reduce((s,f)=>s+parseFloat(f.amount||0),0);
+  const eventsCount=phEvents().length;
+  const bars=[
+    {title:'Funds Raised',cur:Math.round(totalRaised),tgt:goal.funds,prefix:'$'},
+    {title:'Events',cur:eventsCount,tgt:goal.events,prefix:''},
   ];
-  const el=document.getElementById('cs-goal-bars');if(!el)return;
-  el.innerHTML=goals.map(g=>{const p=Math.min(Math.round(g.val/g.target*100),100);
-    return`<div class="pr"><span class="pl">${g.label}</span><div class="pb"><div class="pf" style="width:${p}%;background:${progressColor(p)}"></div></div><span class="pv">${p}%</span></div>
-    <div style="display:flex;align-items:center;gap:6px;margin:-6px 0 8px 148px">
-      <span style="font-size:10px;color:var(--mt)">${g.val} / </span>
-      <input type="number" value="${g.target}" min="1" style="width:52px;height:18px;padding:0 4px;border:1px solid var(--bdr);border-radius:4px;font-size:10px;font-family:inherit;color:var(--tx);outline:none" onchange="phUpdateServiceTarget('${g.key}',+this.value)">
-      <span style="font-size:10px;color:var(--ht)">${g.unit}</span>
-    </div>`;
+  document.getElementById('ph-goal-bars').innerHTML=bars.map(b=>{
+    const p=Math.min(Math.round(b.cur/b.tgt*100)||0,100);
+    return `<div class="pr"><span class="pl">${b.title} (${b.prefix}${b.cur.toLocaleString()}/${b.prefix}${b.tgt.toLocaleString()})</span><div class="pb"><div class="pf" style="width:${p}%;background:${progressColor(p)}"></div></div><span class="pv">${p}%</span></div>`;
   }).join('');
 }
-function phUpdateServiceTarget(key,val){
-  if(!D.philanthropy.serviceTargets)D.philanthropy.serviceTargets={totalHrs:500,events:6,avgHrs:4};
-  D.philanthropy.serviceTargets[key]=val;
-  saveData();phRenderServiceGoals();
+function phOpenGoalEdit(){
+  if(!canWrite()){toast('Only officers with Philanthropy access can edit goals.','error');return;}
+  const goal=D.philanthropy.goals||{events:4,funds:2000};
+  document.getElementById('phg-funds').value=goal.funds||'';
+  document.getElementById('phg-events').value=goal.events||'';
+  document.getElementById('m-ph-goal').classList.add('open');
+}
+async function phSaveGoal(){
+  if(!canWrite())return;
+  const funds=parseFloat(document.getElementById('phg-funds').value)||0;
+  const events=parseFloat(document.getElementById('phg-events').value)||0;
+  D.philanthropy.goals={funds,events};
+  await saveData();
+  closeM(null,document.getElementById('m-ph-goal'));
+  renderPhilanthropy();
+  toast('Goals updated','success');
 }
 
-function phRenderPhiloGoals(){
-  const ph=D.philanthropy;
-  const phEvs=ph.events.filter(e=>e.kind==='philanthropy'||e.kind==='fundraiser').length;
-  const totalFunds=ph.funds.reduce((s,f)=>s+parseFloat(f.amount||0),0);
-  if(!ph.philoTargets)ph.philoTargets={events:4,funds:2000};
-  const t=ph.philoTargets;
-  const goals=[
-    {label:'Philanthropy Events',target:t.events||4,unit:'events',val:phEvs,key:'events'},
-    {label:'Funds Raised',target:t.funds||2000,unit:'$',val:totalFunds,key:'funds'},
-  ];
-  const el=document.getElementById('ph-goal-bars2');if(!el)return;
-  el.innerHTML=goals.map(g=>{const p=Math.min(Math.round(g.val/g.target*100),100);
-    return`<div class="pr"><span class="pl">${g.label}</span><div class="pb"><div class="pf" style="width:${p}%;background:${progressColor(p)}"></div></div><span class="pv">${p}%</span></div>
-    <div style="display:flex;align-items:center;gap:6px;margin:-6px 0 8px 148px">
-      <span style="font-size:10px;color:var(--mt)">${g.unit==='$'?'$'+Math.round(g.val):g.val} / </span>
-      <input type="number" value="${g.target}" min="1" style="width:52px;height:18px;padding:0 4px;border:1px solid var(--bdr);border-radius:4px;font-size:10px;font-family:inherit;color:var(--tx);outline:none" onchange="phUpdatePhiloTarget('${g.key}',+this.value)">
-      <span style="font-size:10px;color:var(--ht)">${g.unit}</span>
-    </div>`;
-  }).join('');
-}
-function phUpdatePhiloTarget(key,val){
-  if(!D.philanthropy.philoTargets)D.philanthropy.philoTargets={events:4,funds:2000};
-  D.philanthropy.philoTargets[key]=val;
-  saveData();phRenderPhiloGoals();
+function phRenderChart(){
+  const funds=D.philanthropy.funds||[];
+  const chartEl=document.getElementById('ph-chart');
+  if(!chartEl)return;
+  if(!funds.length){ chartEl.innerHTML=`<div style="color:var(--ht);font-size:11.5px;padding:10px 0">No funds logged yet.</div>`; return; }
+  const byWeek={};
+  funds.forEach(f=>{
+    if(!f.date)return;
+    const d=new Date(f.date+'T12:00:00');
+    const weekStart=new Date(d); weekStart.setDate(d.getDate()-d.getDay());
+    const key=weekStart.toISOString().split('T')[0];
+    byWeek[key]=(byWeek[key]||0)+parseFloat(f.amount||0);
+  });
+  const weeks=Object.keys(byWeek).sort().slice(-8);
+  chartEl.innerHTML=miniBarChart(weeks.map(w=>({label:new Date(w+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}),val:byWeek[w]})),v=>'$'+Math.round(v).toLocaleString());
 }
 
-function phRenderServiceLeaderboard(){
-  const hoursMap={};D.philanthropy.hours.filter(h=>!h.kind||h.kind==='service').forEach(h=>{hoursMap[h.memberId]=(hoursMap[h.memberId]||0)+parseFloat(h.hours||0);});
-  const sorted=Object.entries(hoursMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const total=Object.values(hoursMap).reduce((a,b)=>a+b,0);
-  const el=document.getElementById('cs-leaderboard');if(!el)return;
-  const tot=document.getElementById('cs-total-hrs');if(tot)tot.textContent=total.toFixed(1)+' hrs total';
-  el.innerHTML=sorted.length?sorted.map(([mid,hrs],i)=>{const m=getMember(mid);
-    return`<div class="sh-row"><div class="sh-av" style="background:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#cd7f32':'var(--gn-bg)'};color:${i<3?'#555':'var(--gn-tx)'};font-size:10px;font-weight:700">${i+1}</div><div style="flex:1"><div style="font-size:12px;font-weight:500">${m.name}</div></div><span style="font-size:13px;font-weight:600;color:var(--gn)">${hrs.toFixed(1)}<span style="font-size:9.5px;font-weight:400;color:var(--ht)"> hrs</span></span></div>`;
-  }).join(''):es('ti-trophy','green','No service hours logged','Log hours to see the leaderboard.','');
+function phRenderEventRank(){
+  const events=phEvents();
+  const funds=D.philanthropy.funds||[];
+  const el=document.getElementById('ph-event-rank');
+  if(!el)return;
+  const totals=events.map(e=>({e,total:funds.filter(f=>f.eventId===e.id).reduce((s,f)=>s+parseFloat(f.amount||0),0)})).sort((a,b)=>b.total-a.total).slice(0,6);
+  if(!totals.length){ el.innerHTML=es('ti-trophy','pink','No events yet','Add an event and log funds to see rankings.',''); return; }
+  const mx=Math.max(...totals.map(t=>t.total),1);
+  el.innerHTML=totals.map(({e,total})=>`
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px"><span style="font-weight:500">${esc(e.title)}</span><span style="color:var(--mt)">$${total.toLocaleString()}</span></div>
+      <div class="pb"><div class="pf" style="width:${Math.round(total/mx*100)}%;background:#c0345a"></div></div>
+    </div>`).join('');
 }
 
-function phRenderPhiloLeaderboard(){
-  const hoursMap={};D.philanthropy.hours.filter(h=>h.kind==='philanthropy').forEach(h=>{hoursMap[h.memberId]=(hoursMap[h.memberId]||0)+parseFloat(h.hours||0);});
-  const sorted=Object.entries(hoursMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const total=Object.values(hoursMap).reduce((a,b)=>a+b,0);
-  const el=document.getElementById('ph-leaderboard2');if(!el)return;
-  const tot=document.getElementById('ph-total-hrs');if(tot)tot.textContent=total.toFixed(1)+' hrs total';
-  el.innerHTML=sorted.length?sorted.map(([mid,hrs],i)=>{const m=getMember(mid);
-    return`<div class="sh-row"><div class="sh-av" style="background:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#cd7f32':'#fbeaf0'};color:${i<3?'#555':'#c0345a'};font-size:10px;font-weight:700">${i+1}</div><div style="flex:1"><div style="font-size:12px;font-weight:500">${m.name}</div></div><span style="font-size:13px;font-weight:600;color:#c0345a">${hrs.toFixed(1)}<span style="font-size:9.5px;font-weight:400;color:var(--ht)"> hrs</span></span></div>`;
-  }).join(''):es('ti-heart','red','No philanthropy hours logged','Log hours to see the leaderboard.','');
-}
-
-function phRenderServiceEvents(){
-  const ev=D.philanthropy.events.filter(e=>!e.kind||e.kind==='service').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
-  const el=document.getElementById('cs-events-table');if(!el)return;
-  el.innerHTML=`<thead><tr><th>Event</th><th>Date</th><th>Org</th><th>Goal</th><th></th></tr></thead><tbody>${ev.length?ev.map(e=>`<tr><td style="font-weight:500">${e.title}</td><td>${formatDateShort(e.date)}</td><td style="color:var(--mt)">${e.org||'—'}</td><td>${e.hourGoal?e.hourGoal+' hrs':'—'}</td><td><button class="btn btn-d" style="height:22px;font-size:10px;padding:0 7px" onclick="deletePhEvent('${e.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--ht);padding:20px">No service events yet.</td></tr>'}</tbody>`;
-}
-
-function phRenderPhiloEvents(){
-  const ev=D.philanthropy.events.filter(e=>e.kind==='philanthropy'||e.kind==='fundraiser').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
-  const el=document.getElementById('ph-events-table2');if(!el)return;
-  el.innerHTML=`<thead><tr><th>Event</th><th>Date</th><th>Type</th><th>Org</th><th></th></tr></thead><tbody>${ev.length?ev.map(e=>`<tr><td style="font-weight:500">${e.title}</td><td>${formatDateShort(e.date)}</td><td><span class="badge bb2">${e.kind||'philanthropy'}</span></td><td style="color:var(--mt)">${e.org||'—'}</td><td><button class="btn btn-d" style="height:22px;font-size:10px;padding:0 7px" onclick="deletePhEvent('${e.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--ht);padding:20px">No philanthropy events yet.</td></tr>'}</tbody>`;
+function phRenderEvents(){
+  const events=phEvents();
+  const canEdit=canWrite();
+  const el=document.getElementById('ph-events-table');
+  if(!el)return;
+  if(!events.length){ el.innerHTML=`<tbody><tr><td>${es('ti-heart','pink','No philanthropy events','Add an event to get started.',canEdit?`<button class="btn btn-p" onclick="phOpenAddEvent()">Add Event</button>`:'')}</td></tr></tbody>`; return; }
+  el.innerHTML=`<thead><tr><th>Event</th><th>Date</th><th>Org</th><th>Fund Goal</th>${canEdit?'<th></th>':''}</tr></thead><tbody>${
+    [...events].sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<tr><td style="font-weight:500">${esc(e.title)}</td><td>${formatDateShort(e.date)}</td><td style="color:var(--mt)">${esc(e.org)||'—'}</td><td>${e.fundGoal?'$'+Number(e.fundGoal).toLocaleString():'—'}</td>${canEdit?`<td><button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="deletePhEvent('${e.id}')" aria-label="Delete"><i class="ti ti-trash"></i></button></td>`:''}</tr>`).join('')
+  }</tbody>`;
 }
 
 function phRenderFundsLog(){
-  const el=document.getElementById('ph-funds-log');if(!el)return;
-  const funds=[...(D.philanthropy.funds||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  if(!funds.length){el.innerHTML=`<div style="padding:12px;text-align:center;font-size:11.5px;color:var(--ht)">No fundraising logged yet. Click "+ Log" to add.</div>`;return;}
-  const total=funds.reduce((s,f)=>s+parseFloat(f.amount||0),0);
-
-  // Per-member donor map
-  const donorMap={};
-  funds.forEach(f=>{
-    if(f.memberId){donorMap[f.memberId]=(donorMap[f.memberId]||0)+parseFloat(f.amount||0);}
-  });
-  const topDonors=Object.entries(donorMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
-
-  let html=`<div style="font-size:11px;font-weight:600;color:var(--gn-tx);margin-bottom:8px">Total Raised: $${total.toLocaleString()}</div>`;
-
-  // Member donor leaderboard
-  if(topDonors.length){
-    html+=`<div style="font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-bottom:5px">Top Member Donors</div>`;
-    html+=topDonors.map(([mid,amt],i)=>{const m=getMember(mid);return`<div class="sh-row"><div class="sh-av" style="background:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#cd7f32':'#fbeaf0'};color:${i<3?'#555':'#c0345a'};font-size:9px;font-weight:700">${i+1}</div><div style="flex:1"><div style="font-size:12px;font-weight:500">${m.name}</div></div><span style="font-size:13px;font-weight:600;color:#c0345a">$${amt.toLocaleString()}</span></div>`;}).join('');
-    html+=`<div style="font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-top:11px;margin-bottom:5px">All Donations</div>`;
-  }
-
-  html+=funds.slice(0,30).map(f=>{
-    const donor=f.memberId?getMember(f.memberId).name:'Chapter / External';
-    return`<div class="fin-pay-row"><div class="fin-pay-icon" style="background:#fbeaf0"><i class="ti ti-coin" style="color:#c0345a"></i></div><div style="flex:1"><div style="font-size:12px;font-weight:500">$${parseFloat(f.amount).toLocaleString()} <span style="font-size:10px;font-weight:400;color:var(--mt)">— ${donor}</span></div><div style="font-size:10.5px;color:var(--mt)">${formatDateShort(f.date)}${f.notes?' · '+f.notes:''}</div></div><button class="btn btn-d" style="height:22px;font-size:10px;padding:0 7px" onclick="deletePhFunds('${f.id}')"><i class="ti ti-trash"></i></button></div>`;
+  const funds=D.philanthropy.funds||[];
+  const canEdit=canWrite();
+  const el=document.getElementById('ph-funds-log');
+  if(!el)return;
+  if(!funds.length){ el.innerHTML=es('ti-coin','pink','No funds logged','Log money raised to track fundraising progress.',''); return; }
+  el.innerHTML=[...funds].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10).map(f=>{
+    const donor=f.memberId?getMember(f.memberId).name:'External / Chapter';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bdr)">
+      <div><div style="font-size:12px;font-weight:500">${esc(donor)}</div><div style="font-size:10.5px;color:var(--ht)">${formatDateShort(f.date)}</div></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:600;color:#c0345a">+$${Number(f.amount||0).toLocaleString()}</span>
+        ${canEdit?`<button class="btn btn-d" style="height:20px;font-size:9px;padding:0 5px" onclick="deletePhFunds('${f.id}')" aria-label="Delete"><i class="ti ti-trash"></i></button>`:''}
+      </div>
+    </div>`;
   }).join('');
-  el.innerHTML=html;
 }
 
-function csFilterHours(){
-  const q=(document.getElementById('cs-search')||{value:''}).value.toLowerCase();
-  const hoursMap={};D.philanthropy.hours.filter(h=>!h.kind||h.kind==='service').forEach(h=>{hoursMap[h.memberId]=(hoursMap[h.memberId]||0)+parseFloat(h.hours||0);});
-  let rows=D.members.map(m=>({m,hrs:hoursMap[m.id]||0}));
-  if(q)rows=rows.filter(r=>r.m.name.toLowerCase().includes(q));
-  rows.sort((a,b)=>b.hrs-a.hrs);
-  const el=document.getElementById('cs-hours-table');if(!el)return;
-  el.innerHTML=`<thead><tr><th>Member</th><th>Class</th><th>Hours</th><th>vs Goal (4h)</th></tr></thead><tbody>${rows.map(({m,hrs})=>{const p=Math.min(Math.round(hrs/4*100),100);return`<tr><td style="font-weight:500">${m.name}</td><td style="color:var(--mt)">${m.classYear}</td><td style="font-weight:600;color:${hrs>=4?'var(--gn)':hrs>0?'var(--navy)':'var(--ht)'}">${hrs.toFixed(1)} hrs</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:60px;height:5px;background:#f0f0ee;border-radius:99px;overflow:hidden"><div style="height:100%;border-radius:99px;background:${progressColor(p)};width:${p}%"></div></div><span style="font-size:10.5px;color:var(--mt)">${p}%</span></div></td></tr>`;}).join('')}</tbody>`;
+function phRenderOrgs(){
+  const orgs=D.philanthropy.organizations||[];
+  const canEdit=canWrite();
+  const el=document.getElementById('ph-orgs-table');
+  if(!el)return;
+  if(!orgs.length){ el.innerHTML=`<tbody><tr><td>${es('ti-building-community','pink','No organizations yet','Add the causes/organizations this chapter supports.','')}</td></tr></tbody>`; return; }
+  el.innerHTML=`<thead><tr><th>Organization</th><th>Contact</th><th>Notes</th>${canEdit?'<th></th>':''}</tr></thead><tbody>${
+    orgs.map(o=>`<tr><td style="font-weight:500">${esc(o.name)}</td><td style="color:var(--mt)">${esc(o.contact)||'—'}</td><td style="color:var(--mt)">${esc(o.notes)||'—'}</td>${canEdit?`<td><button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="phDeleteOrg('${o.id}')" aria-label="Delete"><i class="ti ti-trash"></i></button></td>`:''}</tr>`).join('')
+  }</tbody>`;
 }
 
-function phOpenAddEvent(kind='service'){
-  document.getElementById('ph-ev-kind').value=kind;
-  document.getElementById('ph-addevent-title').childNodes[0].textContent=kind==='service'?'Add Service Event':'Add Philanthropy Event';
-  document.getElementById('ph-ev-type').value=kind==='service'?'service':'philanthropy';
+function phRenderVendors(){
+  const vendors=D.philanthropy.vendors||[];
+  const canEdit=canWrite();
+  const el=document.getElementById('ph-vendors-table');
+  if(!el)return;
+  if(!vendors.length){ el.innerHTML=`<tbody><tr><td>${es('ti-truck-delivery','pink','No vendors or donors yet','Track who is donating or providing what for your events.','')}</td></tr></tbody>`; return; }
+  el.innerHTML=`<thead><tr><th>Name</th><th>Contact</th><th>Contribution</th>${canEdit?'<th></th>':''}</tr></thead><tbody>${
+    vendors.map(v=>`<tr><td style="font-weight:500">${esc(v.name)}</td><td style="color:var(--mt)">${esc(v.contact)||'—'}</td><td style="color:var(--mt)">${esc(v.contribution)||'—'}</td>${canEdit?`<td><button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="phDeleteVendor('${v.id}')" aria-label="Delete"><i class="ti ti-trash"></i></button></td>`:''}</tr>`).join('')
+  }</tbody>`;
+}
+
+// ── ACTIONS ──
+function phOpenAddEvent(){
+  if(!canWrite()){toast('Only officers with Philanthropy access can add events.','error');return;}
+  ['ph-ev-title','ph-ev-date','ph-ev-goal','ph-ev-org','ph-ev-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('ph-ev-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('ph-ev-title').value='';
-  document.getElementById('ph-ev-goal').value='';
-  document.getElementById('ph-ev-org').value='';
-  document.getElementById('ph-ev-notes').value='';
   document.getElementById('m-ph-addevent').classList.add('open');
 }
-function phAddEvent(){
+async function phAddEvent(){
+  if(!canWrite())return;
   const title=document.getElementById('ph-ev-title').value.trim();
   if(!title){toast('Event name is required','error');return;}
-  const kind=document.getElementById('ph-ev-kind').value;
-  D.philanthropy.events.push({id:uid(),title,date:document.getElementById('ph-ev-date').value||new Date().toISOString().split('T')[0],kind,type:document.getElementById('ph-ev-type').value,hourGoal:parseFloat(document.getElementById('ph-ev-goal').value)||0,org:document.getElementById('ph-ev-org').value.trim(),notes:document.getElementById('ph-ev-notes').value.trim()});
-  saveData();closeM(null,document.getElementById('m-ph-addevent'));renderPhilanthropy();toast('Event created','success');
-}
-function phOpenLogHours(kind='service'){
-  document.getElementById('ph-log-kind').value=kind;
-  document.getElementById('ph-loghours-title').childNodes[0].textContent=kind==='service'?'Log Service Hours':'Log Philanthropy Hours';
-  const sel=document.getElementById('ph-log-member');sel.innerHTML=memberSelectOptions();
-  const esel=document.getElementById('ph-log-event');
-  const evs=D.philanthropy.events.filter(e=>kind==='service'?(!e.kind||e.kind==='service'):e.kind==='philanthropy'||e.kind==='fundraiser');
-  esel.innerHTML='<option value="">-- General / Other --</option>'+evs.map(e=>`<option value="${e.id}">${e.title} (${formatDateShort(e.date)})</option>`).join('');
-  document.getElementById('ph-log-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('ph-log-hours').value='';
-  document.getElementById('ph-log-notes').value='';
-  document.getElementById('m-ph-loghours').classList.add('open');
-}
-function phLogHours(){
-  const mid=document.getElementById('ph-log-member').value;
-  const hrs=parseFloat(document.getElementById('ph-log-hours').value);
-  const kind=document.getElementById('ph-log-kind').value;
-  if(!mid||isNaN(hrs)||hrs<=0){toast('Member and valid hours are required','error');return;}
-  D.philanthropy.hours.push({id:uid(),memberId:mid,hours:hrs,kind,eventId:document.getElementById('ph-log-event').value||null,date:document.getElementById('ph-log-date').value,notes:document.getElementById('ph-log-notes').value.trim()});
-  saveData();closeM(null,document.getElementById('m-ph-loghours'));renderPhilanthropy();toast(hrs+' hrs logged for '+getMember(mid).name.split(' ')[0],'success');
+  const event={id:uid(),title,type:document.getElementById('ph-ev-type').value,date:document.getElementById('ph-ev-date').value||new Date().toISOString().split('T')[0],fundGoal:parseFloat(document.getElementById('ph-ev-goal').value)||0,org:document.getElementById('ph-ev-org').value.trim(),notes:document.getElementById('ph-ev-notes').value.trim(),mandatory:false};
+  D.events.push(event);
+  await saveData();
+  closeM(null,document.getElementById('m-ph-addevent'));
+  renderPhilanthropy();
+  if(typeof renderCalendar==='function')renderCalendar();
+  toast('Event added','success');
 }
 function phOpenLogFunds(){
+  if(!canWrite()){toast('Only officers with Philanthropy access can log funds.','error');return;}
+  const memberSel=document.getElementById('pf-member');
+  memberSel.innerHTML='<option value="">— Chapter / External —</option>'+memberSelectOptions();
+  const eventSel=document.getElementById('pf-event');
+  eventSel.innerHTML='<option value="">-- General --</option>'+phEvents().map(e=>`<option value="${e.id}">${esc(e.title)}</option>`).join('');
   document.getElementById('pf-amount').value='';
   document.getElementById('pf-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('pf-notes').value='';
-  const msel=document.getElementById('pf-member');
-  if(msel)msel.innerHTML='<option value="">— Chapter / External —</option>'+D.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-  const esel=document.getElementById('pf-event');
-  const phEvs=D.philanthropy.events.filter(e=>e.kind==='philanthropy'||e.kind==='fundraiser');
-  esel.innerHTML='<option value="">-- General --</option>'+phEvs.map(e=>`<option value="${e.id}">${e.title}</option>`).join('');
   document.getElementById('m-ph-logfunds').classList.add('open');
 }
-function phLogFunds(){
-  const amt=parseFloat(document.getElementById('pf-amount').value);
-  if(isNaN(amt)||amt<=0){toast('Enter a valid amount','error');return;}
-  if(!D.philanthropy.funds)D.philanthropy.funds=[];
-  const memberId=document.getElementById('pf-member')?.value||null;
-  D.philanthropy.funds.push({id:uid(),amount:amt,memberId:memberId||null,date:document.getElementById('pf-date').value,eventId:document.getElementById('pf-event').value||null,notes:document.getElementById('pf-notes').value.trim()});
-  saveData();closeM(null,document.getElementById('m-ph-logfunds'));renderPhilanthropy();toast('$'+amt.toLocaleString()+' logged','success');
+async function phLogFunds(){
+  if(!canWrite())return;
+  const amount=parseFloat(document.getElementById('pf-amount').value);
+  if(!amount||amount<=0){toast('Enter a valid amount','error');return;}
+  const log={id:uid(),amount,memberId:document.getElementById('pf-member').value||null,date:document.getElementById('pf-date').value||new Date().toISOString().split('T')[0],eventId:document.getElementById('pf-event').value||null,notes:document.getElementById('pf-notes').value.trim()};
+  D.philanthropy.funds.push(log);
+  await saveData();
+  closeM(null,document.getElementById('m-ph-logfunds'));
+  renderPhilanthropy();
+  toast('$'+amount.toLocaleString()+' logged','success');
 }
-// Legacy stubs for old code references
-function phTab(){}
-function renderPhOverview(){}
-function renderPhEvents(){}
-function renderPhHours(){}
-function phFilterHours(){}
-function phOpenAdd(){phOpenAddEvent('service');}
+function phOpenAddOrg(){
+  if(!canWrite()){toast('Only officers with Philanthropy access can add organizations.','error');return;}
+  ['ph-org-name','ph-org-contact','ph-org-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('m-ph-addorg').classList.add('open');
+}
+async function phAddOrg(){
+  if(!canWrite())return;
+  const name=document.getElementById('ph-org-name').value.trim();
+  if(!name){toast('Organization name is required','error');return;}
+  const org={id:uid(),name,contact:document.getElementById('ph-org-contact').value.trim(),notes:document.getElementById('ph-org-notes').value.trim()};
+  D.philanthropy.organizations.push(org);
+  await saveData();
+  closeM(null,document.getElementById('m-ph-addorg'));
+  renderPhilanthropy();
+  toast('Organization added','success');
+}
+async function phDeleteOrg(id){
+  if(!canWrite())return;
+  const ok=await confirmDialog('Remove Organization','Remove this organization?');
+  if(!ok)return;
+  D.philanthropy.organizations=D.philanthropy.organizations.filter(o=>o.id!==id);
+  await saveData();
+  renderPhilanthropy();
+  toast('Organization removed','info');
+}
+function phOpenAddVendor(){
+  if(!canWrite()){toast('Only officers with Philanthropy access can add vendors.','error');return;}
+  ['ph-vd-name','ph-vd-contact','ph-vd-contribution','ph-vd-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('m-ph-addvendor').classList.add('open');
+}
+async function phAddVendor(){
+  if(!canWrite())return;
+  const name=document.getElementById('ph-vd-name').value.trim();
+  if(!name){toast('Vendor/donor name is required','error');return;}
+  const vendor={id:uid(),name,contact:document.getElementById('ph-vd-contact').value.trim(),contribution:document.getElementById('ph-vd-contribution').value.trim(),notes:document.getElementById('ph-vd-notes').value.trim()};
+  D.philanthropy.vendors.push(vendor);
+  await saveData();
+  closeM(null,document.getElementById('m-ph-addvendor'));
+  renderPhilanthropy();
+  toast('Vendor added','success');
+}
+async function phDeleteVendor(id){
+  if(!canWrite())return;
+  const ok=await confirmDialog('Remove Vendor','Remove this vendor/donor?');
+  if(!ok)return;
+  D.philanthropy.vendors=D.philanthropy.vendors.filter(v=>v.id!==id);
+  await saveData();
+  renderPhilanthropy();
+  toast('Vendor removed','info');
+}
+function phExport(){
+  const funds=D.philanthropy.funds||[];
+  const events=phEvents();
+  let csv='Donor,Amount,Event,Date,Notes\n';
+  funds.forEach(f=>{
+    const ev=events.find(e=>e.id===f.eventId);
+    const donor=f.memberId?getMember(f.memberId).name:'External / Chapter';
+    csv+=`${donor},${f.amount},${ev?ev.title:'General'},${f.date},${(f.notes||'').replace(/,/g,';')}\n`;
+  });
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='philanthropy_fundraising.csv';a.click();
+}
 
 
 // ══════════════════════════════════════════════════
@@ -310,21 +341,306 @@ function alLogContact(){
 }
 
 // ══════════════════════════════════════════════════
-// RITUAL & EDUCATION
+// CHAPLAIN HUB (page key stays 'ritual') — Bible study, brotherhood events, ritual checklist
 // ══════════════════════════════════════════════════
+// Anyone who can access this page can edit it — matches how this page already worked (no
+// separate edit-tier existed here before), so viewer is the only role that gets a restricted,
+// read-only view (approved/upcoming events + next Bible study only, no costs/owner/notes).
+function chFull(){ return !!CURRENT_USER && CURRENT_USER.role!=='viewer'; }
+function chBibleStudies(){ return D.chaplainHub.bibleStudies||[]; }
+function chEvents(){ return D.chaplainHub.events||[]; }
+function chTasks(){ return D.chaplainHub.tasks||[]; }
+function chDaysAgo(dateStr){ if(!dateStr)return Infinity; return (Date.now()-new Date(dateStr+'T12:00:00').getTime())/86400000; }
+
+const CH_EVENT_TYPES=[{v:'movie',l:'Movie Night'},{v:'golf',l:'Golf'},{v:'bags',l:'Bags Tournament'},{v:'meal',l:'Brotherhood Meal'},{v:'sports',l:'Sports/Rec'},{v:'retreat',l:'Retreat'},{v:'custom',l:'Other'}];
+function chEventTypeLabel(v){ return (CH_EVENT_TYPES.find(t=>t.v===v)||{}).l||v||'Other'; }
+const CH_PLANNING_STATUSES=[{v:'idea',l:'Idea',c:'bm2'},{v:'planning',l:'Planning',c:'ba2'},{v:'scheduled',l:'Scheduled',c:'bb2'},{v:'completed',l:'Completed',c:'bg2'}];
+function chStatusLabel(v){ return (CH_PLANNING_STATUSES.find(s=>s.v===v)||{}).l||v; }
+function chStatusClass(v){ return (CH_PLANNING_STATUSES.find(s=>s.v===v)||{}).c||'bm2'; }
+const CH_BS_STATUSES=[{v:'planned',l:'Planned',c:'bb2'},{v:'completed',l:'Completed',c:'bg2'},{v:'canceled',l:'Canceled',c:'br2'}];
+function chBsStatusLabel(v){ return (CH_BS_STATUSES.find(s=>s.v===v)||{}).l||v; }
+function chBsStatusClass(v){ return (CH_BS_STATUSES.find(s=>s.v===v)||{}).c||'bm2'; }
+const CH_MEMBER_VISIBLE_EVENT_STATUSES=['scheduled','completed'];
+const CH_QUICK_TASKS=['Confirm venue','Create signup form','Announce event','Collect RSVPs','Follow up with members','Record attendance','Add reflection notes'];
+
 function renderRitual(){
-  const ri=D.ritual;
-  const total=ri.items.length;const done=ri.items.filter(i=>i.done).length;
-  const required=ri.items.filter(i=>i.required);const reqDone=required.filter(i=>i.done).length;
-  const sessions=ri.sessions.length;
+  const full=chFull();
+  const fullEl=document.getElementById('ch-full-view');
+  const memberEl=document.getElementById('ch-member-view');
+  const actionsEl=document.getElementById('ch-full-actions');
+  if(fullEl)fullEl.style.display=full?'':'none';
+  if(memberEl)memberEl.style.display=full?'none':'';
+  if(actionsEl)actionsEl.style.display=full?'':'none';
+  if(full){
+    chRenderKpis();
+    chRenderBibleStudies();
+    chRenderEvents();
+    chRenderKanban();
+    chRenderAnalytics();
+    chRenderTasks();
+    riRenderProgram();
+  }else{
+    chRenderMemberView();
+  }
+}
+
+function chRenderKpis(){
+  const today=new Date().toISOString().split('T')[0];
+  const events=chEvents(); const studies=chBibleStudies();
+  const upcomingEvents=events.filter(e=>e.date>=today && e.planningStatus!=='completed');
+  const activeEventPlans=events.filter(e=>['idea','planning','scheduled'].includes(e.planningStatus));
+  const completedEvents=events.filter(e=>e.planningStatus==='completed');
+  const rated=completedEvents.filter(e=>e.rating!=null);
+  const avgRating=rated.length?(rated.reduce((s,e)=>s+Number(e.rating),0)/rated.length).toFixed(1):null;
+  const recentStudies=studies.filter(s=>s.status==='completed' && s.attendanceCount!=null && chDaysAgo(s.date)<=90);
+  const bsAvgAtt=recentStudies.length?Math.round(recentStudies.reduce((s,x)=>s+Number(x.attendanceCount),0)/recentStudies.length):null;
+  const roster=D.members.length||1;
+  const engagementSamples=[...recentStudies.map(s=>Number(s.attendanceCount)),...completedEvents.filter(e=>e.actualAttendance!=null && chDaysAgo(e.date)<=90).map(e=>Number(e.actualAttendance))];
+  const engagementPct=engagementSamples.length?Math.round((engagementSamples.reduce((a,b)=>a+b,0)/engagementSamples.length)/roster*100):null;
   document.getElementById('ri-kpi').innerHTML=
-    kpi('Ritual Items',total,done+' completed','neutral')+
-    kpi('Required',required.length,reqDone+' / '+required.length+' done',reqDone===required.length&&required.length>0?'up':'neutral')+
-    kpi('Sessions',sessions,'Scheduled','neutral')+
-    kpi('New Members',D.members.filter(m=>m.classYear==='Freshman'||m.classYear==='New Member').length,'In program','neutral');
-  riRenderProgram();
-  riRenderMembers();
-  riRenderSchedule();
+    kpi('Upcoming Brotherhood Events',upcomingEvents.length,'On the calendar','neutral')+
+    kpi('Bible Study Attendance',bsAvgAtt!=null?bsAvgAtt:'—',bsAvgAtt!=null?'Avg, last 90 days':'No completed studies yet','neutral')+
+    kpi('Active Event Plans',activeEventPlans.length,'Idea + Planning + Scheduled','neutral')+
+    kpi('Member Engagement',engagementPct!=null?engagementPct+'%':'—',engagementPct!=null?'Of roster, last 90 days':'No recent data yet',engagementPct!=null?(engagementPct>=50?'up':'down'):'neutral')+
+    kpi('Past Events Completed',completedEvents.length,'All-time','neutral')+
+    kpi('Avg Event Rating',avgRating!=null?avgRating+'/5':'—',rated.length?rated.length+' rated event'+(rated.length!==1?'s':''):'No ratings yet','neutral');
+}
+
+function chRenderBibleStudies(){
+  const el=document.getElementById('ch-bs-table'); if(!el)return;
+  const list=[...chBibleStudies()].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!list.length){ el.innerHTML=`<tbody><tr><td>${es('ti-book-2','pink','No Bible studies yet','Plan your first Bible study session.','<button class="btn btn-p" onclick="chOpenAddBibleStudy()">Add Bible Study</button>')}</td></tr></tbody>`; return; }
+  el.innerHTML=`<thead><tr><th>Date</th><th>Topic</th><th>Scripture</th><th>Attendance</th><th>Status</th><th></th></tr></thead><tbody>${
+    list.map(s=>`<tr>
+      <td>${formatDateShort(s.date)}${s.time?' '+to12h(s.time):''}</td>
+      <td style="font-weight:500">${s.topic||'—'}</td>
+      <td>${s.scripture||'—'}</td>
+      <td>${s.attendanceCount!=null?s.attendanceCount:'—'}</td>
+      <td><span class="badge ${chBsStatusClass(s.status)}">${chBsStatusLabel(s.status)}</span></td>
+      <td style="white-space:nowrap"><button class="btn" style="height:22px;font-size:10px;padding:0 6px" onclick="chOpenEditBibleStudy('${s.id}')"><i class="ti ti-edit"></i></button> <button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="chDeleteBibleStudy('${s.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('')
+  }</tbody>`;
+}
+function chOpenAddBibleStudy(){
+  document.getElementById('ch-bs-id').value='';
+  document.getElementById('ch-bs-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('ch-bs-time').value='';document.getElementById('ch-bs-topic').value='';document.getElementById('ch-bs-scripture').value='';
+  document.getElementById('ch-bs-questions').value='';document.getElementById('ch-bs-attendance').value='';document.getElementById('ch-bs-notes').value='';
+  document.getElementById('ch-bs-status').value='planned';
+  document.getElementById('m-ch-biblestudy').classList.add('open');
+}
+function chOpenEditBibleStudy(id){
+  const s=chBibleStudies().find(x=>x.id===id); if(!s)return;
+  document.getElementById('ch-bs-id').value=s.id;
+  document.getElementById('ch-bs-date').value=s.date||'';document.getElementById('ch-bs-time').value=s.time||'';
+  document.getElementById('ch-bs-topic').value=s.topic||'';document.getElementById('ch-bs-scripture').value=s.scripture||'';
+  document.getElementById('ch-bs-questions').value=s.discussionQuestions||'';
+  document.getElementById('ch-bs-attendance').value=s.attendanceCount!=null?s.attendanceCount:'';
+  document.getElementById('ch-bs-notes').value=s.notes||'';document.getElementById('ch-bs-status').value=s.status||'planned';
+  document.getElementById('m-ch-biblestudy').classList.add('open');
+}
+async function chSaveBibleStudy(){
+  const id=document.getElementById('ch-bs-id').value;
+  const date=document.getElementById('ch-bs-date').value;
+  const topic=document.getElementById('ch-bs-topic').value.trim();
+  if(!date||!topic){toast('Date and topic are required','error');return;}
+  const fields={date,time:document.getElementById('ch-bs-time').value,topic,scripture:document.getElementById('ch-bs-scripture').value.trim(),discussionQuestions:document.getElementById('ch-bs-questions').value.trim(),attendanceCount:document.getElementById('ch-bs-attendance').value===''?null:parseInt(document.getElementById('ch-bs-attendance').value),notes:document.getElementById('ch-bs-notes').value.trim(),status:document.getElementById('ch-bs-status').value};
+  if(id){const s=chBibleStudies().find(x=>x.id===id);if(s)Object.assign(s,fields);}
+  else D.chaplainHub.bibleStudies.push({id:uid(),...fields});
+  await saveData();closeM(null,document.getElementById('m-ch-biblestudy'));renderRitual();toast(id?'Bible study updated':'Bible study added','success');
+}
+async function chDeleteBibleStudy(id){
+  const ok=await confirmDialog('Delete Bible Study','Delete this Bible study?');if(!ok)return;
+  D.chaplainHub.bibleStudies=D.chaplainHub.bibleStudies.filter(x=>x.id!==id);
+  await saveData();renderRitual();toast('Bible study deleted','info');
+}
+
+function chRenderEvents(){
+  const el=document.getElementById('ch-events-table'); if(!el)return;
+  const list=[...chEvents()].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!list.length){ el.innerHTML=`<tbody><tr><td>${es('ti-users-group','pink','No brotherhood events yet','Plan a movie night, golf outing, or other morale event.','<button class="btn btn-p" onclick="chOpenAddEvent()">Add Event</button>')}</td></tr></tbody>`; return; }
+  el.innerHTML=`<thead><tr><th>Name</th><th>Type</th><th>Date</th><th>Location</th><th>Est. Cost</th><th>Attendance</th><th>Status</th><th>Rating</th><th></th></tr></thead><tbody>${
+    list.map(e=>`<tr>
+      <td style="font-weight:500">${e.name}</td><td>${chEventTypeLabel(e.type)}</td><td>${formatDateShort(e.date)}</td><td>${e.location||'—'}</td>
+      <td>${e.estCost!=null?'$'+Number(e.estCost).toLocaleString():'—'}</td>
+      <td>${e.actualAttendance!=null?e.actualAttendance:(e.expectedAttendance!=null?'~'+e.expectedAttendance+' exp.':'—')}</td>
+      <td><span class="badge ${chStatusClass(e.planningStatus)}">${chStatusLabel(e.planningStatus)}</span></td>
+      <td>${e.rating!=null?e.rating+'/5':'—'}</td>
+      <td style="white-space:nowrap"><button class="btn" style="height:22px;font-size:10px;padding:0 6px" onclick="chOpenEditEvent('${e.id}')"><i class="ti ti-edit"></i></button> <button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="chDeleteEvent('${e.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('')
+  }</tbody>`;
+}
+function chEventTypeOptions(sel){ return CH_EVENT_TYPES.map(t=>`<option value="${t.v}" ${sel===t.v?'selected':''}>${t.l}</option>`).join(''); }
+function chStatusOptions(sel){ return CH_PLANNING_STATUSES.map(s=>`<option value="${s.v}" ${sel===s.v?'selected':''}>${s.l}</option>`).join(''); }
+function chToggleEventCompletedFields(){
+  const wrap=document.getElementById('ch-ev-completed-fields');
+  if(wrap)wrap.style.display=document.getElementById('ch-ev-status').value==='completed'?'':'none';
+}
+function chOpenAddEvent(){
+  document.getElementById('ch-ev-id').value='';document.getElementById('ch-ev-name').value='';
+  document.getElementById('ch-ev-type').innerHTML=chEventTypeOptions('movie');
+  document.getElementById('ch-ev-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('ch-ev-time').value='';document.getElementById('ch-ev-location').value='';
+  document.getElementById('ch-ev-cost').value='';document.getElementById('ch-ev-expected').value='';document.getElementById('ch-ev-actual').value='';
+  document.getElementById('ch-ev-status').innerHTML=chStatusOptions('idea');
+  document.getElementById('ch-ev-owner').innerHTML='<option value="">Unassigned</option>'+sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  document.getElementById('ch-ev-notes').value='';document.getElementById('ch-ev-rating').value='';document.getElementById('ch-ev-reflection').value='';
+  chToggleEventCompletedFields();
+  document.getElementById('m-ch-event').classList.add('open');
+}
+function chOpenEditEvent(id){
+  const e=chEvents().find(x=>x.id===id); if(!e)return;
+  document.getElementById('ch-ev-id').value=e.id;document.getElementById('ch-ev-name').value=e.name;
+  document.getElementById('ch-ev-type').innerHTML=chEventTypeOptions(e.type);
+  document.getElementById('ch-ev-date').value=e.date||'';document.getElementById('ch-ev-time').value=e.time||'';
+  document.getElementById('ch-ev-location').value=e.location||'';
+  document.getElementById('ch-ev-cost').value=e.estCost!=null?e.estCost:'';
+  document.getElementById('ch-ev-expected').value=e.expectedAttendance!=null?e.expectedAttendance:'';
+  document.getElementById('ch-ev-actual').value=e.actualAttendance!=null?e.actualAttendance:'';
+  document.getElementById('ch-ev-status').innerHTML=chStatusOptions(e.planningStatus);
+  document.getElementById('ch-ev-owner').innerHTML='<option value="">Unassigned</option>'+sortedMembers().map(m=>`<option value="${m.id}" ${e.owner===m.id?'selected':''}>${m.name}</option>`).join('');
+  document.getElementById('ch-ev-notes').value=e.notes||'';
+  document.getElementById('ch-ev-rating').value=e.rating!=null?e.rating:'';document.getElementById('ch-ev-reflection').value=e.reflection||'';
+  chToggleEventCompletedFields();
+  document.getElementById('m-ch-event').classList.add('open');
+}
+async function chSaveEvent(){
+  const id=document.getElementById('ch-ev-id').value;
+  const name=document.getElementById('ch-ev-name').value.trim();
+  const date=document.getElementById('ch-ev-date').value;
+  if(!name||!date){toast('Name and date are required','error');return;}
+  const fields={name,type:document.getElementById('ch-ev-type').value,date,time:document.getElementById('ch-ev-time').value,location:document.getElementById('ch-ev-location').value.trim(),estCost:document.getElementById('ch-ev-cost').value===''?null:parseFloat(document.getElementById('ch-ev-cost').value),expectedAttendance:document.getElementById('ch-ev-expected').value===''?null:parseInt(document.getElementById('ch-ev-expected').value),actualAttendance:document.getElementById('ch-ev-actual').value===''?null:parseInt(document.getElementById('ch-ev-actual').value),planningStatus:document.getElementById('ch-ev-status').value,owner:document.getElementById('ch-ev-owner').value||null,notes:document.getElementById('ch-ev-notes').value.trim(),rating:document.getElementById('ch-ev-rating').value===''?null:parseInt(document.getElementById('ch-ev-rating').value),reflection:document.getElementById('ch-ev-reflection').value.trim()};
+  if(id){const e=chEvents().find(x=>x.id===id);if(e)Object.assign(e,fields);}
+  else D.chaplainHub.events.push({id:uid(),...fields});
+  await saveData();closeM(null,document.getElementById('m-ch-event'));renderRitual();toast(id?'Event updated':'Event added','success');
+}
+async function chDeleteEvent(id){
+  const ok=await confirmDialog('Delete Event','Delete this brotherhood event?');if(!ok)return;
+  D.chaplainHub.events=D.chaplainHub.events.filter(x=>x.id!==id);
+  await saveData();renderRitual();toast('Event deleted','info');
+}
+
+let CH_DRAG_ID=null;
+function chRenderKanban(){
+  const kanban=document.getElementById('ch-kanban'); if(!kanban)return;
+  kanban.innerHTML=CH_PLANNING_STATUSES.map(stage=>{
+    const items=chEvents().filter(e=>e.planningStatus===stage.v);
+    return `<div class="rc-col">
+      <div class="rc-col-head" style="border-top-color:${stage.v==='completed'?'var(--gn)':stage.v==='scheduled'?'var(--sky)':stage.v==='planning'?'var(--am)':'#9CA3AF'}">
+        <span style="font-size:11.5px;font-weight:500">${stage.l}</span><span style="font-size:10.5px;color:var(--mt)">${items.length}</span>
+      </div>
+      <div class="rc-col-body rc-col-drop" id="chkd-${stage.v}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="chDrop(event,'${stage.v}')">
+        ${items.map(e=>`<div class="rc-card" draggable="true" id="chkc-${e.id}" ondragstart="chDragStart('${e.id}')" ondragend="document.querySelectorAll('.rc-col-drop').forEach(c=>c.classList.remove('drag-over'))" onclick="chOpenEditEvent('${e.id}')">
+          <div style="font-size:12px;font-weight:500;margin-bottom:4px">${e.name}</div>
+          <div style="font-size:10.5px;color:var(--mt)">${chEventTypeLabel(e.type)} · ${formatDateShort(e.date)}</div>
+          <div style="font-size:10px;color:var(--ht);margin-top:3px">${e.owner?getMember(e.owner).name.split(' ')[0]:'Unassigned'}</div>
+        </div>`).join('')||`<div style="padding:14px;text-align:center;font-size:11px;color:var(--ht)">Drop here</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+function chDragStart(id){ CH_DRAG_ID=id; }
+async function chDrop(event,stage){
+  event.preventDefault(); event.currentTarget.classList.remove('drag-over');
+  if(!CH_DRAG_ID)return;
+  const e=chEvents().find(x=>x.id===CH_DRAG_ID); CH_DRAG_ID=null;
+  if(!e||e.planningStatus===stage)return;
+  e.planningStatus=stage;
+  await saveData();renderRitual();toast(e.name+' moved to '+chStatusLabel(stage),'success');
+}
+
+function chRenderAnalytics(){
+  const byTypeEl=document.getElementById('ch-chart-type');
+  if(byTypeEl){
+    const withAtt=chEvents().filter(e=>e.actualAttendance!=null);
+    const types=[...new Set(withAtt.map(e=>e.type))];
+    if(!types.length){byTypeEl.innerHTML=`<div style="color:var(--ht);font-size:11.5px;padding:10px 0">No completed events with recorded attendance yet.</div>`;}
+    else{const pts=types.map(t=>{const inT=withAtt.filter(e=>e.type===t);return{label:chEventTypeLabel(t),val:Math.round(inT.reduce((s,e)=>s+Number(e.actualAttendance),0)/inT.length)};});byTypeEl.innerHTML=miniBarChart(pts,v=>v+' avg');}
+  }
+  const bsTrendEl=document.getElementById('ch-chart-bstrend');
+  if(bsTrendEl){
+    const withAtt=chBibleStudies().filter(s=>s.status==='completed'&&s.attendanceCount!=null).sort((a,b)=>a.date.localeCompare(b.date)).slice(-8);
+    if(!withAtt.length){bsTrendEl.innerHTML=`<div style="color:var(--ht);font-size:11.5px;padding:10px 0">No completed Bible studies with recorded attendance yet.</div>`;}
+    else{bsTrendEl.innerHTML=miniBarChart(withAtt.map(s=>({label:formatDateShort(s.date),val:Number(s.attendanceCount)})),v=>v);}
+  }
+  const byMonthEl=document.getElementById('ch-chart-month');
+  if(byMonthEl){
+    const completed=chEvents().filter(e=>e.planningStatus==='completed');
+    if(!completed.length){byMonthEl.innerHTML=`<div style="color:var(--ht);font-size:11.5px;padding:10px 0">No completed events yet.</div>`;}
+    else{const byMonth={};completed.forEach(e=>{const mo=(e.date||'').slice(0,7);if(!mo)return;byMonth[mo]=(byMonth[mo]||0)+1;});const months=Object.keys(byMonth).sort();byMonthEl.innerHTML=miniBarChart(months.map(mo=>({label:new Date(mo+'-01T12:00:00').toLocaleDateString('en-US',{month:'short'}),val:byMonth[mo]})),v=>v+' event'+(v!==1?'s':''));}
+  }
+  const engTrendEl=document.getElementById('ch-chart-engagement');
+  if(engTrendEl){
+    const roster=D.members.length||1;
+    const samples=[...chBibleStudies().filter(s=>s.status==='completed'&&s.attendanceCount!=null).map(s=>({date:s.date,val:Number(s.attendanceCount)})),...chEvents().filter(e=>e.planningStatus==='completed'&&e.actualAttendance!=null).map(e=>({date:e.date,val:Number(e.actualAttendance)}))];
+    if(samples.length<2){engTrendEl.innerHTML=`<div style="color:var(--ht);font-size:11.5px;padding:10px 0">Not enough attendance history yet.</div>`;}
+    else{const byMonth={};samples.forEach(s=>{const mo=(s.date||'').slice(0,7);if(!mo)return;if(!byMonth[mo])byMonth[mo]=[];byMonth[mo].push(s.val);});const months=Object.keys(byMonth).sort();const pts=months.map(mo=>({label:new Date(mo+'-01T12:00:00').toLocaleDateString('en-US',{month:'short'}),val:Math.min(100,Math.round((byMonth[mo].reduce((a,b)=>a+b,0)/byMonth[mo].length)/roster*100))}));engTrendEl.innerHTML=miniBarChart(pts,v=>v+'%');}
+  }
+}
+
+function chRenderTasks(){
+  const chipsEl=document.getElementById('ch-quick-chips');
+  if(chipsEl && !chipsEl._built){chipsEl.innerHTML=CH_QUICK_TASKS.map(l=>`<span class="rc-tag" onclick="chQuickAddTask('${l.replace(/'/g,"\\'")}')" style="cursor:pointer">+ ${l}</span>`).join('');chipsEl._built=true;}
+  const el=document.getElementById('ch-tasks-list'); if(!el)return;
+  const list=chTasks();
+  if(!list.length){el.innerHTML=es('ti-list-check','pink','No pending actions','Add a follow-up task or use a quick-add chip below.','');return;}
+  const sorted=[...list].sort((a,b)=>(a.done===b.done?0:a.done?1:-1)||(a.dueDate||'').localeCompare(b.dueDate||''));
+  el.innerHTML=sorted.map(t=>{
+    const linked=t.linkedType==='event'?chEvents().find(x=>x.id===t.linkedId):t.linkedType==='bibleStudy'?chBibleStudies().find(x=>x.id===t.linkedId):null;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr)">
+      <div class="tc ${t.done?'done':''}" onclick="chToggleTask('${t.id}')">${t.done?'<i class="ti ti-check" style="font-size:9px"></i>':''}</div>
+      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;${t.done?'text-decoration:line-through;color:var(--mt)':''}">${t.label}${linked?' <span style="color:var(--ht);font-weight:400">— '+(t.linkedType==='event'?linked.name:linked.topic||'Bible Study')+'</span>':''}</div>
+      <div style="font-size:10px;color:var(--ht)">${t.assignedTo?getMember(t.assignedTo).name:'Unassigned'}${t.dueDate?' · Due '+formatDateShort(t.dueDate):''}</div></div>
+      <button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="chDeleteTask('${t.id}')"><i class="ti ti-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+async function chQuickAddTask(label){
+  D.chaplainHub.tasks.push({id:uid(),label,linkedType:null,linkedId:null,assignedTo:null,dueDate:null,done:false});
+  await saveData();chRenderTasks();toast('Task added','success');
+}
+function chOpenAddTask(){
+  document.getElementById('ch-tk-label').value='';
+  const linkSel=document.getElementById('ch-tk-linked');
+  linkSel.innerHTML='<option value="">None</option>'+chEvents().map(e=>`<option value="event:${e.id}">Event — ${e.name}</option>`).join('')+chBibleStudies().map(s=>`<option value="bibleStudy:${s.id}">Bible Study — ${s.topic||formatDateShort(s.date)}</option>`).join('');
+  document.getElementById('ch-tk-assigned').innerHTML='<option value="">Unassigned</option>'+sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  document.getElementById('ch-tk-due').value='';
+  document.getElementById('m-ch-task').classList.add('open');
+}
+async function chSaveTask(){
+  const label=document.getElementById('ch-tk-label').value.trim();
+  if(!label){toast('Task label is required','error');return;}
+  const linkedRaw=document.getElementById('ch-tk-linked').value;
+  const [linkedType,linkedId]=linkedRaw?linkedRaw.split(':'):[null,null];
+  D.chaplainHub.tasks.push({id:uid(),label,linkedType:linkedType||null,linkedId:linkedId||null,assignedTo:document.getElementById('ch-tk-assigned').value||null,dueDate:document.getElementById('ch-tk-due').value||null,done:false});
+  await saveData();closeM(null,document.getElementById('m-ch-task'));chRenderTasks();toast('Task added','success');
+}
+async function chToggleTask(id){
+  const t=chTasks().find(x=>x.id===id); if(!t)return;
+  t.done=!t.done; await saveData();chRenderTasks();
+}
+async function chDeleteTask(id){
+  D.chaplainHub.tasks=D.chaplainHub.tasks.filter(x=>x.id!==id);
+  await saveData();chRenderTasks();
+}
+
+function chRenderMemberView(){
+  const el=document.getElementById('ch-member-content'); if(!el)return;
+  const today=new Date().toISOString().split('T')[0];
+  const nextStudy=[...chBibleStudies()].filter(s=>s.status==='planned'&&s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const visibleEvents=[...chEvents()].filter(e=>CH_MEMBER_VISIBLE_EVENT_STATUSES.includes(e.planningStatus)).sort((a,b)=>a.date.localeCompare(b.date));
+  el.innerHTML=`
+    <div class="card" style="margin-bottom:11px">
+      <div class="card-hd"><span class="card-t">Next Bible Study</span></div>
+      ${nextStudy?`<div style="font-size:13px;font-weight:500">${nextStudy.topic||'Bible Study'}</div><div style="font-size:11px;color:var(--mt)">${formatDateShort(nextStudy.date)}${nextStudy.time?' at '+to12h(nextStudy.time):''}</div>`:es('ti-book-2','pink','Nothing scheduled yet','Check back soon for the next Bible study.','')}
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-t">Upcoming &amp; Recent Brotherhood Events</span></div>
+      ${visibleEvents.length?visibleEvents.map(e=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr)">
+        <div><div style="font-size:12px;font-weight:500">${e.name}</div><div style="font-size:10.5px;color:var(--ht)">${chEventTypeLabel(e.type)} · ${formatDateShort(e.date)}${e.location?' · '+e.location:''}</div></div>
+        <span class="badge ${chStatusClass(e.planningStatus)}">${chStatusLabel(e.planningStatus)}</span>
+      </div>`).join(''):es('ti-users-group','pink','No events yet','Check back soon for brotherhood events.','')}
+    </div>`;
 }
 function riRenderProgram(){
   const items=D.ritual.items;const done=items.filter(i=>i.done).length;
@@ -374,36 +690,6 @@ async function riDeleteItem(id){
   D.ritual.items=D.ritual.items.filter(i=>i.id!==id);
   saveData();riRenderProgram();renderRitual();toast('Item removed','info');
 }
-function riRenderMembers(){
-  const nms=D.members.filter(m=>m.classYear==='Sophomore'||m.classYear==='Freshman');
-  const req=D.ritual.items.filter(i=>i.required);
-  const el=document.getElementById('ri-members-table');if(!el)return;
-  el.innerHTML=`<thead><tr><th>Member</th><th>Class</th><th>Required Items</th><th>Status</th></tr></thead><tbody>${nms.length?nms.map(m=>{const prog=D.ritual.nmProgress[m.id]||{};const done=req.filter(i=>prog[i.id]).length;const pct=req.length?Math.round(done/req.length*100):0;return`<tr><td style="font-weight:500">${m.name}</td><td>${m.classYear}</td><td><div style="display:flex;align-items:center;gap:7px"><div style="width:80px;height:5px;background:#f0f0ee;border-radius:99px;overflow:hidden"><div style="height:100%;background:${progressColor(pct)};border-radius:99px;width:${pct}%"></div></div><span style="font-size:10.5px">${done}/${req.length}</span></div></td><td><span class="badge ${pct===100?'bg2':pct>=50?'ba2':'bm2'}">${pct===100?'Complete':pct>=50?'In Progress':'Not Started'}</span></td></tr>`;}).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--ht);padding:24px">No new members found. Members with class year Sophomore or Freshman appear here.</td></tr>'}</tbody>`;
-}
-function riRenderSchedule(){
-  const sess=D.ritual.sessions;
-  const el=document.getElementById('ri-schedule-table');if(!el)return;
-  if(!sess.length){el.innerHTML=`<thead><tr><th>Session</th><th>Date</th><th>Type</th><th>Facilitator</th><th>Notes</th><th></th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;color:var(--ht);padding:24px">No sessions scheduled. Add one to get started.</td></tr></tbody>`;return;}
-  el.innerHTML=`<thead><tr><th>Session</th><th>Date</th><th>Type</th><th>Facilitator</th><th>Notes</th><th></th></tr></thead><tbody>${sess.sort((a,b)=>b.date.localeCompare(a.date)).map(s=>{const fac=getMember(s.facilitatorId);return`<tr><td style="font-weight:500">${s.title}</td><td>${formatDateShort(s.date)}</td><td><span class="badge ${s.type==='ritual'?'br2':s.type==='test'?'ba2':'bb2'}">${s.type}</span></td><td>${fac.name}</td><td style="color:var(--mt);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.notes||'—'}</td><td style="white-space:nowrap"><button class="btn" style="height:24px;font-size:11px;padding:0 7px;margin-right:4px" onclick="riOpenEditSession('${s.id}')"><i class="ti ti-pencil"></i></button><button class="btn btn-d" style="height:24px;font-size:11px;padding:0 7px" onclick="riDeleteSession('${s.id}')"><i class="ti ti-trash"></i></button></td></tr>`;}).join('')}</tbody>`;
-}
-function riOpenEditSession(id){
-  const s=D.ritual.sessions.find(x=>x.id===id);if(!s)return;
-  const fsel=document.getElementById('ris-facilitator');fsel.innerHTML=D.members.map(m=>`<option value="${m.id}">${m.name}${m.role!=='Member'?' — '+m.role:''}</option>`).join('');
-  document.getElementById('ris-title').value=s.title;
-  document.getElementById('ris-date').value=s.date;
-  document.getElementById('ris-type').value=s.type;
-  fsel.value=s.facilitatorId;
-  document.getElementById('ris-notes').value=s.notes||'';
-  document.getElementById('ris-id').value=id;
-  document.getElementById('m-ri-addsession').querySelector('.md-t').childNodes[0].textContent='Edit Session';
-  document.getElementById('m-ri-addsession').classList.add('open');
-}
-async function riDeleteSession(id){
-  const ok=await confirmDialog('Delete Session','Remove this session from the schedule?');
-  if(!ok)return;
-  D.ritual.sessions=D.ritual.sessions.filter(s=>s.id!==id);
-  saveData();riRenderSchedule();renderRitual();toast('Session removed','info');
-}
 function riOpenAddItem(){
   ['ri-item-title','ri-item-desc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('ri-item-week').value='';
@@ -419,23 +705,6 @@ function riAddItem(){
   if(editId){const item=D.ritual.items.find(i=>i.id===editId);if(item)Object.assign(item,data);}
   else D.ritual.items.push({id:uid(),...data,done:false});
   saveData();closeM(null,document.getElementById('m-ri-additem'));renderRitual();toast(editId?'Item updated':'Item added','success');
-}
-function riOpenAddSession(){
-  const fsel=document.getElementById('ris-facilitator');fsel.innerHTML=D.members.filter(m=>m.role!=='Member').map(m=>`<option value="${m.id}">${m.name} — ${m.role}</option>`).join('');
-  document.getElementById('ris-date').value=new Date().toISOString().split('T')[0];
-  ['ris-title','ris-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  document.getElementById('ris-id').value='';
-  document.getElementById('m-ri-addsession').querySelector('.md-t').childNodes[0].textContent='Add Education Session';
-  document.getElementById('m-ri-addsession').classList.add('open');
-}
-function riAddSession(){
-  const title=document.getElementById('ris-title').value.trim();
-  if(!title){toast('Title is required','error');return;}
-  const editId=document.getElementById('ris-id').value;
-  const data={title,date:document.getElementById('ris-date').value,type:document.getElementById('ris-type').value,facilitatorId:document.getElementById('ris-facilitator').value,notes:document.getElementById('ris-notes').value.trim()};
-  if(editId){const s=D.ritual.sessions.find(x=>x.id===editId);if(s)Object.assign(s,data);}
-  else D.ritual.sessions.push({id:uid(),...data});
-  saveData();closeM(null,document.getElementById('m-ri-addsession'));riRenderSchedule();renderRitual();toast(editId?'Session updated':'Session added','success');
 }
 
 // ══════════════════════════════════════════════════
@@ -527,10 +796,11 @@ async function vnDelete(id){
 // ══════════════════════════════════════════════════
 // CHAPTER HEALTH SCORECARD
 // ══════════════════════════════════════════════════
-function renderHealthScore(){
+// Single source of truth for the health score — used by this page's own scorecard AND by the
+// Chapter Intelligence Center's Overview tab, so the two pages can never disagree on the number.
+function computeHealthDims(){
   const tot=D.members.length||1;
   const avg=Math.round(D.members.reduce((s,m)=>s+getAttendanceRate(m.id),0)/tot);
-  const openT=D.tasks.filter(t=>t.status!=='done').length;
   const doneT=D.tasks.filter(t=>t.status==='done').length;
   const taskPct=D.tasks.length?Math.round(doneT/D.tasks.length*100):50;
   const openCases=D.cases.filter(c=>!['resolved','dismissed'].includes(c.status)).length;
@@ -543,7 +813,7 @@ function renderHealthScore(){
   const finScore=D.members.length?Math.round(paidCount/D.members.length*100):50;
   const rushees=D.recruitment?.rushees||[];
   const recruitScore=Math.min(100,Math.round((rushees.length/30)*100));
-  const phHrs=D.philanthropy?.hours?.reduce((s,h)=>s+parseFloat(h.hours||0),0)||0;
+  const phHrs=D.communityService?.hours?.reduce((s,h)=>s+parseFloat(h.hours||0),0)||0;
   const phScore=Math.min(100,Math.round((phHrs/500)*100));
   const alumCount=D.alumni?.contacts?.length||0;
   const alumScore=Math.min(100,Math.round((alumCount/20)*100));
@@ -558,8 +828,12 @@ function renderHealthScore(){
     {k:'Philanthropy',icon:'ti-heart',v:phScore,w:.07,desc:phHrs.toFixed(0)+' service hours logged',target:75,color:'#e05fa0'},
     {k:'Alumni',icon:'ti-users-group',v:alumScore,w:.05,desc:alumCount+' alumni in directory',target:70,color:'#0ea5a0'},
   ];
-
   const score=Math.round(dims.reduce((s,d)=>s+d.v*d.w,0));
+  return {score, dims, avg, doneT, openCases, taskPct, finScore, paidCount, phHrs, alumCount};
+}
+
+function renderHealthScore(){
+  const {score, dims, avg, doneT, openCases, taskPct, finScore, paidCount, phHrs, alumCount}=computeHealthDims();
   const scoreColor=score>=80?'var(--gn)':score>=65?'var(--navy)':score>=50?'var(--am)':'var(--rd)';
   const grade=score>=90?'A':score>=80?'B':score>=70?'C':score>=60?'D':'F';
   const gradeStyle=score>=80?'background:var(--gn-bg);color:var(--gn-tx)':score>=65?'background:var(--bl-bg);color:var(--bl-tx)':score>=50?'background:var(--am-bg);color:var(--am-tx)':'background:var(--rd-bg);color:var(--rd-tx)';

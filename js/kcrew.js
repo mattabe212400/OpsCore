@@ -122,7 +122,7 @@ function renderKcrew(){
 
 function renderKcSchedule(){
   const ro=!canEditKcrew();
-  const memberOpts=()=>['<option value="">— Unassigned —</option>',...D.members.map(m=>`<option value="${m.id}">${m.name}</option>`)].join('');
+  const memberOpts=()=>['<option value="">— Unassigned —</option>',...sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`)].join('');
   const selStyle=`width:100%;font-size:11.5px;padding:4px 6px;border:1px solid var(--bdr);border-radius:5px;outline:none;font-family:inherit;background:var(--surf);color:var(--tx)${ro?';opacity:.6;cursor:not-allowed':''}`;
 
   let html='';

@@ -73,9 +73,18 @@ document.addEventListener('keydown', e => {
   }
 });
 
-const PAGE_TITLES={dashboard:'Executive Dashboard',attendance:'Attendance',finance:'Finance',calendar:'Calendar',tasks:'Tasks & Goals',notes:'Meeting Notes',judicial:'Judicial Board',sober:'Social Monitor Scheduling',members:'Members',recruitment:'Recruitment CRM',academics:'Academics',committees:'Committees',analytics:'Analytics & Reporting',files:'Files & Documents',notifications:'Notifications',transition:'Officer Transition Hub',settings:'Settings',philanthropy:'Philanthropy & Service',alumni:'Alumni Relations',ritual:'Ritual & Education',vendors:'Vendors & Contacts',healthscore:'Chapter Health Scorecard',kcrew:'House Management',reports:'Reports'};
+const PAGE_TITLES={dashboard:'Executive Dashboard',attendance:'Attendance',finance:'Finance',calendar:'Calendar',tasks:'Tasks & Goals',notes:'Meeting Notes',judicial:'Judicial Board',sober:'Social Monitor Scheduling',members:'Members',recruitment:'Recruitment CRM',academics:'Academics',committees:'Committees',analytics:'Analytics & Reporting',files:'Files & Documents',notifications:'Notifications',transition:'Officer Transition Hub',settings:'Settings',philanthropy:'Philanthropy',communityService:'Community Service',alumni:'Alumni Relations',ritual:'Chaplain Hub',newMemberEducation:'New Member Education',social:'Social Events',vendors:'Vendors & Contacts',healthscore:'Chapter Health Scorecard',kcrew:'House Management',reports:'Reports'};
 
 function getMember(id){if(!id)return{name:'Unassigned',initials:'—'};return D.members.find(m=>m.id===id)||{name:'Unknown',initials:'??'};}
+// Names are stored "First Last" — surname is the last whitespace-separated token.
+function lastName(name){const parts=(name||'').trim().split(/\s+/).filter(Boolean);return parts.length?parts[parts.length-1]:'';}
+function memberNameCompare(a,b){return lastName(a.name).localeCompare(lastName(b.name))||(a.name||'').localeCompare(b.name||'');}
+// Canonical last-name-alphabetical member list — roster dropdowns/tables should read from this
+// instead of D.members directly, so ordering never leaks raw insertion order.
+function sortedMembers(){return [...D.members].sort(memberNameCompare);}
+// "HH:MM" 24-hour (from <input type="time">) -> 12-hour with AM/PM. Passes already-formatted
+// strings (like the seed data's "7:00 PM") through unchanged.
+function to12h(t){if(!t)return'';const[h,m]=t.split(':').map(Number);if(isNaN(h)||isNaN(m))return t;const p=h>=12?'PM':'AM';return(h%12||12)+':'+String(m).padStart(2,'0')+' '+p;}
 function formatDate(d){if(!d)return'—';try{return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch{return'—';}}
 function formatDateShort(d){if(!d)return'—';try{return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch{return'—';}}
 function dayOfMonth(d){if(!d)return'';try{return new Date(d+'T12:00:00').getDate();}catch{return'';}}
@@ -115,8 +124,8 @@ function getAttendanceTrend(memberId){
   return'stable';
 }
 function getTaskMetrics(id){const all=D.tasks.filter(t=>t.assignedTo===id);const dn=all.filter(t=>t.status==='done');return{total:all.length,done:dn.length,rate:all.length?Math.round(dn.length/all.length*100):0};}
-function memberSelectOptions(){return D.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');}
-function eventCategoryStyle(t){const m={chapter:'background:#e8eef7;color:#1a3a6b',exec:'background:#f0f0ee;color:#555',recruitment:'background:var(--gn-bg);color:var(--gn-tx)',philanthropy:'background:#fbeaf0;color:#993556',brotherhood:'background:var(--am-bg);color:var(--am-tx)',retreat:'background:var(--gn-bg);color:var(--gn-tx)',mandatory:'background:var(--rd-bg);color:var(--rd-tx)'};return m[t]||'background:#f0f0ee;color:#555';}
+function memberSelectOptions(){return sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');}
+function eventCategoryStyle(t){const m={chapter:'background:#e8eef7;color:#1a3a6b',exec:'background:#f0f0ee;color:#555',recruitment:'background:var(--gn-bg);color:var(--gn-tx)',philanthropy:'background:#fbeaf0;color:#993556',service:'background:var(--gn-bg);color:var(--gn-tx)',fundraiser:'background:#fbeaf0;color:#993556',social:'background:var(--rd-bg);color:var(--rd-tx)',brotherhood:'background:var(--am-bg);color:var(--am-tx)',retreat:'background:var(--gn-bg);color:var(--gn-tx)',mandatory:'background:var(--rd-bg);color:var(--rd-tx)'};return m[t]||'background:#f0f0ee;color:#555';}
 
 // ── SIDEBAR RESPONSIVE ──
 function sbOpen(){
@@ -149,7 +158,7 @@ function nav(page,el){
     attendance:[{id:'a-kpi',html:skKpi(4)},{id:'a-table',html:skRows(6,5)}],
     calendar:[{id:'cal-grid',html:skCalendar()}],
     notes:[{id:'notes-g',html:skCards(4)}],
-    analytics:[{id:'an-kpi',html:skKpi(4)},{id:'an-eng',html:skRows(4,2)},{id:'an-officers',html:skRows(5,4)}],
+    analytics:[{id:'ci-kpi',html:skKpi(6)}],
     files:[{id:'fi-folders',html:Array(8).fill(0).map(()=>`<div class="sk-card" style="height:90px"></div>`).join('')}],
     committees:[{id:'co-grid',html:Array(3).fill(0).map(()=>`<div class="sk-card" style="height:110px"></div>`).join('')}],
     transition:[{id:'tr-folders',html:Array(6).fill(0).map(()=>`<div class="sk-card" style="height:100px"></div>`).join('')}],
@@ -187,7 +196,7 @@ async function addMem(){
   const name=document.getElementById('nm-n').value.trim();
   if(!name){toast('Name is required','error');return;}
   const ini=name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  const member={id:uid(),name,year:+document.getElementById('nm-y').value,classYear:document.getElementById('nm-c').value,liveIn:document.getElementById('nm-l').value==='1',role:'Member',initials:ini};
+  const member={id:uid(),name,year:+document.getElementById('nm-y').value,classYear:document.getElementById('nm-c').value,liveIn:document.getElementById('nm-l').value==='1',memberStatus:document.getElementById('nm-status').value,role:'Member',initials:ini};
   D.members.push(member);
   try{
     await saveData();
@@ -521,6 +530,7 @@ function openEditMember(id){
   document.getElementById('em-c').value=m.classYear;
   document.getElementById('em-l').value=m.liveIn?'1':'0';
   document.getElementById('em-r').value=m.role;
+  document.getElementById('em-status').value=m.memberStatus||'Active';
   el.classList.add('open');
 }
 async function saveMember(){
@@ -529,10 +539,11 @@ async function saveMember(){
   const m=D.members.find(m=>m.id===id);if(!m)return;
   const name=document.getElementById('em-n').value.trim();
   if(!name){toast('Name is required','error');return;}
-  const prev={name:m.name,year:m.year,classYear:m.classYear,liveIn:m.liveIn,role:m.role,initials:m.initials};
+  const prev={name:m.name,year:m.year,classYear:m.classYear,liveIn:m.liveIn,role:m.role,initials:m.initials,memberStatus:m.memberStatus};
   m.name=name;m.year=+document.getElementById('em-y').value;
   m.classYear=document.getElementById('em-c').value;m.liveIn=document.getElementById('em-l').value==='1';
   m.role=document.getElementById('em-r').value;
+  m.memberStatus=document.getElementById('em-status').value;
   m.initials=name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
   try{
     await saveData();
@@ -790,7 +801,7 @@ function handleSI(input){
 }
 function filterA(){const q=document.getElementById('a-search').value.toLowerCase();document.querySelectorAll('#a-table tbody tr').forEach(tr=>tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none');}
 function filterN(){const q=document.getElementById('n-search').value.toLowerCase();document.querySelectorAll('#notes-g>div').forEach(el=>el.style.display=el.textContent.toLowerCase().includes(q)?'':'none');}
-function filterM(){const q=document.getElementById('m-search').value.toLowerCase();document.querySelectorAll('#m-table tbody tr').forEach(tr=>tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none');}
+function filterM(){renderMembers();}
 function xport(type){
   let data='',fn='export.csv';
   if(type==='members'){data='Name,Class Year,Grad Year,Role,Live-In\n';D.members.forEach(m=>{data+=m.name+','+m.classYear+','+m.year+','+m.role+','+(m.liveIn?'Yes':'No')+'\n';});fn='members.csv';}
@@ -813,6 +824,13 @@ function xport(type){
   }
   else if(type==='all'){const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ato_ops_data.json';a.click();return;}
   const blob=new Blob([data],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click();
+}
+
+// Reusable inline mini bar chart — {label,val}[] plus a value formatter for the tooltip.
+function miniBarChart(pts,fmt){
+  const mx=Math.max(...pts.map(p=>p.val),1);
+  return `<div class="mch">${pts.map(p=>`<div class="mb" style="height:${Math.max(4,Math.round(p.val/mx*100))}%;background:var(--sky)" title="${p.label}: ${fmt(p.val)}"></div>`).join('')}</div>
+  <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--ht)">${pts.map(p=>`<span>${p.label}</span>`).join('')}</div>`;
 }
 
 function kpi(label,val,sub,trend){

@@ -17,11 +17,12 @@ function openImportModal(type) {
   if (!allowed) { toast('You do not have permission to import this data.', 'error'); return; }
   _importType = type;
   _importRows = [];
-  const titles = { members: 'Import Members', grades: 'Import Grades', tasks: 'Import Tasks' };
+  const titles = { members: 'Import Members', grades: 'Import Grades', tasks: 'Import Tasks', mentorAgenda: 'Import Mentor Program Agenda' };
   const instructions = {
     members: `Upload a CSV with these columns (header row required):<br><strong>Name</strong> (required), <em>Grad Year</em>, <em>Class Year</em>, <em>Role</em>, <em>Live In</em>, <em>Major</em>, <em>Email</em>, <em>Phone</em>, <em>Hometown</em><br><span style="color:var(--ht)">Toggle "Update existing members" below to overwrite info for names already in the roster.</span>`,
     grades:  `Upload a CSV with these columns (header row required):<br><strong>Name</strong> (required), <em>Cumulative GPA</em>, <em>Semester GPA</em><br><span style="color:var(--ht)">Members must already exist in the roster. Unmatched names are skipped.</span>`,
     tasks:   `Upload a CSV with these columns (header row required):<br><strong>Title</strong> (required), <em>Assigned To</em>, <em>Priority</em>, <em>Due Date</em>, <em>Description</em><br><span style="color:var(--ht)">Tasks with matching titles already on the board are skipped. "Assigned To" must match a member name.</span>`,
+    mentorAgenda: `Upload a CSV with these columns (header row required):<br><strong>Week</strong> (required), <strong>Topic</strong> (required), <em>Discussion Points</em><br><span style="color:var(--ht)">This replaces the entire existing agenda — it's meant for uploading the full week-by-week curriculum at once, not appending single weeks.</span>`,
   };
   document.getElementById('imp-title').textContent = titles[type] || 'Import';
   document.getElementById('imp-instructions').innerHTML = instructions[type] || '';
@@ -121,6 +122,7 @@ function impPreview(text) {
 
   _importRows = _importType === 'members' ? impBuildMemberRows(rows, preview)
     : _importType === 'tasks' ? impBuildTaskRows(rows, preview)
+    : _importType === 'mentorAgenda' ? impBuildMentorAgendaRows(rows, preview)
     : impBuildGradeRows(rows, preview);
 
   if (_importRows.length > 0) {
@@ -289,6 +291,36 @@ function impBuildTaskRows(rows, previewEl) {
   return toAdd;
 }
 
+function impBuildMentorAgendaRows(rows, previewEl) {
+  const toAdd = [], skipped = [];
+  rows.forEach(row => {
+    const weekRaw = impCol(row, 'week', 'week #', 'week number');
+    const topic = impCol(row, 'topic', 'title', 'subject');
+    const week = parseInt(weekRaw);
+    if (!week || !topic) { skipped.push('(missing week or topic)'); return; }
+    const notes = impCol(row, 'discussion points', 'discussion', 'notes', 'details');
+    toAdd.push({ id: uid(), week, topic, notes });
+  });
+  toAdd.sort((a, b) => a.week - b.week);
+
+  let html = '';
+  if (toAdd.length) {
+    html += `<div style="font-size:12px;font-weight:600;color:var(--gn);margin-bottom:6px">${toAdd.length} week${toAdd.length !== 1 ? 's' : ''} to import — this replaces the entire existing agenda:</div>`;
+    html += `<div style="max-height:220px;overflow-y:auto;border:1px solid var(--bdr);border-radius:7px"><table style="width:100%;border-collapse:collapse;font-size:11.5px">`;
+    html += `<thead><tr style="background:var(--surf2)"><th style="padding:5px 8px;text-align:left;width:50px">Week</th><th style="padding:5px 8px;text-align:left">Topic</th><th style="padding:5px 8px;text-align:left">Discussion Points</th></tr></thead><tbody>`;
+    toAdd.forEach((a, i) => {
+      const bg = i % 2 === 0 ? 'var(--surf)' : 'var(--surf2)';
+      html += `<tr style="background:${bg}"><td style="padding:5px 8px;font-weight:600">${a.week}</td><td style="padding:5px 8px;font-weight:500">${esc(a.topic)}</td><td style="padding:5px 8px;color:var(--mt)">${esc(a.notes||'—')}</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+  if (skipped.length) {
+    html += `<div style="font-size:11.5px;color:var(--ht);margin-top:8px"><strong>${skipped.length} skipped:</strong> ${skipped.map(s => esc(s)).join('; ')}</div>`;
+  }
+  previewEl.innerHTML = html;
+  return toAdd;
+}
+
 // ── COMMIT ──
 
 async function doImport() {
@@ -316,6 +348,11 @@ async function doImport() {
       renderTasks();
       renderDash();
       toast(`${_importRows.length} task${_importRows.length !== 1 ? 's' : ''} imported (demo — not persisted)`, 'success');
+    } else if (_importType === 'mentorAgenda') {
+      D.newMemberEducation.mentorProgramAgenda = _importRows;
+      saveData();
+      if (typeof renderNewMemberEducation === 'function') renderNewMemberEducation();
+      toast(`Agenda imported: ${_importRows.length} week${_importRows.length !== 1 ? 's' : ''} (demo — not persisted)`, 'success');
     } else {
       if (!D.academics) D.academics = {};
       if (!D.academics.gpas) D.academics.gpas = {};
@@ -347,6 +384,19 @@ function impDownloadTemplate(type) {
   } else if (type === 'tasks') {
     csv = 'Title,Assigned To,Priority,Due Date,Description\nPlan Fall Kickoff,Sam Rivera,high,2026-09-01,Coordinate venue and activities with Social Chair\nOrder Chapter T-Shirts,Jordan Blake,medium,2026-08-20,Use size chart from last year';
     filename = 'tasks_template.csv';
+  } else if (type === 'mentorAgenda') {
+    csv = 'Week,Topic,Discussion Points\n'
+      + '1,Welcome & Expectations,Icebreakers; why you joined; set expectations for the semester\n'
+      + '2,Fraternity History & Founding Values,Review founding principles and what brotherhood means to you\n'
+      + '3,Time Management & Academic Success,Study habits; campus resources; balancing classes and chapter life\n'
+      + '4,Brotherhood & Building Relationships,Getting to know brothers outside your pledge class\n'
+      + '5,Risk Management & Personal Responsibility,Chapter risk policies; making smart decisions\n'
+      + '6,Community Service & Philanthropy,Upcoming service opportunities; why philanthropy matters\n'
+      + '7,Financial Responsibility,Dues; budgeting; the chapter\'s finances\n'
+      + '8,Leadership & Getting Involved,Committees and ways to get involved beyond new member status\n'
+      + '9,Alumni Relations,Staying connected after graduation\n'
+      + '10,Reflection & Initiation Prep,Reflect on the semester; what full membership means';
+    filename = 'mentor_program_agenda_template.csv';
   } else {
     csv = 'Name,Cumulative GPA,Semester GPA\nSam Rivera,3.45,3.20\nJordan Blake,2.89,3.10';
     filename = 'grades_template.csv';

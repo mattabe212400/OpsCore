@@ -15,6 +15,9 @@ function renderDash(){
     kpi('Open Tasks',openT,ovT>0?ovT+' overdue':'All on track',ovT>0?'down':'neutral')+
     kpi('Active Cases',cas,cas>0?'Requires attention':'No open cases',cas?'down':'neutral');
 
+  // ── ANNOUNCEMENTS ──
+  dashRenderAnnouncements();
+
   // ── INTELLIGENCE ALERTS ──
   dashBuildAlerts(avg);
 
@@ -29,7 +32,7 @@ function renderDash(){
 
   // ── SOBER BROS ──
   const ws=D.shifts.filter(s=>isUpcoming(s.date)).slice(0,4);
-  document.getElementById('d-sober').innerHTML=ws.map(s=>{const m=s.memberId?getMember(s.memberId):null;return`<div class="sh-row"><div class="sh-av">${m?m.initials:'??'}</div><div style="flex:1"><div style="font-size:12px;font-weight:500;color:${m?'var(--tx)':'var(--rd)'}">${m?m.name:'Unassigned'}</div><div style="font-size:10.5px;color:var(--ht)">${formatDateShort(s.date)} · ${s.start}</div></div><span class="dot ${!m?'dr':s.confirmed?'dg':'da'}"></span></div>`;}).join('')||es('ti-shield-check','green','No shifts scheduled','Shifts appear here.',`<button class="btn" onclick="rbacNav('sober',null)">View schedule</button>`);
+  document.getElementById('d-sober').innerHTML=ws.map(s=>{const m=s.memberId?getMember(s.memberId):null;return`<div class="sh-row"><div class="sh-av">${m?m.initials:'??'}</div><div style="flex:1"><div style="font-size:12px;font-weight:500;color:${m?'var(--tx)':'var(--rd)'}">${m?m.name:'Unassigned'}</div><div style="font-size:10.5px;color:var(--ht)">${formatDateShort(s.date)} · ${to12h(s.start)}</div></div><span class="dot ${!m?'dr':s.confirmed?'dg':'da'}"></span></div>`;}).join('')||es('ti-shield-check','green','No shifts scheduled','Shifts appear here.',`<button class="btn" onclick="rbacNav('sober',null)">View schedule</button>`);
 
   // ── OFFICER ACCOUNTABILITY TABLE (legacy hidden) ──
   const offs=D.members.filter(m=>m.role!=='Member');
@@ -232,7 +235,7 @@ function dashBuildEvents(){
       <div class="ev-dt"><div class="ev-day">${dayOfMonth(e.date)}</div><div class="ev-mo">${monthShort(e.date)}</div></div>
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.title}</div>
-        <div style="font-size:10.5px;color:var(--mt);margin-top:1px">${e.start||'TBD'}${e.location?' · '+e.location:''}</div>
+        <div style="font-size:10.5px;color:var(--mt);margin-top:1px">${to12h(e.start)||'TBD'}${e.location?' · '+e.location:''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
         <span class="d-countdown ${cls}"><i class="ti ti-clock" style="font-size:9px"></i>${cdLabel}</span>
@@ -285,6 +288,123 @@ function dashBuildFeed(){
     </div>
     <div style="font-size:9.5px;color:var(--ht);flex-shrink:0">${a.time?formatDateShort(a.time):''}</div>
   </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// ANNOUNCEMENTS — lead-posted, shown on the Dashboard (the one page every role has, viewer
+// included), so a time-sensitive broadcast is guaranteed to actually be seen. Not a page of its
+// own — a widget, since the whole point is nobody has to go looking for it.
+// ══════════════════════════════════════════════
+function annIsLead(){ return !!CURRENT_USER && ['President','Vice President','admin'].includes(CURRENT_USER.role); }
+function annVisible(){
+  const today=new Date().toISOString().split('T')[0];
+  return (D.announcements||[]).filter(a=>!a.expiresAt||a.expiresAt>=today).sort((a,b)=>{
+    if(!!a.pinned!==!!b.pinned) return a.pinned?-1:1;
+    return b.postedAt.localeCompare(a.postedAt);
+  });
+}
+function dashRenderAnnouncements(){
+  const el=document.getElementById('d-announcements'); if(!el)return;
+  const canEdit=annIsLead();
+  const addBtn=document.getElementById('d-ann-add-btn'); if(addBtn)addBtn.style.display=canEdit?'':'none';
+  const all=annVisible();
+  const viewAllBtn=document.getElementById('d-ann-viewall-btn'); if(viewAllBtn)viewAllBtn.style.display=all.length>3?'':'none';
+  const top=all.slice(0,3);
+  if(!top.length){
+    el.innerHTML=es('ti-speakerphone','blue','No announcements','Nothing posted right now.','');
+    return;
+  }
+  el.innerHTML=top.map(a=>`
+    <div class="al-row">
+      <div class="al-ic" style="background:${a.pinned?'var(--am-bg)':'var(--bl-bg)'};color:${a.pinned?'var(--am-tx)':'var(--bl-tx)'}"><i class="ti ${a.pinned?'ti-pin':'ti-speakerphone'}"></i></div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="font-size:12.5px;font-weight:600">${esc(a.title)}</div>
+          ${a.pinned?'<span class="badge ba2" style="font-size:8.5px">Pinned</span>':''}
+        </div>
+        <div style="font-size:11px;color:var(--mt);margin-top:2px;white-space:pre-wrap">${esc((a.body||'').slice(0,140))}${(a.body||'').length>140?'…':''}</div>
+        <div style="font-size:10px;color:var(--ht);margin-top:3px">${esc(a.postedByName||'—')} · ${formatDateShort(a.postedAt.split('T')[0])}</div>
+      </div>
+      ${canEdit?`<div style="display:flex;gap:4px;flex-shrink:0">
+        <button class="ib" style="width:22px;height:22px;font-size:11px" onclick="annOpenEdit('${a.id}')" aria-label="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="ib" style="width:22px;height:22px;font-size:11px;color:var(--rd)" onclick="annDelete('${a.id}')" aria-label="Delete"><i class="ti ti-trash"></i></button>
+      </div>`:''}
+    </div>`).join('');
+}
+function annOpenAdd(){
+  if(!annIsLead()){toast('Only the President or Vice President can post announcements.','error');return;}
+  ['ann-title','ann-body'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('ann-pinned').checked=false;
+  document.getElementById('ann-expires').value='';
+  document.getElementById('ann-id').value='';
+  document.getElementById('m-announcement').querySelector('.md-t').childNodes[0].textContent='New Announcement';
+  document.getElementById('m-announcement').classList.add('open');
+}
+function annOpenEdit(id){
+  if(!annIsLead())return;
+  const a=D.announcements.find(x=>x.id===id); if(!a)return;
+  document.getElementById('ann-title').value=a.title;
+  document.getElementById('ann-body').value=a.body;
+  document.getElementById('ann-pinned').checked=!!a.pinned;
+  document.getElementById('ann-expires').value=a.expiresAt||'';
+  document.getElementById('ann-id').value=id;
+  document.getElementById('m-announcement').querySelector('.md-t').childNodes[0].textContent='Edit Announcement';
+  document.getElementById('m-announcement').classList.add('open');
+}
+async function annSave(){
+  if(!annIsLead())return;
+  const title=document.getElementById('ann-title').value.trim();
+  const body=document.getElementById('ann-body').value.trim();
+  if(!title||!body){toast('Title and message are required','error');return;}
+  const editId=document.getElementById('ann-id').value;
+  const pinned=document.getElementById('ann-pinned').checked;
+  const expiresAt=document.getElementById('ann-expires').value||null;
+  let isNew=false, ann;
+  if(editId){
+    ann=D.announcements.find(a=>a.id===editId);
+    if(ann)Object.assign(ann,{title,body,pinned,expiresAt});
+  } else {
+    isNew=true;
+    ann={id:uid(),title,body,postedBy:CURRENT_USER?.mid||null,postedByName:CURRENT_USER?.name||CURRENT_USER?.email||'Officer',postedAt:new Date().toISOString(),pinned,expiresAt};
+    D.announcements.unshift(ann);
+  }
+  await saveData();
+  closeM(null,document.getElementById('m-announcement'));
+  dashRenderAnnouncements();
+  toast(isNew?'Announcement posted':'Announcement updated','success');
+}
+async function annDelete(id){
+  if(!annIsLead())return;
+  const ok=await confirmDialog('Delete Announcement','Remove this announcement for everyone?');
+  if(!ok)return;
+  D.announcements=D.announcements.filter(a=>a.id!==id);
+  await saveData();
+  dashRenderAnnouncements();
+  toast('Announcement deleted','info');
+}
+function annOpenAll(){
+  const canEdit=annIsLead();
+  const all=[...(D.announcements||[])].sort((a,b)=>{
+    if(!!a.pinned!==!!b.pinned) return a.pinned?-1:1;
+    return b.postedAt.localeCompare(a.postedAt);
+  });
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('ann-all-list').innerHTML = all.length ? all.map(a=>{
+    const expired = a.expiresAt && a.expiresAt<today;
+    return `<div class="al-row" style="${expired?'opacity:.55':''}">
+      <div class="al-ic" style="background:${a.pinned?'var(--am-bg)':'var(--bl-bg)'};color:${a.pinned?'var(--am-tx)':'var(--bl-tx)'}"><i class="ti ${a.pinned?'ti-pin':'ti-speakerphone'}"></i></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12.5px;font-weight:600">${esc(a.title)}${expired?' <span style="font-size:9.5px;color:var(--ht);font-weight:400">(expired)</span>':''}</div>
+        <div style="font-size:11px;color:var(--mt);margin-top:2px;white-space:pre-wrap">${esc(a.body||'')}</div>
+        <div style="font-size:10px;color:var(--ht);margin-top:3px">${esc(a.postedByName||'—')} · ${formatDateShort(a.postedAt.split('T')[0])}${a.expiresAt?' · Expires '+formatDateShort(a.expiresAt):''}</div>
+      </div>
+      ${canEdit?`<div style="display:flex;gap:4px;flex-shrink:0">
+        <button class="ib" style="width:22px;height:22px;font-size:11px" onclick="closeM(null,document.getElementById('m-ann-all'));annOpenEdit('${a.id}')" aria-label="Edit"><i class="ti ti-pencil"></i></button>
+        <button class="ib" style="width:22px;height:22px;font-size:11px;color:var(--rd)" onclick="annDelete('${a.id}')" aria-label="Delete"><i class="ti ti-trash"></i></button>
+      </div>`:''}
+    </div>`;
+  }).join('') : `<div style="text-align:center;color:var(--ht);padding:20px;font-size:12px">No announcements yet.</div>`;
+  document.getElementById('m-ann-all').classList.add('open');
 }
 
 

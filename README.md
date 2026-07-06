@@ -13,27 +13,30 @@
 
 ---
 
-## 23 Operational Modules
+## 26 Operational Modules
 
 | Module | What it does |
 |---|---|
-| **Dashboard** | Chapter Health Score (0–100), KPI ring, upcoming events, overdue tasks, active alerts, attendance risk list |
+| **Dashboard** | Chapter Health Score (0–100), KPI ring, lead-posted Announcements widget (pinned + expiring), upcoming events, overdue tasks, active alerts, attendance risk list |
 | **Attendance** | Per-event tracking, semester average, class-year breakdown, warning threshold alerts, trend chart |
 | **Calendar** | Month/week view, event creation with RSVP & mandatory flags, sober driver scheduling |
 | **Tasks** | Kanban + list view, priority levels, assignee, due dates, completion tracking, CSV import |
 | **Notes** | Structured meeting minutes with officer reports, announcements, old/new business, weekly honors; branded PDF export |
-| **Finance** | Dues ledger, expense log, budget tracking, fine management, income/expense P&L, 7-tab layout |
+| **Finance** | Dues ledger (tiered by in-house/out-of-house/new-member rate), expense log, budget tracking, fine management, income/expense P&L, 7-tab layout |
 | **Recruitment CRM** | Rushee pipeline (prospect → bid → pledge), funnel chart, stage conversion rates, rush event schedule |
 | **Judicial Board** | Case management, member lookup, hearing scheduling, outcome logging, case status tracking |
 | **Social Event Safety** | Sober driver shift scheduling, shift status, event coverage overview, CSV import |
-| **Members** | Full roster with GPA, class year, status, role, contact info, engagement score, mobile card view, CSV import (add or bulk-update by name match) |
+| **Members** | Full roster with GPA, class year, membership status, role, contact info, engagement score, mobile card view, CSV import (add or bulk-update by name match) |
 | **Academics** | GPA distribution, chapter average, scholarship tracking, academic warning list, CSV grade import — hard-gated to authorized roles |
 | **Committees** | Committee roster, chair assignment, member selection, active project tracking |
-| **Analytics** | Engagement scoring, officer performance, event trend analysis, risk distribution charts |
-| **Philanthropy** | Service hours log, fundraising tracker, event management, by-member hour reporting |
+| **Chapter Intelligence Center** | 8-tab analytics home — Overview, Attendance, Academics, Finance, Recruitment, Community Service, Social, and Accountability (Judicial-Board-leads-only) — with a shared date-range and class-year filter bar that drives every tab |
+| **Philanthropy** | Fundraising log, goals vs. funds raised, event performance ranking, organizations directory, vendors/donors directory |
+| **Community Service** | Service-hour logging by member and event, goal tracking (total hours / events / per-member requirement), volunteer leaderboard, service-location directory, below-requirement list |
 | **Alumni Relations** | Alumni directory, engagement tracking, mentorship connections, outreach log |
-| **Ritual & Education** | New member education program (weekly milestones by category, required-item tracking), per-member progress against required items, session scheduling, ceremony/ritual resource tracking |
-| **Health Score** | Composite chapter health (attendance 30%, finance 25%, academics 20%, engagement 15%, risk 10%) |
+| **Chaplain Hub** | Bible Study Planner, Brotherhood Events Tracker with a 4-column drag-and-drop planning board (Idea → Planning → Scheduled → Completed), engagement analytics, pending-actions list, and the preserved ritual checklist |
+| **New Member Education** | Progress tracker against configurable requirements (driven by membership status, not class year), at-risk list, education-session scheduling with attendance, plus a full **Peer Mentor Program**: mentor-group cards, searchable mentor/new-member assignment pickers, unassigned-new-member tracking, group-balance analytics, and a CSV-importable week-by-week mentor agenda |
+| **Social Events & Formal Planning** | Event list with planning-alert feed and a vendor directory, plus a per-event workspace (Overview, Checklist, Budget, Vendors, Formal Details, RSVPs tabs) covering venue/transportation/lodging/catering/entertainment/security, budget vs. actual, and member RSVP tracking; general members get a read-only view of open events with Yes/Maybe/No buttons |
+| **Health Score** | Composite chapter health across 8 weighted dimensions (attendance, tasks, academics, accountability, finances, recruitment, philanthropy, alumni) |
 | **Transition Hub** | Role handoff docs for all 15 officer positions — responsibilities, recurring tasks, key contacts, "wish I knew" notes |
 | **Reports** | Exportable summaries: semester report, officer report, financial summary, attendance report |
 | **Files** | Document storage by category, upload simulation, folder view |
@@ -41,7 +44,7 @@
 | **House Management** | Weekly meal-prep crew schedule (lunch/dinner slot assignment), 29-item chore checklist across 7 house areas with day-specific recurrence, admin chore manager |
 | **Otis AI Assistant** | Simulated chapter-ops chatbot — event brainstorming, task/event/finance/academics summaries, draft announcements; fully local with canned, keyword-matched responses |
 
-CSV import (Members, Academics, Tasks, Social Event Safety) parses the file entirely in the browser and merges rows into the in-memory demo dataset — nothing is uploaded anywhere, and nothing survives a page refresh, consistent with the rest of this demo.
+CSV import (Members, Academics, Tasks, Social Event Safety, Mentor Program Agenda) parses the file entirely in the browser and merges rows into the in-memory demo dataset — nothing is uploaded anywhere, and nothing survives a page refresh, consistent with the rest of this demo.
 
 > **Not in this demo:** platform-level, multi-chapter administration (provisioning new chapters, cross-chapter officer approval). That capability exists in the production system this demo is based on, but is intentionally out of scope here since OpsCore demonstrates a single chapter's operations, not platform administration.
 
@@ -53,22 +56,22 @@ RBAC operates on two layers: **page access** (which modules appear in the sideba
 
 ### Page Access
 
-All 15 officer roles share a common **exec base** — Dashboard, Calendar, Tasks, Files, Settings, Analytics, Reports, Health Score, Transition Hub, Notes, Sober, Attendance, Members, and Committees. Specialized modules are additive:
+All 15 officer roles share a common **exec base** — Dashboard, Calendar, Tasks, Files, Settings, Chapter Intelligence Center, Reports, Health Score, Transition Hub, Notes, Sober, Attendance, Members, Committees, House Management, Chaplain Hub, New Member Education (+ Peer Mentor Program), and Social Events. Specialized modules are additive on top of that:
 
 | Role | Additional Access |
 |---|---|
-| President / Vice President | All 23 modules |
+| President / Vice President | All 26 modules |
 | Treasurer | Finance |
 | Risk Manager | Academics |
 | Scholarship Chair | Academics |
 | Recruitment Chair | Recruitment CRM |
-| Chaplain / New Member Educator | Ritual & Education |
-| Philanthropy Chair / Community Service | Philanthropy & Service |
+| Philanthropy Chair | Philanthropy |
+| Community Service Chair | Community Service |
 | Alumni Relations Chair | Alumni Relations |
-| House Manager | House Management (edit access) |
-| Secretary / Social Chair / Public Relations | Exec base only |
+| Secretary / Chaplain / New Member Educator / Social Chair / House Manager / Public Relations | Exec base only |
+| General Member (viewer) | Read-only access to Dashboard, Attendance, Calendar, Chapter Intelligence Center, Files, Settings, Members, Committees, Philanthropy, Community Service, Alumni Relations, Chaplain Hub, New Member Education, Social Events, Finance, Notes, Sober, House Management, and Recruitment CRM — no Tasks, Judicial Board, Academics, Transition Hub, Health Score, or Reports, and no edit controls anywhere |
 
-All roles also see House Management (view-only for most; edit access limited per below), since it's an operational reference tool rather than officer-specific data.
+House Management, Chaplain Hub, New Member Education, and Social Events are exec-base-wide because they're operational reference tools every officer needs day to day, not one chair's private domain.
 
 ### Edit Access (within-page RBAC)
 
@@ -84,6 +87,8 @@ Having view access to a page doesn't mean full write access. Add/edit/delete con
 | Finance | President, Vice President, Treasurer |
 | Judicial Board | President, Vice President + authorized emails |
 | House Management (schedule, chores, chore manager) | President, Vice President, House Manager |
+| Announcements (post / pin / delete) | President, Vice President only — everyone else sees them read-only on the Dashboard |
+| Chaplain Hub, New Member Education, Peer Mentor Program, Social Events, Philanthropy, Community Service | Any officer role (edit controls hidden only for the general-member viewer role) |
 
 All others can **view** but not modify. Edit buttons, import controls, and add actions are hidden — not just disabled.
 
@@ -103,19 +108,23 @@ All others can **view** but not modify. Edit buttons, import controls, and add a
 
 The demo auto-logs in as **James Mitchell, President** with a complete seed dataset:
 
-- **18 members** — names, class years, GPAs, roles, contact info, dues status, attendance history
-- **14 events** — 6 past mandatory events with per-member attendance records, 8 upcoming
+- **18 members** — names, class years, GPAs, roles, membership status (Active / New Member), contact info, dues status, attendance history
+- **19 calendar events** — 6 past mandatory events with per-member attendance records, plus philanthropy, service, fundraiser, brotherhood, and social events spanning past and upcoming
 - **12 tasks** — mix of open, in-progress, overdue, and completed across multiple assignees
-- **Finance** — dues for all 18 members, 7 expenses, budget allocations, payment history, 2 outstanding fines
+- **Finance** — tiered dues (in-house / out-of-house / new-member rate) for all 18 members, 7 expenses mapped to real budget categories, 18 budget line items, payment history, 2 outstanding fines
 - **14 rushees** — across 5 funnel stages with bid scores, recruiter assignments, and 5 rush events
 - **Judicial cases** — 3 cases (2 active, 1 resolved) with case types, status, and member lookup
 - **5 social monitor shifts** — across upcoming events, one unassigned to show coverage alerts
 - **4 committees** — with chairs and member rosters
-- **Philanthropy** — 3 events, hours logged per member, funds raised
+- **Philanthropy** — 3 fundraising events, a fundraising log, 2 partner organizations, 2 vendors/donors
+- **Community Service** — 2 service events, hours logged for 12 members, 2 service locations
+- **Chaplain Hub** — 3 Bible studies, 5 brotherhood/morale events across all 4 planning stages, a 12-item ritual checklist, and pending-action tasks
+- **New Member Education + Peer Mentor Program** — 4 requirements tracked for 3 new members, 4 education sessions, 2 mentor groups, and a seeded 10-week mentor agenda
+- **Social Events & Formal Planning** — 3 events (a completed mixer, an in-progress formal with full vendor/budget/RSVP detail, and an early-stage date party), 4 vendors, 6 member RSVPs
+- **Announcements** — 3 seeded posts, one pinned, demonstrating the Dashboard broadcast widget
 - **5 alumni contacts** — with engagement status, outreach log, and upcoming alumni event
 - **15 transition hub entries** — handoff docs for all officer positions, with role-specific content and key contacts
 - **3 meeting notes** — structured chapter minutes with officer reports, honors, and action items
-- **New member education program** — 12 milestones across 5 categories (58% chapter-wide complete), 4 scheduled/past sessions, and per-member progress tracking for 6 new members
 - **House Management** — weekly meal-prep crew schedule across 7 live-in members, 29 default chores across 7 house areas with seeded weekly check-ins
 
 ---
@@ -126,12 +135,12 @@ The demo auto-logs in as **James Mitchell, President** with a complete seed data
 |---|---|
 | Frontend | Vanilla JS (ES6+), HTML5, CSS3 |
 | Icons | Tabler Icons |
-| Charts | Chart.js 4.4.3 |
+| Charts | Hand-rolled SVG (trend lines, donuts) + CSS flexbox bar charts — no charting library or dependency |
 | Database | Firebase Firestore (stubbed in demo; live in production) |
 | Auth | Firebase Authentication + custom RBAC layer |
 | Hosting | Vercel (demo) · Firebase Hosting (production) |
 | Data Layer | LocalStorage offline cache + Firestore real-time sync |
-| Architecture | Single-page app, 23 modules, no build step |
+| Architecture | Single-page app, 26 modules, no build step |
 
 No npm, no build tools, no framework. Loads instantly from a single `index.html`.
 
@@ -139,13 +148,13 @@ No npm, no build tools, no framework. Loads instantly from a single `index.html`
 
 ## Skills Demonstrated
 
-- **System design** — 23-module SPA built around a single `D{}` global data store with modular render functions and a debounced batched save layer
-- **Role-based access control** — 15 role types with two-layer RBAC: page whitelists drive sidebar visibility, and per-feature `canEdit()` guards drive in-page button rendering and write protection
-- **Data modeling** — members, events, attendance, finance, judicial, and recruitment all relationally linked by member ID; no ORM, pure object references
-- **Data import & validation** — client-side CSV parsing with fuzzy column-name matching, add/update merge logic against the existing roster, and a pre-commit preview across Members, Academics, and Tasks
+- **System design** — 26-module SPA built around a single `D{}` global data store with modular render functions and a debounced batched save layer
+- **Role-based access control** — 15 role types plus a read-only general-member role, with two-layer RBAC: page whitelists drive sidebar visibility, and per-feature `canWrite()`/`canEdit*()` guards drive in-page button rendering and write protection
+- **Data modeling** — members, events, attendance, finance, judicial, and recruitment all relationally linked by member ID; no ORM, pure object references. Social Events, Philanthropy, and Community Service all read their event lists from one shared calendar (`type`-filtered) instead of keeping separate copies, so a change is never out of sync across pages
+- **Data import & validation** — client-side CSV parsing with fuzzy column-name matching, add/update merge logic against the existing roster, and a pre-commit preview across Members, Academics, Tasks, and the Peer Mentor Program's weekly agenda
 - **Firebase integration** — Firestore real-time sync, Firebase Auth, stub/override pattern for offline and demo modes
-- **Data visualization** — Chart.js bar, donut, line, and radar charts across 8+ modules with dynamic data binding
-- **UX engineering** — skeleton loaders, toast notifications, confirm dialogs, modal CRUD forms, keyboard shortcuts, mobile-responsive layout, offline detection banner
+- **Data visualization** — hand-rolled SVG line/donut charts and CSS bar charts across 10+ modules, unified behind a shared date-range and class-year filter bar in the Chapter Intelligence Center
+- **UX engineering** — skeleton loaders, toast notifications, confirm dialogs, modal CRUD forms, drag-and-drop Kanban planning boards, keyboard shortcuts, mobile-responsive layout, offline detection banner
 
 ---
 

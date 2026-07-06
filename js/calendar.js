@@ -14,7 +14,7 @@ function renderCalendar(){
   document.getElementById('cal-month-label').textContent=monthNames[CAL_MONTH]+' '+CAL_YEAR;
 
   // Filter buttons
-  const types=['all','chapter','exec','recruitment','philanthropy','brotherhood','mandatory'];
+  const types=['all','chapter','exec','recruitment','philanthropy','service','brotherhood','social','mandatory'];
   document.getElementById('cal-filt').innerHTML=types.map(t=>`<button class="btn${CAL_FILTER===t?' btn-p':''}" style="height:27px;font-size:11px;flex-shrink:0;white-space:nowrap" onclick="calSetFilter('${t}')">${t==='all'?'All':t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('');
 
   // Build grid
@@ -69,7 +69,7 @@ function renderCalendar(){
     const pips=shown.map(item=>{
       if(item.kind==='ev'){
         const e=item.e;
-        return`<div class="cal-pip ${e.type||'chapter'}" title="${e.title}${e.start?' · '+e.start:''}">${e.title}</div>`;
+        return`<div class="cal-pip ${e.type||'chapter'}" title="${e.title}${e.start?' · '+to12h(e.start):''}">${e.title}</div>`;
       } else {
         const t=item.t;
         return`<div class="cal-pip task" title="Task: ${t.title}">${t.title}</div>`;
@@ -97,7 +97,7 @@ function calShowDay(dateStr,e){
   const d=new Date(dateStr+'T12:00:00');
   title.textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   const pcl={urgent:'br2',high:'br2',medium:'ba2',low:'bm2'};
-  body.innerHTML=(evs.length?'<div style="font-size:10px;font-weight:500;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px">Events</div>'+evs.map(ev=>`<div class="ev-row"><div class="ev-dt"><div class="ev-day">${dayOfMonth(ev.date)}</div><div class="ev-mo">${monthShort(ev.date)}</div></div><div style="flex:1"><div style="font-size:12.5px;font-weight:500">${ev.title}</div><div style="font-size:10.5px;color:var(--mt)">${ev.start||'TBD'} · ${ev.location||'—'}</div></div><span class="badge" style="${eventCategoryStyle(ev.type)}">${ev.type}</span>${ev.mandatory?'<span class="badge br2" style="margin-left:4px">Req</span>':''}<div style="display:flex;gap:3px;margin-left:6px;flex-shrink:0"><button class="btn" style="height:22px;font-size:10px;padding:0 6px" onclick="openEditEvent('${ev.id}')"><i class="ti ti-pencil"></i></button><button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="deleteEvent('${ev.id}')"><i class="ti ti-trash"></i></button></div></div>`).join(''):'')
+  body.innerHTML=(evs.length?'<div style="font-size:10px;font-weight:500;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px">Events</div>'+evs.map(ev=>`<div class="ev-row"><div class="ev-dt"><div class="ev-day">${dayOfMonth(ev.date)}</div><div class="ev-mo">${monthShort(ev.date)}</div></div><div style="flex:1"><div style="font-size:12.5px;font-weight:500">${ev.title}</div><div style="font-size:10.5px;color:var(--mt)">${to12h(ev.start)||'TBD'} · ${ev.location||'—'}</div></div><span class="badge" style="${eventCategoryStyle(ev.type)}">${ev.type}</span>${ev.mandatory?'<span class="badge br2" style="margin-left:4px">Req</span>':''}<div style="display:flex;gap:3px;margin-left:6px;flex-shrink:0"><button class="btn" style="height:22px;font-size:10px;padding:0 6px" onclick="openEditEvent('${ev.id}')"><i class="ti ti-pencil"></i></button><button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="deleteEvent('${ev.id}')"><i class="ti ti-trash"></i></button></div></div>`).join(''):'')
   +(tks.length?'<div style="font-size:10px;font-weight:500;color:var(--mt);text-transform:uppercase;letter-spacing:.06em;margin:11px 0 7px">Tasks Due</div>'+tks.map(t=>`<div class="tk-row" onclick="openEditTask('${t.id}')"><div class="tc ${t.status==='done'?'done':''}" onclick="event.stopPropagation();toggleTask('${t.id}')">${t.status==='done'?'<i class="ti ti-check" style="font-size:9px"></i>':''}</div><div style="flex:1"><div style="font-size:11.5px">${t.title}</div><div style="font-size:10px;color:var(--ht)">${getMember(t.assignedTo).name}</div></div><span class="badge ${pcl[t.priority]||'bm2'}" style="font-size:9px">${t.priority}</span></div>`).join(''):'');
   detail.style.display='block';
   detail.scrollIntoView({behavior:'smooth',block:'nearest'});

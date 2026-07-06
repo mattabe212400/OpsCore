@@ -111,13 +111,23 @@ async function deleteRushee(id){
   catch(e){if(removed)D.recruitment.rushees.push(removed);toast('Failed to remove rushee. Please try again.','error');}
 }
 async function deletePhEvent(id){
-  if(!canWrite()){toast('You do not have permission to delete philanthropy events.','error');return;}
-  const ok=await confirmDialog('Delete Event','Delete this event?');
+  if(!canWrite()){toast('You do not have permission to delete this event.','error');return;}
+  const ok=await confirmDialog('Delete Event','Delete this event? Attendance records for it will also be removed.');
   if(!ok)return;
-  const removed=D.philanthropy.events.find(e=>e.id===id);
-  D.philanthropy.events=D.philanthropy.events.filter(e=>e.id!==id);
-  try{await saveData();renderPhilanthropy();toast('Event deleted','info');}
-  catch(e){if(removed)D.philanthropy.events.push(removed);toast('Failed to delete event. Please try again.','error');}
+  const removed=D.events.find(e=>e.id===id);
+  const removedAtt=D.attendance[id];
+  D.events=D.events.filter(e=>e.id!==id);
+  delete D.attendance[id];
+  try{
+    await saveData();
+    renderPhilanthropy();
+    if(typeof renderCalendar==='function')renderCalendar();
+    toast('Event deleted','info');
+  }catch(e){
+    if(removed)D.events.push(removed);
+    if(removedAtt)D.attendance[id]=removedAtt;
+    toast('Failed to delete event. Please try again.','error');
+  }
 }
 async function deletePhFunds(id){
   if(!canWrite()){toast('You do not have permission to delete fundraising entries.','error');return;}

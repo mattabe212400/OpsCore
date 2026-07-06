@@ -5,10 +5,10 @@ let _fbAuth = null;
 let _inactTimer;
 
 // ── ROLE ACCESS MAP ──
-const ALL_PAGES = ['dashboard','attendance','calendar','tasks','notes','finance','judicial','sober','members','recruitment','academics','committees','analytics','files','transition','settings','philanthropy','alumni','ritual','healthscore','reports','kcrew'];
+const ALL_PAGES = ['dashboard','attendance','calendar','tasks','notes','finance','judicial','sober','members','recruitment','academics','committees','analytics','files','transition','settings','philanthropy','communityService','alumni','ritual','newMemberEducation','social','healthscore','reports','kcrew'];
 
 // Pages every exec officer gets regardless of title
-const EXEC_BASE = ['dashboard','calendar','tasks','files','settings','analytics','reports','healthscore','transition','committees','notes','sober','attendance','members','kcrew'];
+const EXEC_BASE = ['dashboard','calendar','tasks','files','settings','analytics','reports','healthscore','transition','committees','notes','sober','attendance','members','kcrew','ritual','newMemberEducation','social'];
 
 const ROLE_ACCESS = {
   'admin':                  ALL_PAGES,
@@ -19,15 +19,15 @@ const ROLE_ACCESS = {
   'Risk Manager':           [...EXEC_BASE, 'academics'],
   'Scholarship Chair':      [...EXEC_BASE, 'academics'],
   'Recruitment Chair':      [...EXEC_BASE, 'recruitment'],
-  'Chaplain':               [...EXEC_BASE, 'ritual'],
-  'Community Service Chair':[...EXEC_BASE, 'philanthropy'],
+  'Chaplain':               [...EXEC_BASE],
+  'Community Service Chair':[...EXEC_BASE, 'communityService'],
   'Philanthropy Chair':     [...EXEC_BASE, 'philanthropy'],
   'Alumni Relations Chair': [...EXEC_BASE, 'alumni'],
-  'New Member Educator':    [...EXEC_BASE, 'ritual'],
+  'New Member Educator':    [...EXEC_BASE],
   'Social Chair':           [...EXEC_BASE],
   'House Manager':          [...EXEC_BASE],
   'Public Relations':       [...EXEC_BASE],
-  'viewer':                 ['dashboard','attendance','calendar','analytics','files','settings'],
+  'viewer':                 ['dashboard','attendance','calendar','analytics','files','settings','members','committees','philanthropy','communityService','alumni','ritual','newMemberEducation','social','finance','notes','sober','kcrew','recruitment'],
 };
 
 function getRoleAccess(role){

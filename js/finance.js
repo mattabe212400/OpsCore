@@ -5,27 +5,36 @@ const FIN_CAT_COLORS = {'Housing Rent':'var(--navy)','Housing Upper Crust':'var(
 const FIN_CAT_ICONS = {'Housing Rent':'ti-home','Housing Upper Crust':'ti-home','Housing Mike':'ti-home','Housing Miscellaneous':'ti-home','Utilities Electric':'ti-bolt','Utilities Alliant Energy':'ti-flame','Utilities Waste Management':'ti-recycle','Administrative IFC Dues':'ti-building','Administrative YouTube/TV':'ti-device-tv','Events Greek Week':'ti-trophy','Events House Maintenance':'ti-tool','Events Social':'ti-confetti','Events Chaplain':'ti-book','Events Philanthropy':'ti-heart','Events Moms Day':'ti-heart-handshake','Events Alumni':'ti-users-group','Scholarship':'ti-school','Miscellaneous':'ti-dots'};
 let FIN_ACTIVE_TAB = 'fin-overview';
 let FIN_CAN_EDIT = false;
-// Dynamic dues — reads from D.settings based on member type (inHouse / outOfHouse / pledge)
+// Dynamic dues — reads from D.settings based on member type (New Member / inHouse / outOfHouse).
+// Member type comes from the explicit m.memberStatus field (Active/New Member), NOT class
+// year — a Freshman can already be an initiated active brother, and a Sophomore/Junior can be
+// a brand-new member (transfer, spring bid, etc.).
 function getSemDues(memberId){
   const m = memberId ? D.members.find(x=>x.id===memberId) : null;
   const s = D.settings||{};
   // Per-member override takes priority
   const override = D.finance?.dues?.[memberId]?.customDues;
   if(override) return override;
-  // Determine type: pledge = Freshman, inHouse = liveIn, outOfHouse = !liveIn
   if(m) {
-    if(m.classYear==='Freshman') return s.duesPledge||0;
+    if((m.memberStatus||'Active')==='New Member') return s.duesPledge||0;
     if(m.liveIn) return s.duesInHouse||0;
     return s.duesOutOfHouse||0;
   }
   // Fallback for overview: use in-house as representative
   return s.duesInHouse||s.duesOutOfHouse||s.duesPledge||0;
 }
+function finDuesTierLabel(memberId){
+  const m = D.members.find(x=>x.id===memberId);
+  if(!m) return '—';
+  if(D.finance?.dues?.[memberId]?.customDues) return 'Custom';
+  if((m.memberStatus||'Active')==='New Member') return 'New Member';
+  return m.liveIn?'In-House':'Out-of-House';
+}
 function getSemDuesDisplay(){
   const s=D.settings||{};
   const ih=s.duesInHouse||0; const oh=s.duesOutOfHouse||0; const pl=s.duesPledge||0;
   if(!ih&&!oh&&!pl) return 'Not set';
-  return `In: $${ih} / Out: $${oh} / Pledge: $${pl}`;
+  return `In: $${ih} / Out: $${oh} / New Member: $${pl}`;
 }
 
 // ── PERMISSION CHECK ──
@@ -188,20 +197,21 @@ function finFilterDues(){
   const st=(document.getElementById('fin-filter-pay')||{value:''}).value;
   const dues=D.finance.dues||{};
   const statusBadge={Paid:'bg2',Partial:'ba2',Overdue:'br2','Payment Plan':'bb2'};
-  let rows=D.members.filter(m=>{
+  let rows=sortedMembers().filter(m=>{
     if(q&&!m.name.toLowerCase().includes(q))return false;
     if(st&&(dues[m.id]?.status||'Partial')!==st)return false;
     return true;
   });
   const tbl=document.getElementById('fin-dues-table');
   if(!tbl)return;
-  tbl.innerHTML=`<thead><tr><th>Member</th><th>Class</th><th>Semester Dues</th><th>Paid</th><th>Balance</th><th>Status</th><th>Last Payment</th><th>Fines</th><th></th></tr></thead><tbody>${rows.map(m=>{
+  tbl.innerHTML=`<thead><tr><th>Member</th><th>Class</th><th>Type</th><th>Semester Dues</th><th>Paid</th><th>Balance</th><th>Status</th><th>Last Payment</th><th>Fines</th><th></th></tr></thead><tbody>${rows.map(m=>{
     const d=dues[m.id]||{semesterDues:getSemDues(m.id),paid:0,status:'Partial',lastPayment:'',fineCount:0};
     const bal=d.semesterDues-d.paid;
     const st=d.status||'Partial';
     return`<tr class="fin-member-row" onclick="finOpenProfile('${m.id}')">
       <td><div style="display:flex;align-items:center;gap:7px"><div class="sh-av" style="width:24px;height:24px;font-size:8.5px">${m.initials}</div><span style="font-weight:500">${m.name}</span></div></td>
       <td style="color:var(--mt)">${m.classYear}</td>
+      <td><span class="badge ${finDuesTierLabel(m.id)==='New Member'?'bb2':'bm2'}">${finDuesTierLabel(m.id)}</span></td>
       <td>$${d.semesterDues}</td>
       <td style="color:var(--gn);font-weight:500">$${d.paid}</td>
       <td style="color:${bal>0?'var(--rd)':'var(--gn)'};font-weight:600">$${bal}</td>
@@ -210,7 +220,7 @@ function finFilterDues(){
       <td style="text-align:center">${d.fineCount>0?`<span class="badge br2">${d.fineCount}</span>`:'—'}</td>
       <td><button class="btn" style="height:23px;font-size:10px;padding:0 7px" onclick="event.stopPropagation();finOpenProfile('${m.id}')"><i class="ti ti-eye"></i></button></td>
     </tr>`;
-  }).join('')||'<tr><td colspan="9" style="text-align:center;padding:22px;color:var(--mt)">No members found</td></tr>'}</tbody>`;
+  }).join('')||'<tr><td colspan="10" style="text-align:center;padding:22px;color:var(--mt)">No members found</td></tr>'}</tbody>`;
 }
 
 // ── FINES TABLE ──
@@ -388,7 +398,7 @@ function finFilterNational(){
 }
 function finOpenNationalPayment(){
   const sel=document.getElementById('fnatl-member');if(!sel)return;
-  sel.innerHTML=D.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  sel.innerHTML=sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
   document.getElementById('fnatl-amount').value='';
   document.getElementById('fnatl-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('fnatl-notes').value='';
@@ -493,7 +503,7 @@ function finOpenProfile(memberId){
 // ── RECORD PAYMENT ──
 function finOpenPayment(){
   const sel=document.getElementById('fpay-member');
-  sel.innerHTML=D.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  sel.innerHTML=sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
   document.getElementById('fpay-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('fpay-amount').value='';
   document.getElementById('m-fin-payment').classList.add('open');
@@ -539,7 +549,7 @@ async function finRecordPayment(){
 // ── ADD FINE ──
 function finOpenAddFine(){
   const sel=document.getElementById('ffine-member');
-  sel.innerHTML=D.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  sel.innerHTML=sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
   document.getElementById('ffine-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('ffine-amount').value='';
   document.getElementById('ffine-reason').value='';
@@ -617,7 +627,7 @@ async function finLogExpense(){
 // ── PAYMENT PLAN ──
 function finOpenAddPlan(){
   const sel=document.getElementById('fplan-member');
-  sel.innerHTML=D.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  sel.innerHTML=sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
   document.getElementById('fplan-start').value=new Date().toISOString().split('T')[0];
   document.getElementById('fplan-total').value='';
   document.getElementById('fplan-notes').value='';
