@@ -94,8 +94,8 @@
   .topbar{padding:0 12px;gap:7px}
   .tb-date{display:none}
   .g4,.g3,.g2,.g21,.gg{grid-template-columns:1fr!important}
+  .two-col{grid-template-columns:minmax(0,1fr)!important}
   #d-officer-row{grid-template-columns:1fr!important}
-  #page-ritual>div:last-child,#page-philanthropy>div:last-child{grid-template-columns:1fr!important}
   .fg{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .pl{width:110px}
   .card{padding:11px 12px}

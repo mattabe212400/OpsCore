@@ -1188,18 +1188,18 @@
     <!-- ═══════════ PHILANTHROPY & SERVICE ═══════════ -->
     <div class="page" id="page-communityService">
       <div class="g4" id="cs-kpi" style="margin-bottom:13px"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;row-gap:8px;margin-bottom:11px">
         <div style="display:flex;align-items:center;gap:7px">
           <div style="width:30px;height:30px;background:var(--gn-bg);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-heart-handshake" style="color:var(--gn);font-size:15px"></i></div>
           <div><div style="font-size:13px;font-weight:600">Community Service</div><div style="font-size:10px;color:var(--mt)">Hours &amp; volunteering</div></div>
         </div>
-        <div style="display:flex;gap:5px">
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-p" id="cs-log-hours-btn" style="height:26px;font-size:11px" onclick="csOpenLogHours()"><i class="ti ti-plus"></i>Log Hours</button>
           <button class="btn" id="cs-add-event-btn" style="height:26px;font-size:11px" onclick="csOpenAddEvent()"><i class="ti ti-calendar-plus"></i>Add Event</button>
           <button class="btn" style="height:26px;font-size:11px" onclick="csExport()"><i class="ti ti-download"></i>Export CSV</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+      <div class="two-col" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px">
         <div style="display:flex;flex-direction:column;gap:11px">
           <div class="card"><div class="card-hd"><span class="card-t">Service Goals</span><button class="card-a" onclick="csOpenGoalEdit()">Edit</button></div><div id="cs-goal-bars"></div></div>
           <div class="card"><div class="card-hd"><span class="card-t">Hours by Week</span></div><div id="cs-chart"></div></div>
@@ -1242,18 +1242,18 @@
     <!-- ═══════════ PHILANTHROPY ═══════════ -->
     <div class="page" id="page-philanthropy">
       <div class="g4" id="ph-kpi" style="margin-bottom:13px"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;row-gap:8px;margin-bottom:11px">
         <div style="display:flex;align-items:center;gap:7px">
           <div style="width:30px;height:30px;background:#fbeaf0;border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-heart" style="color:#c0345a;font-size:15px"></i></div>
           <div><div style="font-size:13px;font-weight:600">Philanthropy</div><div style="font-size:10px;color:var(--mt)">Fundraising &amp; money raised</div></div>
         </div>
-        <div style="display:flex;gap:5px">
-          <button class="btn btn-p" id="ph-log-funds-btn" style="height:26px;font-size:11px;background:#c0345a;border-color:#c0345a" onclick="phOpenLogFunds()"><i class="ti ti-coin"></i>Log Money Raised</button>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-p" id="ph-log-funds-btn" style="height:26px;font-size:11px;background:#c0345a;border-color:#c0345a;white-space:nowrap" onclick="phOpenLogFunds()"><i class="ti ti-coin"></i>Log Money Raised</button>
           <button class="btn" id="ph-add-event-btn" style="height:26px;font-size:11px" onclick="phOpenAddEvent()"><i class="ti ti-calendar-plus"></i>Add Event</button>
           <button class="btn" style="height:26px;font-size:11px" onclick="phExport()"><i class="ti ti-download"></i>Export CSV</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+      <div class="two-col" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px">
         <div style="display:flex;flex-direction:column;gap:11px">
           <div class="card"><div class="card-hd"><span class="card-t">Fundraising Goals</span><button class="card-a" id="ph-goal-edit-btn" onclick="phOpenGoalEdit()">Edit</button></div><div id="ph-goal-bars"></div></div>
           <div class="card"><div class="card-hd"><span class="card-t">Funds Raised Over Time</span></div><div id="ph-chart"></div></div>
@@ -1351,7 +1351,7 @@
 
       <!-- ── FULL WORKSPACE VIEW ── -->
       <div id="ch-full-view" style="display:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px">
+        <div class="two-col" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px;margin-bottom:13px">
           <div class="card">
             <div class="card-hd"><span class="card-t">Bible Study Planner</span><button class="btn btn-p" style="height:24px;font-size:10.5px" onclick="chOpenAddBibleStudy()"><i class="ti ti-plus"></i>Add Bible Study</button></div>
             <div class="tw"><table class="tbl" id="ch-bs-table"></table></div>
@@ -1377,7 +1377,7 @@
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+        <div class="two-col" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px">
           <div class="card">
             <div class="card-hd"><span class="card-t">Ritual Checklist</span><span id="ri-prog-pct" style="font-size:12px;font-weight:600;color:var(--sky-tx)"></span></div>
             <div style="padding:9px 13px 0"><button class="btn btn-p" style="height:24px;font-size:10.5px" onclick="riOpenAddItem()"><i class="ti ti-plus"></i>Add Item</button></div>
@@ -1438,20 +1438,20 @@
     <!-- ═══════════ NEW MEMBER EDUCATION + PEER MENTOR PROGRAM ═══════════ -->
     <div class="page" id="page-newMemberEducation">
       <div class="g4" id="nme-kpi" style="margin-bottom:13px"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;row-gap:8px;margin-bottom:11px">
         <div style="display:flex;align-items:center;gap:7px">
           <div style="width:30px;height:30px;background:var(--bl-bg);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-school" style="color:var(--bl-tx);font-size:15px"></i></div>
           <div><div style="font-size:13px;font-weight:600">New Member Education</div><div style="font-size:10px;color:var(--mt)">Progress tracker &amp; sessions</div></div>
         </div>
-        <div style="display:flex;gap:5px">
-          <div id="nme-edit-actions" style="display:flex;gap:5px">
-            <button class="btn btn-p" id="nme-add-session-btn" style="height:26px;font-size:11px" onclick="nmeOpenAddSession()"><i class="ti ti-plus"></i>Add Session</button>
-            <button class="btn" id="nme-add-req-btn" style="height:26px;font-size:11px" onclick="nmeOpenAddRequirement()"><i class="ti ti-list-check"></i>Add Requirement</button>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <div id="nme-edit-actions" style="display:flex;gap:5px;flex-wrap:wrap">
+            <button class="btn btn-p" id="nme-add-session-btn" style="height:26px;font-size:11px;white-space:nowrap" onclick="nmeOpenAddSession()"><i class="ti ti-plus"></i>Add Session</button>
+            <button class="btn" id="nme-add-req-btn" style="height:26px;font-size:11px;white-space:nowrap" onclick="nmeOpenAddRequirement()"><i class="ti ti-list-check"></i>Add Requirement</button>
           </div>
-          <button class="btn" style="height:26px;font-size:11px" onclick="nmeExport()"><i class="ti ti-download"></i>Export CSV</button>
+          <button class="btn" style="height:26px;font-size:11px;white-space:nowrap" onclick="nmeExport()"><i class="ti ti-download"></i>Export CSV</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+      <div class="two-col" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px">
         <div style="display:flex;flex-direction:column;gap:11px">
           <div class="card"><div class="card-hd"><span class="card-t">New Member Progress</span></div><div class="tw"><table class="tbl" id="nme-progress-table"></table></div></div>
           <div class="card"><div class="card-hd"><span class="card-t">At-Risk Members</span></div><div class="tw"><table class="tbl" id="nme-risk-table"></table></div></div>
@@ -1464,7 +1464,7 @@
 
       <!-- ═══════════ PEER MENTOR PROGRAM ═══════════ -->
       <div id="pmp-section-wrap">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:22px 0 11px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;row-gap:8px;margin:22px 0 11px">
           <div style="display:flex;align-items:center;gap:7px">
             <div style="width:30px;height:30px;background:var(--am-bg);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-users-group" style="color:var(--am-tx);font-size:15px"></i></div>
             <div><div style="font-size:13px;font-weight:600">Peer Mentor Program</div><div style="font-size:10px;color:var(--mt)">Mentor groups &amp; new member assignments</div></div>
@@ -1474,7 +1474,7 @@
           </div>
         </div>
         <div class="g4" id="pmp-kpi" style="margin-bottom:13px"></div>
-        <div style="display:grid;grid-template-columns:2fr 1fr;gap:13px;margin-bottom:13px;align-items:start">
+        <div class="two-col" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:13px;margin-bottom:13px;align-items:start">
           <div class="card">
             <div class="card-hd"><span class="card-t">Mentor Groups</span></div>
             <div id="pmp-groups" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:11px"></div>
@@ -1487,9 +1487,9 @@
         <div class="card" style="margin-bottom:13px">
           <div class="card-hd">
             <span class="card-t">Weekly Agenda</span>
-            <div id="pmp-agenda-actions" style="display:flex;gap:5px">
-              <button class="btn" style="height:24px;font-size:10.5px" onclick="impDownloadTemplate('mentorAgenda')"><i class="ti ti-download"></i>Download Template</button>
-              <button class="btn btn-p" style="height:24px;font-size:10.5px" onclick="openImportModal('mentorAgenda')"><i class="ti ti-table-import"></i>Import Agenda</button>
+            <div id="pmp-agenda-actions" style="display:flex;gap:5px;flex-wrap:wrap">
+              <button class="btn" style="height:24px;font-size:10.5px;white-space:nowrap" onclick="impDownloadTemplate('mentorAgenda')"><i class="ti ti-download"></i>Download Template</button>
+              <button class="btn btn-p" style="height:24px;font-size:10.5px;white-space:nowrap" onclick="openImportModal('mentorAgenda')"><i class="ti ti-table-import"></i>Import Agenda</button>
             </div>
           </div>
           <div class="tw"><table class="tbl" id="pmp-agenda-table"></table></div>
