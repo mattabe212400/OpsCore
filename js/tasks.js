@@ -256,15 +256,14 @@ function openNoteDetail(id){
   el.classList.add('open');
 }
 
-// ── JUDICIAL BOARD PASSWORD ──
-const JB_PW_HASH = ''; // password gate removed — access controlled by role/email
+// ── JUDICIAL BOARD ACCESS ──
+// Access-controlled by role, plus an explicit per-chapter email allowlist for officers whose
+// title alone wouldn't otherwise grant it (e.g. a Judicial Board chair who isn't Pres/VP).
 let JB_UNLOCKED = false;
 
-// Judicial Board access: admin role OR explicitly allowed emails
-// Add Lou's email to this list
 const JB_ALLOWED_EMAILS = [
-  'demo@example.com',   // Matt
-  'demo2@example.com',   // Lou
+  'demo@example.com',
+  'demo2@example.com',
 ];
 
 function jbCanAccess(){
@@ -273,15 +272,6 @@ function jbCanAccess(){
   if(CURRENT_USER.role === 'President' || CURRENT_USER.role === 'Vice President') return true;
   if(JB_ALLOWED_EMAILS.includes((CURRENT_USER.email||'').toLowerCase())) return true;
   return false;
-}
-
-async function hashStr(s){
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-function jbUnlock(){
-  // No-op — kept for any legacy HTML references
 }
 
 function jbLock(){

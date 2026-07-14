@@ -7,7 +7,7 @@
 
 ![Dashboard](screenshots/dashboard.png)
 
-**OpsCore** is a full-stack chapter management system built for Greek-letter organizations. It covers every operational domain a chapter runs — from attendance and finance to recruitment CRM, judicial cases, and officer succession — in a single role-aware SPA. Built after identifying real pain points managing a 160-member chapter on spreadsheets and email threads.
+**OpsCore** replaces the spreadsheets and email threads a real 160-member chapter was running on. It's a full-stack chapter management system for Greek-letter organizations — attendance, finance, recruitment CRM, judicial cases, officer succession, and every other operational domain a chapter runs, unified into a single role-aware SPA.
 
 **[Live Demo →](https://ops-core-sand.vercel.app/)** · No login required · All data is fictional seed data
 

@@ -96,6 +96,15 @@ let _saveDResolvers = [];
 const _appStartTime = Date.now();
 let _firebaseConfirmed = false; // set true once auth state resolves — errors before this are suppressed
 
+// ═══════════════════════════════════════════════════════════════════════════
+// PRODUCTION-ONLY REFERENCE CODE — never runs in this demo build.
+// js/demo.js loads last (index.html script order) and redeclares saveData/loadData/
+// saveToLocalStorage/loadFromLocalStorage/startRealtimeSync/resetData as no-ops — in plain
+// <script> tags the last declaration of a given function name wins, so every call site in this
+// app is actually invoking demo.js's stub, not the real Firestore logic below. Kept in the repo
+// on purpose, as the reference for what the production build's persistence layer looks like —
+// see README.md's "Demo vs. Production" section.
+// ═══════════════════════════════════════════════════════════════════════════
 async function saveData(){
   saveToLocalStorage(); // write to localStorage immediately, always
 
@@ -252,6 +261,7 @@ async function resetData(){
   localStorage.removeItem(LS_CACHE);
   location.reload();
 }
+// ═══════ END PRODUCTION-ONLY REFERENCE CODE ═══════
 
 // Wire up Firebase once ready
 document.addEventListener('firebase-ready', ()=>{
