@@ -583,6 +583,29 @@ async function finAddFine(){
   }
 }
 
+// Auto-generated fine for an Unexcused Miss, created from the attendance-marking flow
+// (js/helpers.js) rather than the manual Add Fine modal — gated by canEditAttendance()
+// (President/VP/Secretary) instead of finCheckPerms(), since the Secretary marking attendance
+// is exactly who's expected to issue these. Same fine object shape finAddFine() builds, plus an
+// eventId so re-saving the same event's attendance can tell "already fined" apart from "needs one".
+async function finAddAttendanceFine(memberId, eventId, eventTitle, amount){
+  const fine={id:'fn'+uid(),memberId,eventId,type:'Attendance',amount,reason:'Unexcused absence — '+eventTitle,date:new Date().toISOString().split('T')[0],status:'Unpaid',paidDate:''};
+  D.finance.fines.unshift(fine);
+  if(!D.finance.dues[memberId])D.finance.dues[memberId]={semesterDues:getSemDues(memberId),paid:0,status:'Partial',lastPayment:'',fineCount:0,notes:'',restriction:'None'};
+  const prevCount=D.finance.dues[memberId].fineCount||0;
+  D.finance.dues[memberId].fineCount=prevCount+1;
+  try{
+    await saveData();
+  }catch(e){
+    D.finance.fines=D.finance.fines.filter(f=>f.id!==fine.id);
+    D.finance.dues[memberId].fineCount=prevCount;
+    throw e;
+  }
+}
+function finHasAttendanceFine(memberId, eventId){
+  return (D.finance.fines||[]).some(f=>f.type==='Attendance'&&f.memberId===memberId&&f.eventId===eventId);
+}
+
 async function finMarkFinePaid(fineId){
   if(!canWrite()||!finCheckPerms()){toast('Only Treasurer, President, or VP can mark fines paid.','error');return;}
   const f=D.finance.fines.find(x=>x.id===fineId);

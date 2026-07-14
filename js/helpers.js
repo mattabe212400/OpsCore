@@ -587,7 +587,12 @@ function resolveCase(){
 }
 
 // ── MARK ATTENDANCE ──
+// Present / Excused Miss / Unexcused Miss — mirrors the production system, which dropped a
+// code-based self-check-in option (too easy to share/screenshot, defeating the point of
+// tracking who actually showed up) in favor of the Secretary marking attendance directly, with
+// an Unexcused Miss prompting a fine on the spot.
 let _attTmp={};
+const ATT_STATUS_LABEL={present:'Present',excused:'Excused Miss',absent:'Unexcused Miss'};
 function openMarkAttEv(evId){
   if(!canEditAttendance()){toast('Only the President, Vice President, and Secretary can mark attendance.','error');return;}
   const ev=D.events.find(e=>e.id===evId);if(!ev)return;
@@ -608,9 +613,9 @@ function renderAttList(){
   document.getElementById('ma-list').innerHTML=D.members.map(m=>{
     const st=_attTmp[m.id]||'';
     const cls=st==='present'?'att-check present':st==='absent'?'att-check absent':st==='excused'?'att-check excused':'att-check';
-    const lbl=st==='present'?'✓':st==='absent'?'✗':st==='excused'?'E':'';
+    const lbl=st==='present'?'✓':st==='absent'?'U':st==='excused'?'E':'';
     return`<div style="display:flex;align-items:center;gap:7px;padding:4px 0;cursor:pointer" onclick="cycleAtt('${m.id}')">
-      <div class="${cls}" id="ac-${m.id}">${lbl}</div>
+      <div class="${cls}" id="ac-${m.id}" title="${ATT_STATUS_LABEL[st]||'Unmarked'}">${lbl}</div>
       <span style="font-size:12px">${m.name}</span>
     </div>`;
   }).join('');
@@ -620,7 +625,11 @@ function cycleAtt(mid){
   const next=cur===''?'present':cur==='present'?'absent':cur==='absent'?'excused':'';
   if(next==='')delete _attTmp[mid];else _attTmp[mid]=next;
   const el=document.getElementById('ac-'+mid);
-  if(el){el.className=next==='present'?'att-check present':next==='absent'?'att-check absent':next==='excused'?'att-check excused':'att-check';el.textContent=next==='present'?'✓':next==='absent'?'✗':next==='excused'?'E':'';}
+  if(el){
+    el.className=next==='present'?'att-check present':next==='absent'?'att-check absent':next==='excused'?'att-check excused':'att-check';
+    el.textContent=next==='present'?'✓':next==='absent'?'U':next==='excused'?'E':'';
+    el.title=ATT_STATUS_LABEL[next]||'Unmarked';
+  }
 }
 function saveAttendance(){
   if(!canEditAttendance()){toast('Only the President, Vice President, and Secretary can mark attendance.','error');return;}
@@ -629,6 +638,46 @@ function saveAttendance(){
   if(!D.attendance)D.attendance={};
   D.attendance[evId]=_attTmp;
   saveData();closeM(null,document.getElementById('m-markatt'));renderAttendance();renderDash();toast('Attendance saved','success');
+  _attCheckForFines(evId);
+}
+
+// ── UNEXCUSED-MISS FINES ──
+// After saving, anyone left as an Unexcused Miss who doesn't already have an Attendance fine for
+// this specific event gets offered one — the Secretary types the amount right there, per member.
+let _attFineEvId=null, _attFineMembers=[];
+function _attCheckForFines(evId){
+  const ev=D.events.find(e=>e.id===evId);
+  const needsFine=Object.entries(_attTmp)
+    .filter(([mid,st])=>st==='absent'&&!finHasAttendanceFine(mid,evId))
+    .map(([mid])=>getMember(mid));
+  if(!needsFine.length)return;
+  _attFineEvId=evId;
+  _attFineMembers=needsFine;
+  document.getElementById('af-title').textContent='Unexcused Miss Fines — '+(ev?ev.title:'Event');
+  document.getElementById('af-list').innerHTML=needsFine.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+    <span style="flex:1;font-size:12.5px">${m.name}</span>
+    <input type="number" min="0" step="0.01" placeholder="Amount" id="af-amt-${m.id}" style="width:100px;height:30px;padding:0 8px;border:1px solid var(--bdr);border-radius:6px;font-size:12px">
+  </div>`).join('');
+  document.getElementById('m-att-fines').classList.add('open');
+}
+async function attSaveFines(){
+  const evId=_attFineEvId;
+  const ev=D.events.find(e=>e.id===evId);
+  const eventTitle=ev?ev.title:'Event';
+  let issued=0, skipped=0;
+  for(const m of _attFineMembers){
+    const input=document.getElementById('af-amt-'+m.id);
+    const amount=parseFloat(input?.value);
+    if(isNaN(amount)||amount<=0){skipped++;continue;}
+    if(finHasAttendanceFine(m.id,evId))continue; // defensive re-check
+    try{ await finAddAttendanceFine(m.id,evId,eventTitle,amount); issued++; }
+    catch(e){ toast('Failed to fine '+m.name.split(' ')[0]+' — please try again from Finance.','error'); }
+  }
+  closeM(null,document.getElementById('m-att-fines'));
+  _attFineEvId=null; _attFineMembers=[];
+  if(FIN_ACTIVE_TAB==='fin-fines')finRenderFines();
+  if(issued)toast(issued+' fine'+(issued>1?'s':'')+' issued'+(skipped?', '+skipped+' skipped (no amount entered)':''),'success');
+  else if(skipped)toast('No fines issued — no amounts entered.','info');
 }
 
 // ── EDIT COMMITTEE ──

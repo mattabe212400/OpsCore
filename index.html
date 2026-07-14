@@ -2320,9 +2320,16 @@
 <!-- ── MARK ATTENDANCE ── -->
 <div class="mo" id="m-markatt" onclick="closeM(event,this)"><div class="md" style="width:520px"><div class="md-t"><span id="ma-title">Mark Attendance</span><button class="md-x" onclick="closeM(null,document.getElementById('m-markatt'))"><i class="ti ti-x"></i></button></div>
   <input type="hidden" id="ma-evid">
-  <div style="font-size:11.5px;color:var(--mt);margin-bottom:11px">Click each member to cycle: Present → Absent → Excused → (unset)</div>
+  <div style="font-size:11.5px;color:var(--mt);margin-bottom:11px">Click each member to cycle: Present → Unexcused Miss → Excused Miss → (unset)</div>
   <div id="ma-list" style="max-height:400px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:5px"></div>
   <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:13px"><button class="btn" onclick="closeM(null,document.getElementById('m-markatt'))">Cancel</button><button class="btn btn-p" onclick="saveAttendance()">Save Attendance</button></div>
+</div></div>
+
+<!-- ── UNEXCUSED MISS FINES (prompted right after saving attendance) ── -->
+<div class="mo" id="m-att-fines" onclick="closeM(event,this)"><div class="md" style="width:420px"><div class="md-t"><span id="af-title">Unexcused Miss Fines</span><button class="md-x" onclick="closeM(null,document.getElementById('m-att-fines'))"><i class="ti ti-x"></i></button></div>
+  <div style="font-size:11.5px;color:var(--mt);margin-bottom:11px">Enter a fine amount for each member marked Unexcused Miss. Leave blank to skip a fine for that member.</div>
+  <div id="af-list" style="max-height:320px;overflow-y:auto"></div>
+  <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:13px"><button class="btn" onclick="closeM(null,document.getElementById('m-att-fines'))">Skip All</button><button class="btn btn-p" onclick="attSaveFines()">Save Fines</button></div>
 </div></div>
 
 <!-- ── EDIT COMMITTEE MEMBERS ── -->

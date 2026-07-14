@@ -18,11 +18,11 @@
 | Module | What it does |
 |---|---|
 | **Dashboard** | Chapter Health Score (0–100), KPI ring, lead-posted Announcements widget (pinned + expiring), upcoming events, overdue tasks, active alerts, attendance risk list |
-| **Attendance** | Per-event tracking, semester average, class-year breakdown, warning threshold alerts, trend chart |
+| **Attendance** | Per-event tracking (Present / Excused Miss / Unexcused Miss, marked by the Secretary — no self-service check-in, which is easy to share or screenshot and defeats the point of tracking who actually showed up), semester average, class-year breakdown, warning threshold alerts, trend chart, and an Unexcused Miss can prompt a fine on the spot, posted straight to Finance |
 | **Calendar** | Month/week view, event creation with RSVP & mandatory flags, sober driver scheduling |
 | **Tasks** | Kanban + list view, priority levels, assignee, due dates, completion tracking, CSV import |
 | **Notes** | Structured meeting minutes with officer reports, announcements, old/new business, weekly honors; branded PDF export |
-| **Finance** | Dues ledger (tiered by in-house/out-of-house/new-member rate), expense log, budget tracking, fine management, income/expense P&L, 7-tab layout |
+| **Finance** | Dues ledger (tiered by in-house/out-of-house/new-member rate), expense log, budget tracking, fine management (including fines issued directly from Attendance for an Unexcused Miss), income/expense P&L, 7-tab layout |
 | **Recruitment CRM** | Rushee pipeline (prospect → bid → pledge), funnel chart, stage conversion rates, rush event schedule |
 | **Judicial Board** | Case management, member lookup, hearing scheduling, outcome logging, case status tracking |
 | **Social Event Safety** | Sober driver shift scheduling, shift status, event coverage overview, CSV import |
