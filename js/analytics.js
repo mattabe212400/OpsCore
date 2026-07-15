@@ -18,7 +18,7 @@ function calcAttendanceTrend(n){
 }
 function attTier(pct){
   if(pct>=85) return {label:'Good', color:'var(--gn)', badge:'bg2'};
-  if(pct>=75) return {label:'On Track', color:'var(--navy)', badge:'bb2'};
+  if(pct>=75) return {label:'On Track', color:'var(--gold)', badge:'bb2'};
   if(pct>=65) return {label:'At Risk', color:'var(--am)', badge:'ba2'};
   return {label:'Warning', color:'var(--rd)', badge:'br2'};
 }
@@ -153,7 +153,7 @@ function ciRenderKpiRow(){
 function ciRenderHealthLink(){
   const {score,dims}=computeHealthDims();
   const grade=score>=80?'A':score>=65?'B':score>=50?'C':'F';
-  const color=score>=80?'var(--gn)':score>=65?'var(--navy)':score>=50?'var(--am)':'var(--rd)';
+  const color=score>=80?'var(--gn)':score>=65?'var(--gold)':score>=50?'var(--am)':'var(--rd)';
   const weak=dims.filter(d=>d.v<d.target).sort((a,b)=>a.v-b.v).slice(0,2);
   const el=document.getElementById('ci-health-link'); if(!el)return;
   el.innerHTML=`<div style="display:flex;align-items:center;gap:14px;cursor:pointer" onclick="rbacNav('healthscore',null)">
@@ -184,7 +184,7 @@ function ciRenderAttendanceTab(){
   const tot=members.length||1;
   const tiers=[
     {label:'Good (85%+)',min:85,c:'var(--gn)'},
-    {label:'On Track (75–84%)',min:75,max:85,c:'var(--navy)'},
+    {label:'On Track (75–84%)',min:75,max:85,c:'var(--gold)'},
     {label:'At Risk (65–74%)',min:65,max:75,c:'var(--am)'},
     {label:'Warning (<65%)',min:0,max:65,c:'var(--rd)'},
   ];

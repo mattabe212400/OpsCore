@@ -169,7 +169,7 @@ function impBuildMemberRows(rows, previewEl) {
   const th = `<thead><tr style="background:var(--surf2)"><th style="padding:5px 8px;text-align:left">Name</th><th style="padding:5px 8px;text-align:left">Major</th><th style="padding:5px 8px;text-align:left">Email</th><th style="padding:5px 8px;text-align:left">Class</th><th style="padding:5px 8px;text-align:left">Role</th></tr></thead>`;
   let html = '';
   if (toUpdate.length) {
-    html += `<div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px">${toUpdate.length} member${toUpdate.length !== 1 ? 's' : ''} to update:</div>`;
+    html += `<div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:6px">${toUpdate.length} member${toUpdate.length !== 1 ? 's' : ''} to update:</div>`;
     html += `<div style="max-height:150px;overflow-y:auto;border:1px solid var(--bdr);border-radius:7px;margin-bottom:10px"><table style="width:100%;border-collapse:collapse;font-size:11.5px">${th}<tbody>`;
     toUpdate.forEach((m, i) => {
       const bg = i % 2 === 0 ? 'var(--surf)' : 'var(--surf2)';

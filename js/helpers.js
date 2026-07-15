@@ -1,8 +1,15 @@
 /* OpsCore 2.0 Demo — Helpers & Utilities */
-function toast(msg,type='info',duration=3000){
+const TOAST_ICONS={success:'ti-check',error:'ti-alert-circle',warning:'ti-alert-triangle',info:'ti-info-circle'};
+function toast(msg,type='info',duration=2600){
   const c=document.getElementById('toast-container');
   const t=document.createElement('div');
-  t.className='toast '+type;t.textContent=msg;c.appendChild(t);
+  t.className='toast '+type;
+  const ic=document.createElement('i');
+  ic.className='ti '+(TOAST_ICONS[type]||TOAST_ICONS.info);
+  const span=document.createElement('span');
+  span.textContent=msg;
+  t.appendChild(ic);t.appendChild(span);
+  c.appendChild(t);
   requestAnimationFrame(()=>{requestAnimationFrame(()=>{t.classList.add('show');});});
   setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),250);},duration);
 }
@@ -65,6 +72,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     const overlay = document.getElementById('confirm-overlay');
     if (overlay && overlay.classList.contains('open')) { confirmCancel(); return; }
+    const drawer = document.getElementById('member-drawer-overlay');
+    if (drawer && drawer.classList.contains('open')) { closeMemberDrawer(); return; }
     // Close topmost open modal
     const openModals = document.querySelectorAll('.mo.open');
     if (openModals.length) {
@@ -93,7 +102,7 @@ function isOverdue(d){if(!d)return false;try{return new Date(d+'T12:00:00')<new 
 function isUpcoming(d){if(!d)return false;try{return new Date(d+'T12:00:00')>=new Date();}catch{return false;}}
 function percent(count,total){return total?Math.round(count/total*100):0;}
 function uid(){return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
-function progressColor(p){return p>=80?'var(--gn)':p>=50?'var(--navy)':p>=25?'var(--am)':'var(--rd)';}
+function progressColor(p){return p>=80?'var(--gn)':p>=50?'var(--gold)':p>=25?'var(--am)':'var(--rd)';}
 
 // Attendance rate: computed from real D.attendance data
 function getAttendanceRate(memberId){
@@ -125,7 +134,7 @@ function getAttendanceTrend(memberId){
 }
 function getTaskMetrics(id){const all=D.tasks.filter(t=>t.assignedTo===id);const dn=all.filter(t=>t.status==='done');return{total:all.length,done:dn.length,rate:all.length?Math.round(dn.length/all.length*100):0};}
 function memberSelectOptions(){return sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');}
-function eventCategoryStyle(t){const m={chapter:'background:#e8eef7;color:#1a3a6b',exec:'background:#f0f0ee;color:#555',recruitment:'background:var(--gn-bg);color:var(--gn-tx)',philanthropy:'background:#fbeaf0;color:#993556',service:'background:var(--gn-bg);color:var(--gn-tx)',fundraiser:'background:#fbeaf0;color:#993556',social:'background:var(--rd-bg);color:var(--rd-tx)',brotherhood:'background:var(--am-bg);color:var(--am-tx)',retreat:'background:var(--gn-bg);color:var(--gn-tx)',mandatory:'background:var(--rd-bg);color:var(--rd-tx)'};return m[t]||'background:#f0f0ee;color:#555';}
+function eventCategoryStyle(t){const m={chapter:'background:var(--sky-bg);color:var(--sky-tx)',exec:'background:var(--surf2);color:#555',recruitment:'background:var(--gn-bg);color:var(--gn-tx)',philanthropy:'background:#fbeaf0;color:#993556',service:'background:var(--gn-bg);color:var(--gn-tx)',fundraiser:'background:#fbeaf0;color:#993556',social:'background:var(--rd-bg);color:var(--rd-tx)',brotherhood:'background:var(--am-bg);color:var(--am-tx)',retreat:'background:var(--gn-bg);color:var(--gn-tx)',mandatory:'background:var(--rd-bg);color:var(--rd-tx)'};return m[t]||'background:var(--surf2);color:#555';}
 
 // ── SIDEBAR RESPONSIVE ──
 function sbOpen(){
@@ -359,8 +368,8 @@ function _buildExportHtml(notes,withCover){
     .sec-t{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b6b68;margin-top:20px;margin-bottom:8px;border-top:1px solid #e5e5e3;padding-top:14px}
     .sec-b{margin-bottom:4px}.bl{margin-bottom:3px;padding-left:4px}
     .ot{width:100%;border-collapse:collapse;margin-bottom:4px}
-    .or{font-size:10.5px;font-weight:700;color:#444;padding:5px 10px 5px 0;vertical-align:top;white-space:nowrap;width:140px;border-bottom:1px solid #f0f0ee}
-    .on{padding:5px 0;font-size:11.5px;border-bottom:1px solid #f0f0ee;vertical-align:top}
+    .or{font-size:10.5px;font-weight:700;color:#444;padding:5px 10px 5px 0;vertical-align:top;white-space:nowrap;width:140px;border-bottom:1px solid var(--surf2)}
+    .on{padding:5px 0;font-size:11.5px;border-bottom:1px solid var(--surf2);vertical-align:top}
     @media print{body{padding:24px}@page{margin:.75in}}
   </style></head><body>
   ${cover}${notes.map((n,i)=>noteHtml(n,i===notes.length-1)).join('')}
@@ -377,7 +386,7 @@ function openAddNote(){
       </div>
       <div style="flex:1">
         <div style="font-size:11.5px;font-weight:500;margin-bottom:3px">${o.role} — ${o.name}</div>
-        <textarea id="mn-off-${o.id}" style="width:100%;height:36px;padding:5px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:11.5px;font-family:inherit;resize:vertical;outline:none;transition:border .1s" placeholder="• Report notes..." onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='var(--bdr)'"></textarea>
+        <textarea id="mn-off-${o.id}" style="width:100%;height:36px;padding:5px 8px;border:1px solid var(--bdr);border-radius:6px;font-size:11.5px;font-family:inherit;resize:vertical;outline:none;transition:border .1s" placeholder="• Report notes..." onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--bdr)'"></textarea>
       </div>
     </div>`).join('');
   openM('m-addnote');

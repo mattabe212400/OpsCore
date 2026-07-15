@@ -103,7 +103,7 @@ function rpWeekly(){
       return rpTable(['Officer','Role','Tasks Done','Attendance','Status'],offs.map(m=>{
         const ts=getTaskMetrics(m.id);const att=getAttendanceRate(m.id);
         const s=ts.rate>=80&&att>=85?['On Track','var(--gn)']:ts.rate>=60||att>=75?['Behind','var(--am)']:['At Risk','var(--rd)'];
-        return[`<strong>${m.name}</strong>`,m.role,`${ts.done}/${ts.total}`,`<span style="color:${att>=85?'var(--gn)':att>=75?'var(--navy)':att<75?'var(--rd)':'var(--am)'}">${att}%</span>`,`<span style="color:${s[1]}">${s[0]}</span>`];
+        return[`<strong>${m.name}</strong>`,m.role,`${ts.done}/${ts.total}`,`<span style="color:${att>=85?'var(--gn)':att>=75?'var(--gold)':att<75?'var(--rd)':'var(--am)'}">${att}%</span>`,`<span style="color:${s[1]}">${s[0]}</span>`];
       }));
     })()
   );
@@ -140,7 +140,7 @@ function rpAttendance(){
   rpSection('ti-users','Full Member Attendance',
     rpTable(['Member','Class','Role','Attendance Rate','Status'],[...D.members].sort((a,b)=>getAttendanceRate(b.id)-getAttendanceRate(a.id)).map(m=>{
       const r=getAttendanceRate(m.id);
-      const s=r>=85?['Good','var(--gn)']:r>=75?['Good','var(--navy)']:r>=65?['At Risk','var(--am)']:['Warning','var(--rd)'];
+      const s=r>=85?['Good','var(--gn)']:r>=75?['Good','var(--gold)']:r>=65?['At Risk','var(--am)']:['Warning','var(--rd)'];
       return[m.name,m.classYear,m.role||'Member',`<span style="font-weight:600;color:${s[1]}">${r}%</span>`,`<span style="color:${s[1]}">${s[0]}</span>`];
     }))
   )+
@@ -150,7 +150,7 @@ function rpAttendance(){
       const pres=Object.values(att).filter(v=>v==='present'||v==='excused').length;
       const abs=Object.values(att).filter(v=>v==='absent').length;
       const rate=Math.round(pres/tot*100);
-      return[`<strong>${ev.title}</strong>`,formatDate(ev.date),pres,abs,`<span style="color:${rate>=85?'var(--gn)':rate>=75?'var(--navy)':'var(--rd)'};font-weight:600">${rate}%</span>`];
+      return[`<strong>${ev.title}</strong>`,formatDate(ev.date),pres,abs,`<span style="color:${rate>=85?'var(--gn)':rate>=75?'var(--gold)':'var(--rd)'};font-weight:600">${rate}%</span>`];
     })):(`<div style="color:var(--mt);font-size:12px">No mandatory events marked yet.</div>`)
   );
 }
@@ -166,7 +166,7 @@ function rpRecruitment(){
 
   return rpHeader('Recruitment Report',`${rushees.length} rushees in pipeline · ${getSemester()}`)+
   rpSection('ti-chart-bar','Pipeline Summary',rpKpis([
-    {label:'Total Rushees',val:rushees.length,color:'var(--navy)'},
+    {label:'Total Rushees',val:rushees.length,color:'var(--gold)'},
     {label:'Bid Ready / Accepted',val:bidReady,color:'var(--gn)'},
     {label:'Hot Prospects (70+)',val:hot,color:'var(--am-tx)'},
     {label:'Goal Progress',val:Math.round(rushees.length/(RCG.target||20)*100)+'%',color:'var(--bl)'},
@@ -212,7 +212,7 @@ function rpFinance(){
 
   return rpHeader('Finance Snapshot',`Dues collection and budget status · ${getSemester()}`)+
   rpSection('ti-chart-bar','Financial Summary',rpKpis([
-    {label:'Total Owed',val:'$'+totalOwed.toLocaleString(),color:'var(--navy)'},
+    {label:'Total Owed',val:'$'+totalOwed.toLocaleString(),color:'var(--gold)'},
     {label:'Collected',val:'$'+totalPaid.toLocaleString(),color:'var(--gn)'},
     {label:'Outstanding',val:'$'+outstanding.toLocaleString(),color:outstanding>0?'var(--rd)':'var(--gn)'},
     {label:'Collection Rate',val:collRate+'%',color:collRate>=80?'var(--gn)':collRate>=60?'var(--am)':'var(--rd)'},
@@ -242,7 +242,7 @@ function rpAcademics(){
 
   return rpHeader('Academic Standing Report',`Chapter GPA and individual member academic status · ${getSemester()}`)+
   rpSection('ti-chart-bar','Academic Summary',rpKpis([
-    {label:'Chapter Avg GPA',val:avgGpa,color:'var(--navy)'},
+    {label:'Chapter Avg GPA',val:avgGpa,color:'var(--gold)'},
     {label:"Dean's List (3.5+)",val:deans,color:'var(--gn)'},
     {label:'Members Tracked',val:withGpa.length+'/'+D.members.length,color:'var(--bl)'},
     {label:'Academic Warnings (<2.75)',val:warn,color:warn>0?'var(--rd)':'var(--gn)'},

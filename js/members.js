@@ -86,7 +86,7 @@ function renderJudicialContent(){
         <span style="font-size:12.5px">${x.label}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:80px;height:5px;background:#f0f0ee;border-radius:99px;overflow:hidden">
+        <div style="width:80px;height:5px;background:var(--surf2);border-radius:99px;overflow:hidden">
           <div style="height:100%;border-radius:99px;background:${x.col};width:${D.cases.length?Math.round(x.n/D.cases.length*100):0}%"></div>
         </div>
         <span style="font-size:12px;font-weight:500;width:20px;text-align:right">${x.n}</span>
@@ -145,7 +145,54 @@ function renderMembers(){
     if(q&&!(m.name||'').toLowerCase().includes(q))return false;
     return true;
   });
-  document.getElementById('m-table').innerHTML=`<thead><tr><th>Member</th><th>Grad Year</th><th>Class</th><th>Status</th><th>Role</th><th>Attendance</th><th>Live-in</th><th>Engagement</th>${editCol}</tr></thead><tbody>${rows.map(m=>{const r=getAttendanceRate(m.id);const dots=[...Array(5)].map((_,i)=>`<div class="edot ${i<Math.round(r/20)?'f':'e'}"></div>`).join('');const status=m.memberStatus||'Active';const editCell=canEdit?`<td><button class="btn" style="height:23px;font-size:10.5px" onclick="openEditMember('${m.id}')"><i class="ti ti-pencil"></i></button></td>`:'';return`<tr><td><div style="display:flex;align-items:center;gap:7px"><div class="sh-av" style="width:25px;height:25px;font-size:8.5px">${m.initials}</div><span style="font-weight:500">${m.name}</span></div></td><td style="color:var(--mt)">${m.year}</td><td>${m.classYear}</td><td><span class="badge ${status==='New Member'?'bb2':'bm2'}">${status}</span></td><td><span class="badge ${m.role!=='Member'?'bb2':'bm2'}">${m.role}</span></td><td style="font-weight:500;color:${r>=85?'var(--gn)':r>=75?'var(--navy)':r>=65?'var(--am)':'var(--rd)'}">${r}%</td><td>${m.liveIn?'Yes':'—'}</td><td><div class="edots">${dots}</div></td>${editCell}</tr>`;}).join('')||`<tr><td colspan="9" style="text-align:center;color:var(--mt);padding:18px">No members found.</td></tr>`}</tbody>`;
+  document.getElementById('m-table').innerHTML=`<thead><tr><th>Member</th><th>Grad Year</th><th>Class</th><th>Status</th><th>Role</th><th>Attendance</th><th>Live-in</th><th>Engagement</th>${editCol}</tr></thead><tbody>${rows.map(m=>{const r=getAttendanceRate(m.id);const dots=[...Array(5)].map((_,i)=>`<div class="edot ${i<Math.round(r/20)?'f':'e'}"></div>`).join('');const status=m.memberStatus||'Active';const editCell=canEdit?`<td><button class="btn" style="height:23px;font-size:10.5px" onclick="event.stopPropagation();openEditMember('${m.id}')"><i class="ti ti-pencil"></i></button></td>`:'';return`<tr style="cursor:pointer" onclick="openMemberDrawer('${m.id}')"><td><div style="display:flex;align-items:center;gap:7px"><div class="sh-av" style="width:25px;height:25px;font-size:8.5px">${m.initials}</div><span style="font-weight:500">${m.name}</span></div></td><td style="color:var(--mt)">${m.year}</td><td>${m.classYear}</td><td><span class="badge ${status==='New Member'?'bb2':'bm2'}">${status}</span></td><td><span class="badge ${m.role!=='Member'?'bb2':'bm2'}">${m.role}</span></td><td style="font-weight:500;color:${r>=85?'var(--gn)':r>=75?'var(--gold)':r>=65?'var(--am)':'var(--rd)'}">${r}%</td><td>${m.liveIn?'Yes':'—'}</td><td><div class="edots">${dots}</div></td>${editCell}</tr>`;}).join('')||`<tr><td colspan="9" style="text-align:center;color:var(--mt);padding:18px">No members found.</td></tr>`}</tbody>`;
+}
+
+// ── MEMBER PROFILE DRAWER (view-only; Edit button hands off to the existing edit modal) ──
+function openMemberDrawer(id){
+  const m=D.members.find(x=>x.id===id);if(!m)return;
+  const r=getAttendanceRate(id);
+  const ts=getTaskMetrics(id);
+
+  document.getElementById('mdw-av').textContent=m.initials;
+  document.getElementById('mdw-name').textContent=m.name;
+  document.getElementById('mdw-sub').textContent=`${m.role} · ${m.classYear}`;
+
+  const stats=[{v:r+'%',l:'Attendance'},{v:`${ts.done}/${ts.total}`,l:'Tasks Done'}];
+  if(canAccess('academics')){
+    const g=(D.academics.gpas[id]||{}).cumulativeGpa;
+    stats.push({v:g?(+g).toFixed(2):'—',l:'Cumulative GPA'});
+  }
+  if(canAccess('finance')){
+    const status=(D.finance.dues[id]||{}).status||'Partial';
+    stats.push({v:status,l:'Dues Status'});
+  }
+
+  const status=m.memberStatus||'Active';
+  const detailRows=[['Status',status],['Grad Year',m.year],['Class',m.classYear],['Live-in',m.liveIn?'Yes':'No']];
+
+  const pastEvents=D.events.filter(e=>e.mandatory&&!isUpcoming(e.date)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const attMap={present:['Present','bg2'],excused:['Excused','bb2'],unexcused:['Unexcused Miss','br2']};
+  const attRows=pastEvents.map(ev=>{
+    const rec=(D.attendance[ev.id]||{})[id];
+    const [label,cls]=attMap[rec]||['Not marked','bm2'];
+    const d=new Date(ev.date+'T12:00:00');
+    return`<div class="ev-row"><div class="ev-dt"><div class="ev-day">${d.getDate()}</div><div class="ev-mo">${d.toLocaleString('en-US',{month:'short'})}</div></div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.title}</div><div style="font-size:10.5px;color:var(--mt)">${formatDateShort(ev.date)}</div></div><span class="badge ${cls}">${label}</span></div>`;
+  }).join('')||`<div class="es-inline"><i class="ti ti-calendar-off"></i>No past mandatory events yet</div>`;
+
+  const canEdit=canEditMembers();
+  document.getElementById('mdw-body').innerHTML=`
+    <div class="drawer-stats">${stats.map(s=>`<div class="drawer-stat"><div class="drawer-stat-v">${s.v}</div><div class="drawer-stat-l">${s.l}</div></div>`).join('')}</div>
+    <div class="drawer-section-t">Details</div>
+    <div style="display:flex;flex-direction:column;gap:8px">${detailRows.map(([l,v])=>`<div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:var(--mt)">${l}</span><span style="font-weight:500;color:var(--tx)">${v}</span></div>`).join('')}</div>
+    <div class="drawer-section-t">Recent Attendance</div>
+    <div>${attRows}</div>
+    ${canEdit?`<div style="margin-top:18px"><button class="btn btn-p" style="width:100%;justify-content:center" onclick="closeMemberDrawer();openEditMember('${id}')"><i class="ti ti-pencil"></i>Edit Member</button></div>`:''}
+  `;
+  document.getElementById('member-drawer-overlay').classList.add('open');
+}
+function closeMemberDrawer(){
+  document.getElementById('member-drawer-overlay').classList.remove('open');
 }
 
 function renderCommittees(){
@@ -155,14 +202,14 @@ function renderCommittees(){
 
   const editBtn=(id)=>canEdit?`<button class="btn" style="height:22px;font-size:10px;padding:0 7px" onclick="openEditComm('${id}')"><i class="ti ti-pencil"></i></button>`:'';
   document.getElementById('co-cnt').textContent=D.committees.length+' committees this semester';
-  document.getElementById('co-grid').innerHTML=D.committees.map(c=>`<div class="card" style="transition:border-color .1s" onmouseover="this.style.borderColor='var(--navy)'" onmouseout="this.style.borderColor='var(--bdr)'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px"><span style="font-size:13px;font-weight:500">${c.name}</span><div style="display:flex;align-items:center;gap:6px"><span style="font-size:10.5px;color:var(--mt)">${(c.members||[]).length} members</span>${editBtn(c.id)}</div></div><p style="font-size:11.5px;color:var(--mt);line-height:1.5;margin-bottom:9px">${c.desc||'No description'}</p><div style="font-size:11px;color:var(--ht);border-top:1px solid var(--bdr);padding-top:8px;display:flex;justify-content:space-between"><span>Chair:</span><span style="font-weight:500;color:var(--tx)">${c.chair?getMember(c.chair).name:'Unassigned'}</span></div></div>`).join('')||`<div style="grid-column:1/-1">${es('ti-sitemap','blue','No committees','Create committees to organize chapter working groups.',canEdit?`<button class="btn btn-p" onclick="openM('m-addcomm')"><i class="ti ti-plus"></i>New Committee</button>`:'')}</div>`;
+  document.getElementById('co-grid').innerHTML=D.committees.map(c=>`<div class="card" style="transition:border-color .1s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--bdr)'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px"><span style="font-size:13px;font-weight:500">${c.name}</span><div style="display:flex;align-items:center;gap:6px"><span style="font-size:10.5px;color:var(--mt)">${(c.members||[]).length} members</span>${editBtn(c.id)}</div></div><p style="font-size:11.5px;color:var(--mt);line-height:1.5;margin-bottom:9px">${c.desc||'No description'}</p><div style="font-size:11px;color:var(--ht);border-top:1px solid var(--bdr);padding-top:8px;display:flex;justify-content:space-between"><span>Chair:</span><span style="font-weight:500;color:var(--tx)">${c.chair?getMember(c.chair).name:'Unassigned'}</span></div></div>`).join('')||`<div style="grid-column:1/-1">${es('ti-sitemap','blue','No committees','Create committees to organize chapter working groups.',canEdit?`<button class="btn btn-p" onclick="openM('m-addcomm')"><i class="ti ti-plus"></i>New Committee</button>`:'')}</div>`;
 }
 
 
 // ── FILE STORAGE: store base64 content in memory (not localStorage — too large)
 const FI_STORE = {}; // id -> {name, type, size, base64, mediaType, text}
 
-function fiDragOver(e){e.preventDefault();const t=e.currentTarget;t.style.borderColor='var(--navy)';t.style.background='#f0f4ff';}
+function fiDragOver(e){e.preventDefault();const t=e.currentTarget;t.style.borderColor='var(--gold)';t.style.background='#f0f4ff';}
 function fiDragLeave(e){const t=e.currentTarget;t.style.borderColor='var(--bdr)';t.style.background='transparent';}
 function fiDrop(e){e.preventDefault();fiDragLeave(e);const files=e.dataTransfer.files;if(files.length)fiProcessFiles(files,'General');}
 
@@ -211,21 +258,21 @@ function fiGuessFolder(name){
 let FI_CURRENT_FOLDER=null; // null = root view
 
 const DEFAULT_FILE_FOLDERS=[
-  {name:'President',icon:'👑',color:'#1a3a6b',bg:'#e8eef7'},
+  {name:'President',icon:'👑',color:'var(--sky-tx)',bg:'var(--sky-bg)'},
   {name:'Vice President',icon:'⭐',color:'#185fa5',bg:'#e6f1fb'},
-  {name:'Treasurer',icon:'💰',color:'#3b6d11',bg:'#eaf3de'},
-  {name:'Risk Manager',icon:'🛡️',color:'#a32d2d',bg:'#fcebeb'},
-  {name:'Secretary',icon:'📋',color:'#854f0b',bg:'#faeeda'},
-  {name:'Chaplain',icon:'✝️',color:'#555',bg:'#f0f0ee'},
+  {name:'Treasurer',icon:'💰',color:'var(--gn-tx)',bg:'var(--gn-bg)'},
+  {name:'Risk Manager',icon:'🛡️',color:'var(--rd-tx)',bg:'var(--rd-bg)'},
+  {name:'Secretary',icon:'📋',color:'var(--am-tx)',bg:'var(--am-bg)'},
+  {name:'Chaplain',icon:'✝️',color:'#555',bg:'var(--surf2)'},
   {name:'New Member Educator',icon:'🎓',color:'#185fa5',bg:'#e6f1fb'},
-  {name:'Recruitment Chair',icon:'🤝',color:'#3b6d11',bg:'#eaf3de'},
-  {name:'Social Chair',icon:'🎉',color:'#854f0b',bg:'#faeeda'},
-  {name:'Philanthropy Chair',icon:'❤️',color:'#a32d2d',bg:'#fcebeb'},
+  {name:'Recruitment Chair',icon:'🤝',color:'var(--gn-tx)',bg:'var(--gn-bg)'},
+  {name:'Social Chair',icon:'🎉',color:'var(--am-tx)',bg:'var(--am-bg)'},
+  {name:'Philanthropy Chair',icon:'❤️',color:'var(--rd-tx)',bg:'var(--rd-bg)'},
   {name:'Scholarship Chair',icon:'📚',color:'#185fa5',bg:'#e6f1fb'},
-  {name:'Alumni Relations Chair',icon:'🏛️',color:'#1a3a6b',bg:'#e8eef7'},
-  {name:'Public Relations Officer',icon:'📣',color:'#854f0b',bg:'#faeeda'},
-  {name:'Community Service Chair',icon:'🌱',color:'#3b6d11',bg:'#eaf3de'},
-  {name:'General',icon:'📁',color:'#555',bg:'#f0f0ee'},
+  {name:'Alumni Relations Chair',icon:'🏛️',color:'var(--sky-tx)',bg:'var(--sky-bg)'},
+  {name:'Public Relations Officer',icon:'📣',color:'var(--am-tx)',bg:'var(--am-bg)'},
+  {name:'Community Service Chair',icon:'🌱',color:'var(--gn-tx)',bg:'var(--gn-bg)'},
+  {name:'General',icon:'📁',color:'#555',bg:'var(--surf2)'},
 ];
 function getFileFolders(){
   if(!D.settings)return DEFAULT_FILE_FOLDERS;
@@ -345,7 +392,7 @@ function fiAddFolder(){
   if(folders.find(f=>f.name.toLowerCase()===name.toLowerCase())){toast('A folder with that name already exists','error');return;}
   const icon=document.getElementById('fi-folder-icon').value.trim()||'📁';
   if(!D.settings.fileFolders)D.settings.fileFolders=[...DEFAULT_FILE_FOLDERS];
-  D.settings.fileFolders.push({name,icon,color:'#555',bg:'#f0f0ee'});
+  D.settings.fileFolders.push({name,icon,color:'#555',bg:'var(--surf2)'});
   saveData();closeM(null,document.getElementById('m-fi-addfolder'));renderFiles();toast('Folder created','success');
 }
 async function fiDeleteFolder(folderName){
@@ -369,7 +416,7 @@ function renderNotifications(){
   document.getElementById('no-list').innerHTML=visibleNotifs.map(n=>{
     const linkClick=n.link?`onclick="nRead('${n.id}');rbacNav('${n.link}',null)"`:(`onclick="nRead('${n.id}')"`);
     return`<div class="ni-item ${n.read?'':'unread'}" ${linkClick} style="cursor:${n.link?'pointer':'default'}">
-      <div class="al-ic" style="${co[n.type]||'background:#f0f0ee;color:var(--mt)'}"><i class="ti ${ic[n.type]||'ti-bell'}" style="font-size:13px"></i></div>
+      <div class="al-ic" style="${co[n.type]||'background:var(--surf2);color:var(--mt)'}"><i class="ti ${ic[n.type]||'ti-bell'}" style="font-size:13px"></i></div>
       <div style="flex:1">
         <div style="font-size:12px;font-weight:${n.read?400:500}">${n.title}${n.autoKey?'<span style="font-size:9px;color:var(--ht);margin-left:6px;font-weight:400">auto</span>':''}</div>
         <div style="font-size:11px;color:var(--mt);margin-top:2px">${n.body}</div>
@@ -383,7 +430,7 @@ function renderNotifications(){
 
 // ── EXEC POSITION FOLDERS ──
 const EXEC_POSITIONS=[
-  {role:'President',          icon:'👑', color:'#1a3a6b', bg:'#e8eef7',
+  {role:'President',          icon:'👑', color:'var(--sky-tx)', bg:'var(--sky-bg)',
    responsibilities:['Lead chapter operations and exec team','Chair all chapter and exec meetings','Represent chapter to ISU, IFC, and ATO national','Manage judicial board and standards enforcement','Final approval on all major chapter decisions'],
    recurringTasks:['Weekly exec check-ins (Monday)','Monthly report to ATO national advisor','Semester goal-setting with exec team','Sign all chapter contracts and official documents','IFC President meetings (bi-weekly)'],
    wishIKnew:'The job is 80% communication and follow-up. Your exec team will only move as fast as you hold them accountable. Set clear weekly expectations and never let a deadline slip twice.'},
@@ -391,27 +438,27 @@ const EXEC_POSITIONS=[
    responsibilities:['Run chapter meetings and set agendas','Track officer accountability and task completion','Serve as President backup at all events','Coordinate committee chairs and their reports','Manage chapter calendar and event scheduling'],
    recurringTasks:['Weekly VP checklist (see Playbooks)','Monday agenda prep and officer check-ins','Send weekly chapter digest email','Attendance follow-up for members below 75%','Coordinate with Secretary on meeting minutes'],
    wishIKnew:'Agenda discipline makes or breaks chapter meetings. Send the agenda 24 hours out, stick to time limits, and never let open forum run more than 5 minutes. Brothers appreciate efficiency.'},
-  {role:'Treasurer',          icon:'💰', color:'#3b6d11', bg:'#eaf3de',
+  {role:'Treasurer',          icon:'💰', color:'var(--gn-tx)', bg:'var(--gn-bg)',
    responsibilities:['Manage all chapter finances and bank accounts','Collect and track semester dues','Approve all chapter expenditures','Maintain semester budget and financial reports','File all required financial reports with IFC and nationals'],
    recurringTasks:['Weekly dues reminder to unpaid members','Monthly budget vs. actuals report to exec','IFC financial reporting (semester deadlines)','Annual audit with chapter advisor','Semester budget planning before each semester'],
    wishIKnew:'Chase dues early and often. The first 3 weeks of the semester set the tone. Members who don\'t pay by Week 4 rarely pay voluntarily. Know exactly what IFC requires and when — late filings are a big deal.'},
-  {role:'Secretary',          icon:'📋', color:'#854f0b', bg:'#faeeda',
+  {role:'Secretary',          icon:'📋', color:'var(--am-tx)', bg:'var(--am-bg)',
    responsibilities:['Record and publish all chapter meeting minutes','Maintain official chapter roster and member records','Handle chapter correspondence and official communications','Track and submit all required reports to nationals','Manage chapter calendar accuracy'],
    recurringTasks:['Minutes published within 24 hours of each meeting','Roster update at start of each semester','Monthly report to ATO national (online portal)','Attendance records kept current in platform','Email archive maintained for the semester'],
    wishIKnew:'The national portal deadlines sneak up on you. Build calendar reminders for every reporting deadline on Day 1. Keep the chapter roster obsessively up to date — everything else in the platform depends on it.'},
-  {role:'Recruitment Chair',  icon:'🤝', color:'#3b6d11', bg:'#eaf3de',
+  {role:'Recruitment Chair',  icon:'🤝', color:'var(--gn-tx)', bg:'var(--gn-bg)',
    responsibilities:['Plan and execute all rush events each semester','Manage the recruitment CRM and rushee pipeline','Coordinate bid day and new member onboarding','Lead the recruitment committee','Track and report recruitment metrics'],
    recurringTasks:['Weekly CRM review and rushee follow-ups','Rush event debrief within 24 hours','Recruiter leaderboard and accountability tracking','IFC recruitment registration and compliance','Post-rush debrief report at end of each semester'],
    wishIKnew:'Relationships close bids, not events. Your brothers who personally invite rushees and follow up 1-on-1 are worth more than any event. Train every brother on how to have a conversation, not just a sales pitch.'},
-  {role:'Risk Manager',       icon:'🛡️', color:'#a32d2d', bg:'#fcebeb',
+  {role:'Risk Manager',       icon:'🛡️', color:'var(--rd-tx)', bg:'var(--rd-bg)',
    responsibilities:['Enforce all risk management policies at events','Schedule and manage social monitor rotations','Conduct event safety walkthroughs','Handle incident documentation and reporting','Liaise with ISU and ATO national on risk matters'],
    recurringTasks:['Social monitor schedule filled 1 week in advance','Event approval sign-off for every social event','Weekly check of social monitor confirmations','Risk policy review at start of each semester','Post-event incident reports (if applicable)'],
    wishIKnew:'The social monitor schedule is your most important recurring task. Never let it go unfilled. One incident without documentation ruins the chapter. Get your FIPG training done in the first week and make sure exec knows the policy cold.'},
-  {role:'Social Chair',       icon:'🎉', color:'#854f0b', bg:'#faeeda',
+  {role:'Social Chair',       icon:'🎉', color:'var(--am-tx)', bg:'var(--am-bg)',
    responsibilities:['Plan and execute all chapter social events','Coordinate with co-host organizations','Manage event budgets in coordination with Treasurer','Ensure all socials are approved by Risk Manager','Build and maintain vendor relationships'],
    recurringTasks:['Submit event proposals to exec 2 weeks in advance','Confirm venue, catering, and transportation 1 week out','Brief brothers on event logistics 48 hours before','Post-event debrief and vendor rating update','Semester event calendar submitted Week 1'],
    wishIKnew:'Book popular venues in the first week of the semester or they\'ll be gone. Always have a backup plan for venue and catering. Your vendor list in the platform is gold — update it after every event while details are fresh.'},
-  {role:'Philanthropy Chair', icon:'❤️', color:'#a32d2d', bg:'#fcebeb',
+  {role:'Philanthropy Chair', icon:'❤️', color:'var(--rd-tx)', bg:'var(--rd-bg)',
    responsibilities:['Organize all chapter philanthropy and service events','Track and report individual and chapter service hours','Meet IFC and national service hour requirements','Build relationships with nonprofit partners','Run the philanthropy committee'],
    recurringTasks:['Service hour log updated within 24 hours of each event','IFC service hours reported each semester','At least 1 philanthropy event per month during semester','Chapter service hour goal tracked in platform','Thank-you notes sent to partner orgs within 48 hours'],
    wishIKnew:'IFC has a minimum hours requirement that can affect your chapter standing. Know the number on Day 1 and set your semester goal above it. Brothers participate more when you make it easy — transportation is usually the bottleneck.'},
@@ -419,7 +466,7 @@ const EXEC_POSITIONS=[
    responsibilities:['Track and report all member GPAs each semester','Identify and support members on academic probation','Run the scholarship committee and study programs','Submit GPA reports to IFC and ATO national','Coordinate academic support resources with ISU'],
    recurringTasks:['GPA collection within first 3 weeks of semester','Academic probation check-ins (weekly)','Study hours tracking if chapter policy requires','IFC GPA report (end of semester deadline)','Chapter GPA award at end-of-semester recognition night'],
    wishIKnew:'Collecting GPAs is harder than it sounds. Send a platform link and make it part of the first chapter meeting. Members on probation often hide it — check in with them privately, not in front of the chapter.'},
-  {role:'House Manager',      icon:'🏠', color:'#555', bg:'#f0f0ee',
+  {role:'House Manager',      icon:'🏠', color:'#555', bg:'var(--surf2)',
    responsibilities:['Manage chapter house maintenance and repairs','Coordinate with house corporation on major repairs','Enforce house rules and cleanliness standards','Manage room assignments and live-in rosters','Handle vendor relationships for house services'],
    recurringTasks:['Weekly house walkthrough and maintenance log','Monthly report to house corporation','Room assignment updates at semester start','Utilities and vendor payments tracked with Treasurer','Move-in and move-out inspection checklists'],
    wishIKnew:'Build a relationship with the house corporation contact in Week 1. Keep a running maintenance log — it protects you when something goes wrong. Never pay for a repair out of pocket without exec approval and documentation.'},
@@ -427,7 +474,7 @@ const EXEC_POSITIONS=[
    responsibilities:['Design and run the semester new member education program','Track new member progress through all milestones','Coordinate with Chaplain on ritual components','Ensure NME program is compliant with ATO standards','Oversee Peer Mentor Program group assignments'],
    recurringTasks:['Weekly NME session planning and facilitation','New member progress tracked in Ritual & Education section','Peer Mentor Program groups finalized by Week 4','Standards tests administered and graded','Initiation logistics coordinated with Chaplain and President'],
    wishIKnew:'The new member experience sets the tone for how brothers engage with the chapter for their entire time here. Take it seriously. The ritual section in the platform helps track every milestone — use it every week, not just at initiation.'},
-  {role:'Chaplain',           icon:'✝️', color:'#555', bg:'#f0f0ee',
+  {role:'Chaplain',           icon:'✝️', color:'#555', bg:'var(--surf2)',
    responsibilities:['Lead chapter in ritual and spiritual life','Coordinate all formal ritual ceremonies','Maintain ritual materials and ensure their security','Run the brother of the week and chapter prayer traditions','Support members through personal challenges'],
    recurringTasks:['Chapter opening and closing ritual at every meeting','Coordinate initiation ceremony logistics with NME','Brother of the Week nomination at every chapter meeting','Ritual equipment inventory at start of each semester','Support member wellness — connect struggling brothers to resources'],
    wishIKnew:'The ritual materials are your most important responsibility. Know where they are at all times. Initiation coordination with the NME takes 3-4 weeks of planning — start early. Your informal role supporting brothers personally matters more than most execs realize.'},
@@ -486,7 +533,7 @@ function trNavRoot(){
     const pos=EXEC_POSITIONS.find(p=>p.role===role);
     const tr=D.transitions.find(t=>t.role===role);
     const icon=pos?pos.icon:'📁';
-    const bg=pos?pos.bg:'#f0f0ee';
+    const bg=pos?pos.bg:'var(--surf2)';
     const col=pos?pos.color:'#555';
     const status=tr?tr.status:'not_started';
     const out=tr&&tr.outgoing?getMember(tr.outgoing).name:'—';
@@ -945,7 +992,7 @@ function filterGpaModal(){
     return`<input type="number" id="gpa-${field}-${id}" step="0.01" min="0" max="4" value="${v}" placeholder="—"
       title="${label}"
       style="width:68px;height:28px;padding:0 6px;border:1px solid var(--bdr);border-radius:6px;font-size:11.5px;font-family:inherit;text-align:center;outline:none;transition:border .1s"
-      onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='var(--bdr)'">`;
+      onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--bdr)'">`;
   }
 
   list.innerHTML=members.map(m=>{

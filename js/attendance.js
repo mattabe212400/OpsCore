@@ -21,7 +21,7 @@ function renderAttendance(){
   const absent=Object.values(D.attendance||{}).reduce((s,ev)=>s+Object.values(ev).filter(v=>v==='absent').length,0);
   const attHd=document.getElementById('att-hd');if(attHd)attHd.textContent='Member Attendance — '+getSemester();
   document.getElementById('a-kpi').innerHTML=kpi('Semester avg',avg+'%',getSemester(),avg>=85?'up':'down')+kpi('Excused Misses',excused,'Semester total','neutral')+kpi('Unexcused Misses',absent,'Semester total',absent>20?'down':'neutral')+kpi('Warnings issued',D.members.filter(m=>getAttendanceRate(m.id)<75).length,'Below 75%',D.members.filter(m=>getAttendanceRate(m.id)<75).length>0?'down':'neutral');
-  document.getElementById('a-table').innerHTML=`<thead><tr><th>Member</th><th>Class</th><th>Attendance Rate</th><th>Status</th><th></th></tr></thead><tbody>${D.members.map(m=>{const r=getAttendanceRate(m.id);const s=r>=85?['Good','bg2']:r>=75?['Good','bg2']:r>=65?['At risk','ba2']:['Warning','br2'];return`<tr><td style="font-weight:500">${m.name}</td><td>${m.classYear}</td><td style="font-weight:500;color:${r>=85?'var(--gn)':r>=75?'var(--navy)':r>=65?'var(--am)':'var(--rd)'}">${r}%</td><td><span class="badge ${s[1]}">${s[0]}</span></td><td><button class="btn" style="height:23px;font-size:10.5px" onclick="openEditMember('${m.id}')"><i class="ti ti-pencil"></i></button></td></tr>`;}).join('')}</tbody>`;
+  document.getElementById('a-table').innerHTML=`<thead><tr><th>Member</th><th>Class</th><th>Attendance Rate</th><th>Status</th><th></th></tr></thead><tbody>${D.members.map(m=>{const r=getAttendanceRate(m.id);const s=r>=85?['Good','bg2']:r>=75?['Good','bg2']:r>=65?['At risk','ba2']:['Warning','br2'];return`<tr><td style="font-weight:500">${m.name}</td><td>${m.classYear}</td><td style="font-weight:500;color:${r>=85?'var(--gn)':r>=75?'var(--gold)':r>=65?'var(--am)':'var(--rd)'}">${r}%</td><td><span class="badge ${s[1]}">${s[0]}</span></td><td><button class="btn" style="height:23px;font-size:10.5px" onclick="openEditMember('${m.id}')"><i class="ti ti-pencil"></i></button></td></tr>`;}).join('')}</tbody>`;
   document.getElementById('a-events').innerHTML=`<thead><tr><th>Event</th><th>Type</th><th>Date</th><th>Mandatory</th><th></th></tr></thead><tbody>${D.events.map(e=>`<tr><td style="font-weight:500">${e.title}</td><td><span class="badge" style="${eventCategoryStyle(e.type)}">${e.type}</span></td><td>${formatDate(e.date)}</td><td>${e.mandatory?'<span class="badge br2">Required</span>':'—'}</td><td>${e.mandatory&&!isUpcoming(e.date)?`<button class="btn" style="height:23px;font-size:10.5px" onclick="openMarkAttEv('${e.id}')"><i class="ti ti-checkbox"></i>Mark</button>`:'—'}</td></tr>`).join('')}</tbody>`;
   attRenderAnalytics();
   updateBadges();
@@ -59,7 +59,7 @@ function attDrawTrend(){
   if(lbl)lbl.textContent=mandPast.length+' mandatory events';
 
   if(mandPast.length<2){
-    svg.innerHTML=`<text x="50%" y="75" text-anchor="middle" fill="#6B7280" font-family="Satoshi,system-ui,sans-serif" font-size="12">Mark attendance for mandatory events to see the trend.</text>`;
+    svg.innerHTML=`<text x="50%" y="75" text-anchor="middle" fill="#6B7280" font-family="Inter,system-ui,sans-serif" font-size="12">Mark attendance for mandatory events to see the trend.</text>`;
     if(xaxis)xaxis.innerHTML='';return;
   }
 
@@ -84,20 +84,20 @@ function attDrawTrend(){
     if(g<minV-5||g>maxV+5)return;
     const y=yS(g);
     html+=`<line x1="${PAD.l}" y1="${y}" x2="${PAD.l+CW}" y2="${y}" stroke="#e5e5e3" stroke-width="1"/>`;
-    html+=`<text x="${PAD.l-5}" y="${y+4}" text-anchor="end" fill="#6B7280" font-size="9" font-family="Satoshi,system-ui,sans-serif">${g}%</text>`;
+    html+=`<text x="${PAD.l-5}" y="${y+4}" text-anchor="end" fill="#6B7280" font-size="9" font-family="Inter,system-ui,sans-serif">${g}%</text>`;
   });
   // 85% target
   if(85>=minV&&85<=maxV){
     const y=yS(85);
-    html+=`<line x1="${PAD.l}" y1="${y}" x2="${PAD.l+CW}" y2="${y}" stroke="#e24b4a" stroke-width="1.5" stroke-dasharray="5 4" opacity=".5"/>`;
-    html+=`<text x="${PAD.l+CW+4}" y="${y+3.5}" fill="#e24b4a" font-size="8.5" font-family="Satoshi,system-ui,sans-serif" opacity=".8">85%</text>`;
+    html+=`<line x1="${PAD.l}" y1="${y}" x2="${PAD.l+CW}" y2="${y}" stroke="var(--rd)" stroke-width="1.5" stroke-dasharray="5 4" opacity=".5"/>`;
+    html+=`<text x="${PAD.l+CW+4}" y="${y+3.5}" fill="var(--rd)" font-size="8.5" font-family="Inter,system-ui,sans-serif" opacity=".8">85%</text>`;
   }
   // Area fill
   const areaPath=pts.map((p,i)=>(i===0?`M${xS(i)},${yS(p.val)}`:`L${xS(i)},${yS(p.val)}`)).join(' ')+` L${xS(pts.length-1)},${PAD.t+CH} L${xS(0)},${PAD.t+CH} Z`;
-  html+=`<path d="${areaPath}" fill="var(--navy)" opacity=".06"/>`;
+  html+=`<path d="${areaPath}" fill="var(--gold)" opacity=".06"/>`;
   // Line
   const linePath=pts.map((p,i)=>(i===0?`M${xS(i)},${yS(p.val)}`:`L${xS(i)},${yS(p.val)}`)).join(' ');
-  html+=`<path d="${linePath}" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  html+=`<path d="${linePath}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
   // Dots
   pts.forEach((p,i)=>{
     const cx=xS(i),cy=yS(p.val);
@@ -134,10 +134,10 @@ function attDrawDonut(){
   if(!svg)return;
 
   const tiers=[
-    {label:'Good (85%+)',min:85,c:'#1d9e75'},
+    {label:'Good (85%+)',min:85,c:'var(--gn)'},
     {label:'On Track (75–85%)',min:75,c:'#378add'},
-    {label:'At Risk (65–75%)',min:65,c:'#ef9f27'},
-    {label:'Warning (<65%)',min:0,c:'#e24b4a'},
+    {label:'At Risk (65–75%)',min:65,c:'var(--am)'},
+    {label:'Warning (<65%)',min:0,c:'var(--rd)'},
   ];
   const counts=tiers.map(t=>({...t,n:D.members.filter(m=>{const r=getAttendanceRate(m.id);return r>=t.min&&(t.min===0||true)&&r< (tiers[tiers.indexOf(t)-1]?.min||101)}).length}));
   // Recompute cleanly
@@ -146,10 +146,10 @@ function attDrawDonut(){
   const risk=D.members.filter(m=>{const r=getAttendanceRate(m.id);return r>=65&&r<75;}).length;
   const warn=D.members.filter(m=>getAttendanceRate(m.id)<65).length;
   const segs=[
-    {label:'Good (85%+)',n:good,c:'#1d9e75'},
+    {label:'Good (85%+)',n:good,c:'var(--gn)'},
     {label:'On Track (75–84%)',n:onT,c:'#378add'},
-    {label:'At Risk (65–74%)',n:risk,c:'#ef9f27'},
-    {label:'Warning (<65%)',n:warn,c:'#e24b4a'},
+    {label:'At Risk (65–74%)',n:risk,c:'var(--am)'},
+    {label:'Warning (<65%)',n:warn,c:'var(--rd)'},
   ].filter(s=>s.n>0);
 
   const tot=D.members.length||1;
@@ -157,7 +157,7 @@ function attDrawDonut(){
 
   const R=42,CX=55,CY=55,CIRC=2*Math.PI*R,SW=16;
   let offset=0;
-  let paths=segs.length===0?`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#f0f0ee" stroke-width="${SW}"/>`:'';
+  let paths=segs.length===0?`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--surf2)" stroke-width="${SW}"/>`:'';
   segs.forEach(s=>{
     const dash=(s.n/tot)*CIRC;
     const off=CIRC-(offset/tot*CIRC);
@@ -169,7 +169,7 @@ function attDrawDonut(){
   svg.innerHTML=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#f5f5f3" stroke-width="${SW}"/>${paths}`;
 
   if(legend){
-    legend.innerHTML=[{label:'Good (85%+)',n:good,c:'#1d9e75'},{label:'On Track (75–84%)',n:onT,c:'#378add'},{label:'At Risk (65–74%)',n:risk,c:'#ef9f27'},{label:'Warning (<65%)',n:warn,c:'#e24b4a'}]
+    legend.innerHTML=[{label:'Good (85%+)',n:good,c:'var(--gn)'},{label:'On Track (75–84%)',n:onT,c:'#378add'},{label:'At Risk (65–74%)',n:risk,c:'var(--am)'},{label:'Warning (<65%)',n:warn,c:'var(--rd)'}]
       .map(s=>`<div style="display:flex;align-items:center;gap:6px;padding:2px 0">
         <div style="width:9px;height:9px;border-radius:50%;background:${s.c};flex-shrink:0"></div>
         <span style="font-size:10.5px;color:var(--mt);flex:1">${s.label}</span>
@@ -190,7 +190,7 @@ function attDrawEventBars(){
     const att=D.attendance[ev.id]||{};
     const pres=Object.values(att).filter(v=>v==='present'||v==='excused').length;
     const pct=Math.round(pres/tot*100);
-    const col=pct>=85?'#1d9e75':pct>=75?'#378add':pct>=65?'#ef9f27':'#e24b4a';
+    const col=pct>=85?'var(--gn)':pct>=75?'#378add':pct>=65?'var(--am)':'var(--rd)';
     return`<div class="att-ev-bar">
       <span class="att-ev-label" title="${ev.title} · ${formatDate(ev.date)}">${ev.title}</span>
       <div class="att-ev-track"><div class="att-ev-fill" style="width:0%;background:${col}" data-w="${pct}"></div></div>
@@ -208,14 +208,14 @@ function attDrawClassYear(){
   el.innerHTML=years.map(yr=>{
     const mems=D.members.filter(m=>m.classYear===yr);
     const avg=mems.length?Math.round(mems.reduce((s,m)=>s+getAttendanceRate(m.id),0)/mems.length):0;
-    const col=avg>=85?'var(--gn)':avg>=75?'var(--navy)':avg>=65?'var(--am)':'var(--rd)';
+    const col=avg>=85?'var(--gn)':avg>=75?'var(--gold)':avg>=65?'var(--am)':'var(--rd)';
     return`<div>
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
         <span style="font-size:12px;font-weight:500">${yr}</span>
         <span style="font-size:11px;color:var(--mt)">${mems.length} member${mems.length!==1?'s':''}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="flex:1;height:8px;background:#f0f0ee;border-radius:99px;overflow:hidden">
+        <div style="flex:1;height:8px;background:var(--surf2);border-radius:99px;overflow:hidden">
           <div style="height:100%;border-radius:99px;background:${col};width:0%;transition:width .65s ease" data-w="${avg}"></div>
         </div>
         <span style="font-size:11px;font-weight:700;color:${col};width:32px;text-align:right">${avg}%</span>

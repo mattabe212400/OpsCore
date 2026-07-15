@@ -65,10 +65,12 @@
 .ac-rank-2{background:#C0C0C0;color:#555}
 .ac-rank-3{background:#cd7f32;color:#6b3800}
 
-/* ── FINANCE ── */
-.fin-tab{padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;font-family:inherit;transition:color .12s}
-.fin-tab.active{color:var(--sky-tx);border-bottom:2px solid var(--sky);margin-bottom:-2px}
-.fin-tab:not(.active){color:var(--mt)}
+/* ── FINANCE / CHAPTER INTELLIGENCE (shared .fin-tab pill vocabulary) ── */
+#fin-tabs-bar,#ci-tabs-bar,#soc-tabs-bar{display:inline-flex;gap:2px;background:var(--surf2);border-radius:10px;padding:3px;border:1px solid var(--bdr);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#ci-tabs-bar::-webkit-scrollbar,#soc-tabs-bar::-webkit-scrollbar{display:none}
+.fin-tab{padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:600;border:none;background:none;cursor:pointer;font-family:inherit;transition:background .15s,color .15s;color:var(--mt)}
+.fin-tab.active{background:var(--navy);color:#fff}
+.fin-tab:hover:not(.active){color:var(--tx)}
 .fin-health{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:9px;border:1px solid var(--bdr)}
 .fin-health.healthy{background:var(--gn-bg);border-color:rgba(29,158,117,.35)}
 .fin-health.warning{background:var(--am-bg);border-color:rgba(239,159,39,.35)}
@@ -90,6 +92,13 @@
 .fin-plan-badge.on-track{background:var(--gn-bg);color:var(--gn-tx)}
 .fin-plan-badge.late{background:var(--rd-bg);color:var(--rd-tx)}
 .fin-plan-badge.complete{background:var(--bl-bg);color:var(--bl-tx)}
+
+/* ── RECRUITMENT ── */
+#rc-tabs-bar{display:inline-flex;gap:2px;background:var(--surf2);border-radius:10px;padding:3px;border:1px solid var(--bdr);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#rc-tabs-bar::-webkit-scrollbar{display:none}
+.rc-tab{padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:600;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0;transition:background .15s,color .15s}
+.rc-tab.active{background:var(--navy);color:#fff}
+.rc-tab:hover:not(.active){color:var(--tx)}
 
 /* ── RECRUITMENT FUNNEL 2.0 ── */
 .rc-hfunnel-row{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;align-items:center;gap:9px;padding:3px 0;cursor:pointer;border-radius:5px;transition:background .1s}
@@ -206,37 +215,37 @@
   display:grid;
   grid-template-columns:minmax(0,1.1fr) 1px minmax(0,1fr);
   gap:0;
-  background:radial-gradient(120% 160% at 0% 0%,rgba(214,173,78,.14) 0%,transparent 45%),radial-gradient(90% 140% at 100% 100%,rgba(79,182,236,.08) 0%,transparent 50%),linear-gradient(135deg,var(--surf2) 0%,var(--bg) 100%);
-  border:1px solid var(--bdr2);
+  background:linear-gradient(135deg,var(--navy) 0%,var(--slate) 100%);
+  border:1px solid var(--slate);
   border-radius:var(--rl);
-  padding:18px 22px;
-  margin-bottom:13px;
-  color:var(--tx);
+  padding:20px 24px;
+  margin-bottom:15px;
+  color:#fff;
   align-items:center;
   box-shadow:var(--shadow-md);
 }
-.d2-hero-div{width:1px;background:var(--bdr2);align-self:stretch;margin:0 20px}
+.d2-hero-div{width:1px;background:rgba(255,255,255,.14);align-self:stretch;margin:0 20px}
 .d2-hero-health{display:flex;align-items:center;gap:16px}
 .d2-health-ring{position:relative;width:68px;height:68px;flex-shrink:0}
 .d2-health-ring svg{transform:rotate(-90deg)}
-.d2-health-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--tx);line-height:1;font-variant-numeric:tabular-nums}
-.d2-health-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:2px;font-weight:500}
+.d2-health-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+.d2-health-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.07em;opacity:.65;margin-top:2px;font-weight:500}
 .d2-hero-copy{flex:1;min-width:0}
-.d2-hero-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;opacity:.65;margin-bottom:7px;color:var(--gold-tx)}
+.d2-hero-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:1;margin-bottom:8px;color:var(--gold)}
 .d2-hero-dims{display:flex;flex-direction:column;gap:5px}
 .d2-hero-dims .d2-dim{display:flex;align-items:center;gap:7px}
 .d2-hero-dims .d2-dim-lbl{font-size:10px;opacity:.75;width:72px;flex-shrink:0}
-.d2-hero-dims .d2-dim-bar{flex:1;height:4px;background:rgba(0,0,0,.08);border-radius:99px;overflow:hidden}
+.d2-hero-dims .d2-dim-bar{flex:1;height:4px;background:rgba(255,255,255,.16);border-radius:99px;overflow:hidden}
 .d2-hero-dims .d2-dim-fill{height:100%;border-radius:99px;background:var(--gold);transition:width .7s cubic-bezier(.4,0,.2,1)}
 .d2-hero-dims .d2-dim-val{font-size:9.5px;font-weight:700;width:26px;text-align:right;opacity:.9}
 .d2-hero-actions{padding-left:4px}
 .d2-qa-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
-.d2-qa-btn{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;background:var(--surf);border:1px solid var(--bdr);cursor:pointer;transition:background .13s,border-color .13s,transform .1s;font-size:11px;font-weight:500;color:var(--tx);text-align:left;font-family:inherit;white-space:nowrap}
-.d2-qa-btn:hover{background:var(--surf-h);border-color:var(--bdr2);transform:translateY(-1px)}
-.d2-qa-btn i{font-size:13px;opacity:.85;color:var(--sky-tx)}
+.d2-qa-btn{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);cursor:pointer;transition:background .13s,border-color .13s,transform .1s;font-size:11px;font-weight:500;color:#fff;text-align:left;font-family:inherit;white-space:nowrap}
+.d2-qa-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.26);transform:translateY(-1px)}
+.d2-qa-btn i{font-size:13px;opacity:.9;color:var(--gold)}
 
 /* KPI row */
-.d2-kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:13px}
+.d2-kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--gap-cards);margin-bottom:16px}
 .d2-kpi-row .card{transition:box-shadow .18s,border-color .18s,transform .15s}
 .d2-kpi-row .card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);border-color:var(--bdr2)}
 
@@ -246,6 +255,8 @@
 .d2-card{}
 .d2-card-t{display:flex;align-items:center;gap:5px}
 .d2-card-ico{font-size:12px;opacity:.85}
+
+.risk-alert-card{border-color:var(--rd)!important}
 
 /* Alert dot with pulse */
 .d2-pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--gn);display:inline-block;flex-shrink:0;transition:background .3s}
@@ -281,14 +292,12 @@
   .d2-kpi-row{grid-template-columns:1fr 1fr}
 }
 
-/* ── GLOBAL SEARCH ── */
-.gs-wrap{position:relative;flex:1;max-width:320px}
 /* ── ATTENDANCE ANALYTICS ── */
-.att-tabs{display:flex;gap:0;border-bottom:2px solid var(--bdr);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.att-tabs{display:inline-flex;gap:2px;background:var(--surf2);border-radius:10px;padding:3px;border:1px solid var(--bdr);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .att-tabs::-webkit-scrollbar{display:none}
-.att-tab{padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0;transition:color .12s;border-bottom:2px solid transparent;margin-bottom:-2px}
+.att-tab{padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:600;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0;transition:background .15s,color .15s}
 .att-tab i{display:none}
-.att-tab.active{color:var(--sky-tx);border-bottom-color:var(--sky)}
+.att-tab.active{background:var(--navy);color:#fff}
 .att-tab:hover:not(.active){color:var(--tx)}
 .att-ev-bar{display:flex;align-items:center;gap:8px;padding:3px 0}
 .att-ev-label{font-size:10.5px;color:var(--mt);width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -326,7 +335,7 @@
 @keyframes spin{to{transform:rotate(360deg)}}
 .lg-box{background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--bdr2);border-radius:18px;padding:36px 32px;width:340px;box-shadow:var(--shadow-lg)}
 .lg-logo{display:flex;align-items:center;gap:11px;margin-bottom:24px}
-.lg-badge{width:42px;height:42px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#151008;font-size:14px;font-weight:700;letter-spacing:.03em;flex-shrink:0;font-family:Arial,Helvetica,sans-serif}
+.lg-badge{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold-h));border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--navy);flex-shrink:0}
 .lg-name{font-size:15px;font-weight:600;line-height:1.25}
 .lg-sub{font-size:11px;color:var(--mt)}
 .lg-fld{margin-bottom:12px}

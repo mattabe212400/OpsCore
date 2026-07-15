@@ -5,11 +5,11 @@ let _gsResults = [];
 
 // Category config: icon bg, icon color, icon, badge style, badge label
 const GS_CATS = {
-  members:     {icon:'ti-user-circle',   bg:'#e8eef7',       ic:'#1a3a6b',  bs:'background:#e8eef7;color:#1a3a6b',          bl:'Member'},
+  members:     {icon:'ti-user-circle',   bg:'var(--sky-bg)',       ic:'var(--sky-tx)',  bs:'background:var(--sky-bg);color:var(--sky-tx)',          bl:'Member'},
   tasks:       {icon:'ti-checkbox',      bg:'var(--gn-bg)',  ic:'var(--gn-tx)', bs:'background:var(--gn-bg);color:var(--gn-tx)', bl:'Task'},
   notes:       {icon:'ti-notes',         bg:'var(--am-bg)',  ic:'var(--am-tx)', bs:'background:var(--am-bg);color:var(--am-tx)', bl:'Meeting Note'},
   events:      {icon:'ti-calendar-event',bg:'var(--bl-bg)',  ic:'var(--bl-tx)', bs:'background:var(--bl-bg);color:var(--bl-tx)', bl:'Event'},
-  files:       {icon:'ti-file',          bg:'#f0f0ee',       ic:'var(--mt)', bs:'background:#f0f0ee;color:var(--mt)',          bl:'File'},
+  files:       {icon:'ti-file',          bg:'var(--surf2)',       ic:'var(--mt)', bs:'background:var(--surf2);color:var(--mt)',          bl:'File'},
   recruitment: {icon:'ti-user-plus',     bg:'var(--gn-bg)',  ic:'var(--gn-tx)', bs:'background:var(--gn-bg);color:var(--gn-tx)', bl:'Rushee'},
   cases:       {icon:'ti-scale',         bg:'var(--rd-bg)',  ic:'var(--rd-tx)', bs:'background:var(--rd-bg);color:var(--rd-tx)', bl:'J-Board Case'},
   finance:     {icon:'ti-cash',          bg:'var(--gn-bg)',  ic:'var(--gn-tx)', bs:'background:var(--gn-bg);color:var(--gn-tx)', bl:'Finance'},
@@ -238,6 +238,7 @@ function gsOnFocus() {
 }
 
 function gsOnKey(e) {
+  if (e.key === 'Escape') { cmdkClose(); gsClear(); return; }
   const dd = document.getElementById('gs-dropdown');
   const items = dd.querySelectorAll('.gs-item');
   if (!items.length) {
@@ -270,6 +271,9 @@ function gsFocusItem(items) {
 function gsPickIdx(idx) {
   const item = _gsResults[idx];
   if (!item) return;
+  const q = document.getElementById('gs-input')?.value.trim();
+  if (q && typeof gsTrackRecentSearch === 'function') gsTrackRecentSearch(q);
+  if (item.cat === 'members' && typeof gsTrackRecentMember === 'function') gsTrackRecentMember(item.id, item.title);
   gsClear();
   if (item.action) item.action();
 }
@@ -277,6 +281,7 @@ function gsPickIdx(idx) {
 function gsClose() {
   document.getElementById('gs-dropdown').classList.remove('open');
   _gsFocusIdx = -1;
+  if (typeof renderCmdkQuickAccess === 'function') renderCmdkQuickAccess();
 }
 
 function gsClear() {
@@ -287,17 +292,19 @@ function gsClear() {
   inp.blur();
 }
 
-// Close dropdown when clicking outside
+// Close the command palette when clicking outside its modal
 document.addEventListener('click', e => {
-  if (!document.getElementById('gs-wrap')?.contains(e.target)) gsClose();
+  const overlay = document.getElementById('cmdk-overlay');
+  if (overlay && overlay.classList.contains('open') && !overlay.querySelector('.cmdk-modal').contains(e.target)) {
+    cmdkClose();
+  }
 });
 
-// Keyboard shortcut: / or Cmd+K to focus search
+// Keyboard shortcut: / or Cmd+K opens the command palette
 document.addEventListener('keydown', e => {
   if ((e.key === '/' || (e.key === 'k' && (e.metaKey || e.ctrlKey))) && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
     e.preventDefault();
-    const inp = document.getElementById('gs-input');
-    if (inp) { inp.focus(); inp.select(); }
+    cmdkOpen();
   }
 });
 

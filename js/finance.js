@@ -1,7 +1,7 @@
 /* OpsCore 2.0 Demo — Finance */
 const FIN_SEMESTER_DUES_DEFAULT = 0; // No default — must be set by Treasurer
 const FIN_BUDGET_CATS = ['Housing Rent','Housing Upper Crust','Housing Mike','Housing Miscellaneous','Utilities Electric','Utilities Alliant Energy','Utilities Waste Management','Administrative IFC Dues','Administrative YouTube/TV','Events Greek Week','Events House Maintenance','Events Social','Events Chaplain','Events Philanthropy','Events Moms Day','Events Alumni','Scholarship','Miscellaneous'];
-const FIN_CAT_COLORS = {'Housing Rent':'var(--navy)','Housing Upper Crust':'var(--navy)','Housing Mike':'var(--navy)','Housing Miscellaneous':'var(--navy)','Utilities Electric':'var(--am)','Utilities Alliant Energy':'var(--am)','Utilities Waste Management':'var(--am)','Administrative IFC Dues':'var(--mt)','Administrative YouTube/TV':'var(--mt)','Events Greek Week':'var(--bl)','Events House Maintenance':'var(--bl)','Events Social':'var(--bl)','Events Chaplain':'var(--bl)','Events Philanthropy':'var(--rd)','Events Moms Day':'var(--bl)','Events Alumni':'var(--bl)','Scholarship':'var(--gn)','Miscellaneous':'var(--ht)'};
+const FIN_CAT_COLORS = {'Housing Rent':'var(--gold)','Housing Upper Crust':'var(--gold)','Housing Mike':'var(--gold)','Housing Miscellaneous':'var(--gold)','Utilities Electric':'var(--am)','Utilities Alliant Energy':'var(--am)','Utilities Waste Management':'var(--am)','Administrative IFC Dues':'var(--mt)','Administrative YouTube/TV':'var(--mt)','Events Greek Week':'var(--bl)','Events House Maintenance':'var(--bl)','Events Social':'var(--bl)','Events Chaplain':'var(--bl)','Events Philanthropy':'var(--rd)','Events Moms Day':'var(--bl)','Events Alumni':'var(--bl)','Scholarship':'var(--gn)','Miscellaneous':'var(--ht)'};
 const FIN_CAT_ICONS = {'Housing Rent':'ti-home','Housing Upper Crust':'ti-home','Housing Mike':'ti-home','Housing Miscellaneous':'ti-home','Utilities Electric':'ti-bolt','Utilities Alliant Energy':'ti-flame','Utilities Waste Management':'ti-recycle','Administrative IFC Dues':'ti-building','Administrative YouTube/TV':'ti-device-tv','Events Greek Week':'ti-trophy','Events House Maintenance':'ti-tool','Events Social':'ti-confetti','Events Chaplain':'ti-book','Events Philanthropy':'ti-heart','Events Moms Day':'ti-heart-handshake','Events Alumni':'ti-users-group','Scholarship':'ti-school','Miscellaneous':'ti-dots'};
 let FIN_ACTIVE_TAB = 'fin-overview';
 let FIN_CAN_EDIT = false;
@@ -128,7 +128,7 @@ function finRenderOverview(){
     const spent=(D.finance.expenses||[]).filter(e=>e.category===cat).reduce((s,e)=>s+e.amount,0);
     const bud=D.finance.budget[cat]||0;
     const pct=bud?Math.min(100,Math.round(spent/bud*100)):0;
-    const col=pct>=90?'var(--rd)':pct>=70?'var(--am)':FIN_CAT_COLORS[cat]||'var(--navy)';
+    const col=pct>=90?'var(--rd)':pct>=70?'var(--am)':FIN_CAT_COLORS[cat]||'var(--gold)';
     return`<div class="pr"><span class="pl" style="width:110px"><i class="ti ${FIN_CAT_ICONS[cat]} " style="font-size:11px;color:var(--ht);margin-right:4px"></i>${cat}</span><div class="pb"><div class="pf" style="width:${pct}%;background:${col}"></div></div><span style="font-size:10.5px;color:var(--mt);width:80px;text-align:right;flex-shrink:0">$${spent} / $${bud}</span></div>`;
   }).join('');
 
@@ -170,7 +170,7 @@ function finRenderOverview(){
       return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr)">
         <div class="sh-av" style="width:23px;height:23px;font-size:8px">${m.initials}</div>
         <div style="flex:1;min-width:0"><div style="font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.name}</div></div>
-        <div style="width:50px;height:4px;background:#f0f0ee;border-radius:99px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${pct}%;background:${sc};border-radius:99px"></div></div>
+        <div style="width:50px;height:4px;background:var(--surf2);border-radius:99px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${pct}%;background:${sc};border-radius:99px"></div></div>
         <span style="font-size:11px;font-weight:700;color:${sc};width:36px;text-align:right;flex-shrink:0">$${owed}</span>
         <button class="btn" style="height:22px;font-size:10px;padding:0 7px;flex-shrink:0" onclick="finOpenProfile('${m.id}')"><i class="ti ti-edit"></i></button>
       </div>`;
@@ -234,7 +234,7 @@ function finRenderFines(){
     kpi('Outstanding','$'+outstanding,'Unpaid',outstanding?'down':'neutral')+
     kpi('Collected','$'+(total-outstanding),'Paid','neutral');
   const statusBadge={Paid:'bg2',Unpaid:'br2'};
-  const typeColors={'Attendance':'var(--am)','Late Payment':'var(--rd)','Damage':'var(--rd)','Judicial':'var(--navy)','Other':'var(--mt)'};
+  const typeColors={'Attendance':'var(--am)','Late Payment':'var(--rd)','Damage':'var(--rd)','Judicial':'var(--gold)','Other':'var(--mt)'};
   document.getElementById('fin-fines-table').innerHTML=`<thead><tr><th>Member</th><th>Type</th><th>Amount</th><th>Reason</th><th>Date Issued</th><th>Status</th><th></th></tr></thead><tbody>${fines.sort((a,b)=>b.date.localeCompare(a.date)).map(f=>{
     const m=getMember(f.memberId);
     return`<tr><td><div style="display:flex;align-items:center;gap:6px"><div class="sh-av" style="width:22px;height:22px;font-size:8px">${m.initials}</div><span style="font-weight:500">${m.name}</span></div></td>
@@ -255,7 +255,7 @@ function finRenderBudget(){
     const bud=D.finance.budget[cat]||0;
     const pct=bud?Math.min(100,Math.round(spent/bud*100)):0;
     const rem=bud-spent;
-    const col=pct>=90?'var(--rd)':pct>=70?'var(--am)':FIN_CAT_COLORS[cat]||'var(--navy)';
+    const col=pct>=90?'var(--rd)':pct>=70?'var(--am)':FIN_CAT_COLORS[cat]||'var(--gold)';
     return`<div class="card" style="padding:11px 13px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div style="display:flex;align-items:center;gap:7px"><i class="ti ${FIN_CAT_ICONS[cat]}" style="color:${col};font-size:14px"></i><span style="font-size:12.5px;font-weight:500">${cat}</span></div>
@@ -312,7 +312,7 @@ function finRenderSettings(){
           <span style="font-size:12px;color:var(--mt)">$</span>
           <input type="number" id="fin-bud-${cat.replace(/\s+/g,'-')}" value="${(D.finance.budget||{})[cat]||0}" min="0" step="50"
             style="width:90px;height:28px;padding:0 7px;border:1px solid var(--bdr);border-radius:6px;font-size:12px;font-family:inherit;color:var(--tx);outline:none;text-align:right"
-            oninput="finUpdateBudgetTotal()" onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='var(--bdr)'">
+            oninput="finUpdateBudgetTotal()" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--bdr)'">
         </div>
       </div>`).join('');
     finUpdateBudgetTotal();
@@ -445,7 +445,7 @@ function finRenderPlans(){
     <td style="color:${rem>0?'var(--rd)':'var(--gn)'};font-weight:600">$${rem}</td>
     <td style="color:var(--mt)">${p.nextDue?formatDateShort(p.nextDue):'—'}</td>
     <td><span class="fin-plan-badge ${status}">${labels[status]}</span></td>
-    <td><div style="width:80px;height:5px;background:#f0f0ee;border-radius:99px;overflow:hidden"><div style="height:100%;background:var(--gn);width:${pct}%;border-radius:99px"></div></div></td>
+    <td><div style="width:80px;height:5px;background:var(--surf2);border-radius:99px;overflow:hidden"><div style="height:100%;background:var(--gn);width:${pct}%;border-radius:99px"></div></div></td>
     <td>${finCheckPerms()?`<button class="btn btn-d" style="height:22px;font-size:10px;padding:0 7px" onclick="deletePlan('${p.id}')"><i class="ti ti-trash"></i></button>`:''}</td></tr>`;
   }).join(''):''}</tbody>${!plans.length?`<tfoot><tr><td colspan="8">${es('ti-calendar-dollar','blue','No payment plans','Create a plan for members who need installments.',finCheckPerms()?`<button class="btn btn-p" onclick="finOpenAddPlan()"><i class="ti ti-plus"></i>Create Plan</button>`:'')}</td></tr></tfoot>`:''} `;
 }
@@ -764,12 +764,12 @@ function renderSnapshot(){
 
   const cards=[
     snapCard(
-      'ti-calendar-event','var(--navy)','This Week\u2019s Events',thisWeekEvs.length,'mandatory events',
+      'ti-calendar-event','var(--gold)','This Week\u2019s Events',thisWeekEvs.length,'mandatory events',
       thisWeekEvs.map(e=>{const days=Math.max(0,Math.round((new Date(e.date+'T12:00:00')-now)/86400000));return{label:e.title,badge:days===0?'Today':days===1?'Tomorrow':formatDateShort(e.date),badgeStyle:'background:var(--bl-bg);color:var(--bl-tx)'};}),'No mandatory events this week','calendar'
     ),
     snapCard(
       'ti-clock','var(--rd)','Overdue Tasks',overdue.length,'tasks',
-      overdue.map(t=>{const m=getMember(t.assignedTo);return{label:t.title,badge:m.name.split(' ')[0],badgeStyle:'background:#f0f0ee;color:var(--mt)'};}),'All tasks on track','tasks'
+      overdue.map(t=>{const m=getMember(t.assignedTo);return{label:t.title,badge:m.name.split(' ')[0],badgeStyle:'background:var(--surf2);color:var(--mt)'};}),'All tasks on track','tasks'
     ),
     snapCard(
       'ti-user-exclamation','var(--am)','Attendance Concerns',attRisk.length,'members',
@@ -784,7 +784,7 @@ function renderSnapshot(){
       stale.map(r=>{const days=r.lastContact?Math.round((now-new Date(r.lastContact+'T12:00:00'))/86400000):null;return{label:r.name,badge:days?days+'d ago':'No contact',badgeStyle:'background:var(--rd-bg);color:var(--rd-tx)'};}),'All rushees recently contacted','recruitment'
     ),
     snapCard(
-      'ti-hourglass','var(--navy)','Upcoming Deadlines',deadlines.length,'tasks due this week',
+      'ti-hourglass','var(--gold)','Upcoming Deadlines',deadlines.length,'tasks due this week',
       deadlines.map(t=>{const d=new Date(t.dueDate+'T12:00:00');const days=Math.max(0,Math.round((d-now)/86400000));return{label:t.title,badge:days===0?'Today':days===1?'Tomorrow':formatDateShort(t.dueDate),badgeStyle:'background:var(--bl-bg);color:var(--bl-tx)'};}),'No deadlines this week','tasks'
     ),
   ];

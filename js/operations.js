@@ -646,7 +646,7 @@ function riRenderProgram(){
   const items=D.ritual.items;const done=items.filter(i=>i.done).length;
   const pct=items.length?Math.round(done/items.length*100):0;
   const pctEl=document.getElementById('ri-prog-pct');if(pctEl)pctEl.textContent=pct+'% complete';
-  const catColors={ritual:'background:#fbeaf0;color:#993556',education:'background:var(--bl-bg);color:var(--bl-tx)',brotherhood:'background:var(--am-bg);color:var(--am-tx)',service:'background:var(--gn-bg);color:var(--gn-tx)',administrative:'background:#f0f0ee;color:var(--mt)'};
+  const catColors={ritual:'background:#fbeaf0;color:#993556',education:'background:var(--bl-bg);color:var(--bl-tx)',brotherhood:'background:var(--am-bg);color:var(--am-tx)',service:'background:var(--gn-bg);color:var(--gn-tx)',administrative:'background:var(--surf2);color:var(--mt)'};
   const grouped={};items.forEach(item=>{const c=item.category||'education';if(!grouped[c])grouped[c]=[];grouped[c].push(item);});
   const listEl=document.getElementById('ri-program-list');
   if(!listEl)return;
@@ -729,7 +729,7 @@ function vnRenderGrid(){
   if(q)vns=vns.filter(v=>v.name.toLowerCase().includes(q)||(v.contact||'').toLowerCase().includes(q)||(v.notes||'').toLowerCase().includes(q));
   if(cat)vns=vns.filter(v=>v.category===cat);
   const catIcon={'Catering / Food':'ti-tools-kitchen-2','Photography / Video':'ti-camera','Venue':'ti-building','Printing / Apparel':'ti-shirt','Entertainment / DJ':'ti-music','Transportation':'ti-car','Alcohol / Beverages':'ti-glass','Flowers / Decor':'ti-leaf','Other':'ti-package'};
-  const catColors={'Catering / Food':'background:#fbeaf0;color:#993556','Photography / Video':'background:var(--bl-bg);color:var(--bl-tx)','Venue':'background:var(--am-bg);color:var(--am-tx)','Printing / Apparel':'background:var(--gn-bg);color:var(--gn-tx)','Entertainment / DJ':'background:#f0f0ee;color:var(--mt)','Transportation':'background:#e8eef7;color:#1a3a6b','Other':'background:#f0f0ee;color:var(--mt)'};
+  const catColors={'Catering / Food':'background:#fbeaf0;color:#993556','Photography / Video':'background:var(--bl-bg);color:var(--bl-tx)','Venue':'background:var(--am-bg);color:var(--am-tx)','Printing / Apparel':'background:var(--gn-bg);color:var(--gn-tx)','Entertainment / DJ':'background:var(--surf2);color:var(--mt)','Transportation':'background:var(--sky-bg);color:var(--sky-tx)','Other':'background:var(--surf2);color:var(--mt)'};
   const grid=document.getElementById('vn-grid');const empty=document.getElementById('vn-empty');
   if(!vns.length){grid.style.display='none';empty.style.display='';empty.innerHTML=es('ti-building-store','slate','No vendors found','Add your first vendor or clear filters.','');return;}
   grid.style.display='grid';empty.style.display='none';
@@ -740,7 +740,7 @@ function vnRenderGrid(){
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:7px">
         <div style="display:flex;align-items:center;gap:9px">
           <div style="width:36px;height:36px;border-radius:9px;background:var(--sky-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${catIcon[v.category]||'ti-package'}" style="font-size:17px;color:var(--sky-tx)"></i></div>
-          <div><div class="folder-name">${v.name}</div><span class="badge" style="${catColors[v.category]||'background:#f0f0ee;color:var(--mt)'};font-size:9px">${v.category||'Other'}</span></div>
+          <div><div class="folder-name">${v.name}</div><span class="badge" style="${catColors[v.category]||'background:var(--surf2);color:var(--mt)'};font-size:9px">${v.category||'Other'}</span></div>
         </div>
         <div style="font-size:12px;color:#f5a623;white-space:nowrap;flex-shrink:0">${stars}</div>
       </div>
@@ -819,7 +819,7 @@ function computeHealthDims(){
   const alumScore=Math.min(100,Math.round((alumCount/20)*100));
 
   const dims=[
-    {k:'Attendance',icon:'ti-users',v:avg,w:.22,desc:'Average member attendance rate',target:85,color:'var(--navy)'},
+    {k:'Attendance',icon:'ti-users',v:avg,w:.22,desc:'Average member attendance rate',target:85,color:'var(--gold)'},
     {k:'Task Completion',icon:'ti-checkbox',v:taskPct,w:.18,desc:doneT+' of '+D.tasks.length+' tasks done',target:80,color:'var(--gn)'},
     {k:'Academics',icon:'ti-school',v:gpaScore,w:.15,desc:avgGpa?('Avg GPA '+avgGpa.toFixed(2)):'No GPA data yet',target:90,color:'var(--bl)'},
     {k:'Accountability',icon:'ti-scale',v:caseScore,w:.13,desc:openCases+' open J-Board case'+(openCases!==1?'s':''),target:90,color:caseScore>=80?'var(--gn)':'var(--rd)'},
@@ -834,7 +834,7 @@ function computeHealthDims(){
 
 function renderHealthScore(){
   const {score, dims, avg, doneT, openCases, taskPct, finScore, paidCount, phHrs, alumCount}=computeHealthDims();
-  const scoreColor=score>=80?'var(--gn)':score>=65?'var(--navy)':score>=50?'var(--am)':'var(--rd)';
+  const scoreColor=score>=80?'var(--gn)':score>=65?'var(--gold)':score>=50?'var(--am)':'var(--rd)';
   const grade=score>=90?'A':score>=80?'B':score>=70?'C':score>=60?'D':'F';
   const gradeStyle=score>=80?'background:var(--gn-bg);color:var(--gn-tx)':score>=65?'background:var(--bl-bg);color:var(--bl-tx)':score>=50?'background:var(--am-bg);color:var(--am-tx)':'background:var(--rd-bg);color:var(--rd-tx)';
 
@@ -862,7 +862,7 @@ function renderHealthScore(){
         <div style="display:flex;align-items:center;gap:6px"><i class="ti ${d.icon}" style="font-size:12px;color:${d.color}"></i><span style="font-size:12px;font-weight:500">${d.k}</span><span style="font-size:9.5px;color:var(--ht)">${d.desc}</span></div>
         <div style="display:flex;align-items:center;gap:5px;flex-shrink:0"><span style="font-size:11.5px;font-weight:700;color:${hit?'var(--gn)':'var(--rd)'}">${p}%</span><span style="font-size:9px;color:var(--ht)">/ ${d.target}%</span></div>
       </div>
-      <div style="height:6px;background:#f0f0ee;border-radius:99px;overflow:hidden;position:relative">
+      <div style="height:6px;background:var(--surf2);border-radius:99px;overflow:hidden;position:relative">
         <div style="height:100%;border-radius:99px;background:${d.color};width:${p}%;transition:width .7s ease"></div>
         <div style="position:absolute;top:0;bottom:0;left:${d.target}%;width:2px;background:#d0d0ce;border-radius:1px"></div>
       </div>

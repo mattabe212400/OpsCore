@@ -67,6 +67,11 @@
 @media(max-width:1100px){
   .sb{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .22s cubic-bezier(.4,0,.2,1);height:100dvh;box-shadow:4px 0 24px rgba(0,0,0,.15)}
   .sb.open{transform:translateX(0)}
+  .sb.collapsed{width:244px}
+  .sb.collapsed .sb-word,.sb.collapsed .nl,.sb.collapsed .ni span,.sb.collapsed .nbdg,.sb.collapsed .sb-collapse-row span,.sb.collapsed .sb-user-text{display:revert}
+  .sb.collapsed .ni{justify-content:flex-start;padding:8px 10px}
+  .sb.collapsed .sb-user{justify-content:flex-start;padding:8px 10px}
+  .sb-collapse-row{display:none}
   #sb-close-btn{display:flex!important}
   .sb-hamburger{display:flex}
   .main{width:100%}
@@ -89,6 +94,10 @@
 
 @media(max-width:768px){
   /* ── CORE ── */
+  /* iOS Safari auto-zooms the viewport on focus when an input's computed font-size is under
+     16px — every form field in this app is 12px, so force 16px here (!important beats even
+     inline style="font-size:12px" attributes without having to touch every element). */
+  input,select,textarea{font-size:16px!important}
   body{font-size:12.5px}
   .content{padding:11px 12px}
   .topbar{padding:0 12px;gap:7px}
@@ -128,6 +137,18 @@
 
   /* ── TOPBAR: hide title when search is open ── */
   .gs-wrap{max-width:none;flex:1}
+  .tb-breadcrumb{display:none}
+  .qc-btn .btn-icon-label{display:none}
+  .qc-btn{padding:0 9px}
+  .tb-dd{width:min(300px,calc(100vw - 24px));right:-8px}
+  .notif-dd{width:min(340px,calc(100vw - 24px))}
+  #cmdk-overlay{padding-top:6vh}
+  .cmdk-modal{max-height:86vh;border-radius:16px}
+  .cmdk-header{height:56px;padding:0 15px;gap:10px}
+  .cmdk-header input{font-size:16px}
+  .cmdk-esc{display:none}
+  .cmdk-empty-lg{padding:34px 18px 22px}
+  .cmdk-qsec{padding:12px 15px}
 
   /* ── FINANCE TABS: scrollable on mobile ── */
   #fin-tabs-bar{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -362,6 +383,50 @@
 
   /* KPI: stack to 1-col only on very small phones */
   #kc-kpi{grid-template-columns:1fr!important}
+}
+
+/* ── TOUCH EXPERIENCE ──
+   :hover doesn't fire reliably on touch devices, so primary interactive elements need their
+   own :active feedback, and touch targets need to clear the ~44px minimum recommended by
+   Apple/Google. Scoped to @media(hover:none) so mouse/trackpad users keep the existing hover
+   behavior unchanged — this only affects devices that are actually touch-primary. */
+button,.btn,.ni,.ib,.qc-btn,.tab-pill,.att-tab,.fin-tab,.rc-tab,.gs-item,.cmdk-chip,
+.cmdk-action-item,.tb-dd-item,.sb-pop-item,.sb-collapse-row,.sb-user,.mbn-item,
+.tk-card,.rc-card,.fc,.drawer-close,.md-x,.gs-clear,.cmdk-esc{
+  -webkit-tap-highlight-color:transparent;
+}
+@media(hover:none){
+  .btn:active,.ib:active,.qc-btn:active,.tb-dd-item:active,.sb-pop-item:active,
+  .cmdk-action-item:active,.att-tab:active:not(.active),.fin-tab:active:not(.active),
+  .rc-tab:active:not(.active){opacity:.65}
+  .ni:active,.sb-collapse-row:active,.sb-user:active,.mbn-item:active,
+  .cmdk-chip:active,.gs-item:active{background:rgba(0,0,0,.06)}
+  .sb.collapsed .ni:active,.ni.active:active{background:rgba(255,255,255,.1)}
+  .tk-card:active,.rc-card:active,.fc:active{transform:scale(.98)}
+}
+
+@media(max-width:768px){
+  /* Touch targets: bump the small chrome controls (icon buttons, nav rows, toggles,
+     checkboxes) up toward the 44px guideline. Dense per-row table action buttons (which set
+     their own small inline height, e.g. height:23px) are intentionally left alone — forcing
+     those to 44px would blow out every data table's row height app-wide; they stay reachable
+     via pinch-zoom, which the viewport meta tag does not block. */
+  .ib{width:40px;height:40px}
+  .ni{min-height:44px}
+  .sb-collapse-row,.sb-user{min-height:44px}
+  .tgl{width:38px;height:22px}
+  .tgl::after{width:16px;height:16px;top:3px}
+  .tgl.on::after{left:20px}
+  .tgl.off::after{left:2px}
+  .tc{width:19px;height:19px}
+  .tk-row,.al-row{padding-top:9px;padding-bottom:9px}
+  .qc-btn{min-height:40px}
+  .cmdk-esc,.gs-clear{min-width:32px;min-height:32px;display:inline-flex;align-items:center;justify-content:center}
+
+  /* Drawers become bottom sheets on mobile instead of a right-side slide-in panel */
+  .drawer{top:auto;right:0;left:0;bottom:0;width:100%;max-height:88vh;border-radius:18px 18px 0 0;
+    transform:translateY(100%);box-shadow:0 -16px 48px rgba(0,0,0,.25)}
+  .drawer-overlay.open .drawer{transform:translateY(0)}
 }
 
 @media(max-width:380px){

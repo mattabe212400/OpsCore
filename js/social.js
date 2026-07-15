@@ -186,7 +186,7 @@ function socRenderEventList(){
         <td style="color:var(--mt)">${esc(e.location)||'—'}</td>
         <td><span class="badge ${socStatusClass(plan.status)}">${socStatusLabel(plan.status)}</span></td>
         <td style="color:var(--mt)">$${Math.round(tot.actual).toLocaleString()} / $${Math.round(tot.est).toLocaleString()}</td>
-        <td><div style="display:flex;align-items:center;gap:6px"><div style="width:50px;height:5px;background:#f0f0ee;border-radius:99px;overflow:hidden"><div style="height:100%;width:${r.score}%;background:${progressColor(r.score)}"></div></div><span style="font-size:10.5px;color:var(--mt)">${r.score}%</span></div></td>
+        <td><div style="display:flex;align-items:center;gap:6px"><div style="width:50px;height:5px;background:var(--surf2);border-radius:99px;overflow:hidden"><div style="height:100%;width:${r.score}%;background:${progressColor(r.score)}"></div></div><span style="font-size:10.5px;color:var(--mt)">${r.score}%</span></div></td>
       </tr>`;
     }).join('')
   }</tbody>`;

@@ -1,6 +1,6 @@
 /* OpsCore 2.0 Demo — Recruitment CRM */
 const RC_STAGES=['New Lead','Contacted','Attended Event','Active Rush','Interviewed','Bid Ready','Bid Extended','Accepted'];
-const RC_STAGE_COLORS=['#9eb5d8','#378add','#ef9f27','#1d9e75','#7b5ea7','#e24b4a','#D6AD4E','#1d9e75'];
+const RC_STAGE_COLORS=['#9eb5d8','#378add','var(--am)','var(--gn)','#7b5ea7','var(--rd)','#D6AD4E','var(--gn)'];
 const RC_TAGS=['Athlete','Legacy','Leadership','Good Fit','Needs Follow-up','Academics','Social Fit','Hot Prospect','Greek Life','Community'];
 const RC_TAG_CLASSES={Athlete:'athlete',Legacy:'legacy',Leadership:'leader','Hot Prospect':'hot','Good Fit':'active','Needs Follow-up':'dnb'};
 
@@ -23,10 +23,8 @@ function rcStageBadgeStyle(stage){return`background:${rcStageColor(stage)}22;col
 
 // ── TAB SWITCHER ──
 function rcTab(btn,tabId){
-  document.querySelectorAll('.rc-tab').forEach(t=>{
-    t.style.color='var(--mt)';t.style.borderBottom='none';t.style.marginBottom='0';
-  });
-  if(btn){btn.style.color='var(--navy)';btn.style.borderBottom='2px solid var(--navy)';btn.style.marginBottom='-2px';}
+  document.querySelectorAll('.rc-tab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
   document.querySelectorAll('#page-recruitment > div[id^="rc-"]').forEach(d=>{
     if(d.id==='rc-tabs-bar')return; // never hide the tab bar
     d.style.display='none';
@@ -42,11 +40,7 @@ function rcTab(btn,tabId){
 // ── MAIN RENDER ──
 function renderRecruitment(){
   // Reset to overview tab
-  document.querySelectorAll('.rc-tab').forEach((t,i)=>{
-    t.style.color=i===0?'var(--navy)':'var(--mt)';
-    t.style.borderBottom=i===0?'2px solid var(--navy)':'none';
-    t.style.marginBottom=i===0?'-2px':'0';
-  });
+  document.querySelectorAll('.rc-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
   document.querySelectorAll('#page-recruitment > div[id^="rc-"]').forEach(d=>{
     if(d.id==='rc-tabs-bar')return;
     d.style.display=d.id==='rc-overview'?'block':'none';
@@ -126,7 +120,7 @@ function rcDrawConversion(rushees){
     const col=p.rate>=60?'var(--gn)':p.rate>=35?'var(--am)':'var(--rd)';
     return`<div style="display:flex;align-items:center;gap:7px;padding:3px 0">
       <div style="font-size:10px;color:var(--mt);width:80px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${p.from} → ${p.to}">${p.from} <i class="ti ti-arrow-right" style="font-size:9px"></i></div>
-      <div style="flex:1;height:12px;background:#f0f0ee;border-radius:3px;overflow:hidden">
+      <div style="flex:1;height:12px;background:var(--surf2);border-radius:3px;overflow:hidden">
         <div style="height:100%;background:${col};border-radius:3px;width:0%;transition:width .65s ease" data-w="${p.rate}"></div>
       </div>
       <span style="font-size:10.5px;font-weight:700;color:${col};width:28px;text-align:right">${p.rate}%</span>
@@ -177,7 +171,7 @@ function rcDrawLeaderboard(rushees){
   ldrEl.innerHTML=data.map((d,i)=>`
     <div class="rc-scorecard">
       <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
-        <div class="sh-av" style="width:30px;height:30px;font-size:10px;background:${i===0?'var(--navy)':'#e8eef7'};color:${i===0?'#fff':'var(--navy)'};">${d.m.initials}</div>
+        <div class="sh-av" style="width:30px;height:30px;font-size:10px;background:${i===0?'var(--gold)':'var(--sky-bg)'};color:${i===0?'#fff':'var(--gold)'};">${d.m.initials}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.m.name}</div>
           <div style="font-size:10px;color:var(--mt)">${d.assigned} assigned · avg score ${d.avgScore}</div>
@@ -198,7 +192,7 @@ function rcDrawLeaderboard(rushees){
           <div style="font-size:9px;color:var(--ht);text-transform:uppercase;letter-spacing:.05em">Conv.</div>
         </div>
       </div>
-      <div style="height:5px;background:#f0f0ee;border-radius:99px;overflow:hidden">
+      <div style="height:5px;background:var(--surf2);border-radius:99px;overflow:hidden">
         <div style="height:100%;background:${d.convRate>=40?'var(--gn)':d.convRate>=20?'var(--am)':'var(--rd)'};border-radius:99px;width:0%;transition:width .65s ease" data-w="${d.convRate}"></div>
       </div>
     </div>`).join('');
@@ -210,11 +204,11 @@ function rcDrawQuality(rushees){
   const el=document.getElementById('rc-quality');if(!el)return;
   if(!rushees.length){el.innerHTML=`<div style="color:var(--ht);font-size:12px;padding:14px 0;text-align:center">No rushees yet.</div>`;return;}
   const tiers=[
-    {label:'Strong Bid',sub:'85+',min:85,c:'#1d9e75'},
+    {label:'Strong Bid',sub:'85+',min:85,c:'var(--gn)'},
     {label:'Possible Bid',sub:'70–84',min:70,c:'#378add'},
-    {label:'Needs Eval',sub:'50–69',min:50,c:'#ef9f27'},
+    {label:'Needs Eval',sub:'50–69',min:50,c:'var(--am)'},
     {label:'Monitor',sub:'30–49',min:30,c:'#9b59b6'},
-    {label:'Do Not Bid',sub:'<30',min:0,c:'#e24b4a'},
+    {label:'Do Not Bid',sub:'<30',min:0,c:'var(--rd)'},
   ];
   const tot=rushees.length;
   const avgScore=Math.round(rushees.reduce((s,r)=>s+(r.bidScore||0),0)/tot);
@@ -234,7 +228,7 @@ function rcDrawQuality(rushees){
         <span style="font-size:11px;font-weight:500">${t.label} <span style="font-size:9.5px;color:var(--ht)">${t.sub}</span></span>
         <span style="font-size:10.5px;font-weight:600;color:${t.c}">${n}</span>
       </div>
-      <div style="height:7px;background:#f0f0ee;border-radius:99px;overflow:hidden">
+      <div style="height:7px;background:var(--surf2);border-radius:99px;overflow:hidden">
         <div style="height:100%;background:${t.c};border-radius:99px;width:0%;transition:width .6s ease" data-w="${pct}"></div>
       </div>
     </div>`;
@@ -386,8 +380,8 @@ function rcRenderEvents(){
     kpi('Total Events',total,'This semester','neutral')+
     kpi('Upcoming',upcoming,'Scheduled','neutral')+
     kpi('Completed',past,'Past events','neutral');
-  const typeColors={'Open House':'var(--bl)','Brotherhood Event':'var(--gn)','Invite Only':'var(--navy)','Philanthropy':'var(--rd)','Athletics':'var(--am)','Study Event':'var(--mt)','Rush Dinner':'var(--navy)'};
-  document.getElementById('rc-events-table').innerHTML=`<thead><tr><th>Event</th><th>Type</th><th>Date</th><th>Time</th><th>Location</th><th>RSVP</th><th>Recruiters</th></tr></thead><tbody>${events.sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`<tr><td style="font-weight:500">${e.name}</td><td><span class="badge" style="background:${typeColors[e.type]||'#f0f0ee'}22;color:${typeColors[e.type]||'var(--mt)'}">${e.type}</span></td><td>${formatDate(e.date)}</td><td style="color:var(--mt)">${e.time}</td><td style="color:var(--mt)">${e.location||'—'}</td><td style="text-align:center">${e.rsvp||'—'}</td><td style="color:var(--mt)">${e.recruiters.map(id=>getMember(id).name.split(' ')[0]).join(', ')||'—'}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:22px;color:var(--mt)">No events yet</td></tr>'}</tbody>`;
+  const typeColors={'Open House':'var(--bl)','Brotherhood Event':'var(--gn)','Invite Only':'var(--gold)','Philanthropy':'var(--rd)','Athletics':'var(--am)','Study Event':'var(--mt)','Rush Dinner':'var(--gold)'};
+  document.getElementById('rc-events-table').innerHTML=`<thead><tr><th>Event</th><th>Type</th><th>Date</th><th>Time</th><th>Location</th><th>RSVP</th><th>Recruiters</th></tr></thead><tbody>${events.sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`<tr><td style="font-weight:500">${e.name}</td><td><span class="badge" style="background:${typeColors[e.type]||'var(--surf2)'}22;color:${typeColors[e.type]||'var(--mt)'}">${e.type}</span></td><td>${formatDate(e.date)}</td><td style="color:var(--mt)">${e.time}</td><td style="color:var(--mt)">${e.location||'—'}</td><td style="text-align:center">${e.rsvp||'—'}</td><td style="color:var(--mt)">${e.recruiters.map(id=>getMember(id).name.split(' ')[0]).join(', ')||'—'}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:22px;color:var(--mt)">No events yet</td></tr>'}</tbody>`;
 }
 
 // ── RUSHEE PROFILE ──

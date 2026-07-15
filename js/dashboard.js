@@ -36,7 +36,7 @@ function renderDash(){
 
   // ── OFFICER ACCOUNTABILITY TABLE (legacy hidden) ──
   const offs=D.members.filter(m=>m.role!=='Member');
-  document.getElementById('d-officers').innerHTML=`<thead><tr><th>Officer</th><th>Role</th><th>Tasks</th><th>Attendance</th><th>Status</th></tr></thead><tbody>${offs.map(m=>{const ts=getTaskMetrics(m.id);const att=getAttendanceRate(m.id);const s=ts.rate>=80&&att>=85?['On track','bg2']:ts.rate>=60||att>=75?['Behind','ba2']:['At risk','br2'];return`<tr><td style="font-weight:500">${m.name}</td><td style="color:var(--mt)">${m.role}</td><td>${ts.done}/${ts.total}</td><td style="font-weight:500;color:${att>=85?'var(--gn)':att>=75?'var(--navy)':'var(--rd)'}">${att}%</td><td><span class="badge ${s[1]}">${s[0]}</span></td></tr>`;}).join('')}</tbody>`;
+  document.getElementById('d-officers').innerHTML=`<thead><tr><th>Officer</th><th>Role</th><th>Tasks</th><th>Attendance</th><th>Status</th></tr></thead><tbody>${offs.map(m=>{const ts=getTaskMetrics(m.id);const att=getAttendanceRate(m.id);const s=ts.rate>=80&&att>=85?['On track','bg2']:ts.rate>=60||att>=75?['Behind','ba2']:['At risk','br2'];return`<tr><td style="font-weight:500">${m.name}</td><td style="color:var(--mt)">${m.role}</td><td>${ts.done}/${ts.total}</td><td style="font-weight:500;color:${att>=85?'var(--gn)':att>=75?'var(--gold)':'var(--rd)'}">${att}%</td><td><span class="badge ${s[1]}">${s[0]}</span></td></tr>`;}).join('')}</tbody>`;
 
   // ── OFFICER KPI CARDS (new visual design) ──
   const offV2=document.getElementById('d-officers-v2');
@@ -47,7 +47,7 @@ function renderDash(){
       offV2.innerHTML=offs.map(m=>{
         const ts=getTaskMetrics(m.id);const att=getAttendanceRate(m.id);
         const s=ts.rate>=80&&att>=85?['On track','bg2','var(--gn)']:ts.rate>=60||att>=75?['Behind','ba2','var(--am)']:['At risk','br2','var(--rd)'];
-        const attColor=att>=85?'var(--gn)':att>=75?'var(--navy)':att>=65?'var(--am)':'var(--rd)';
+        const attColor=att>=85?'var(--gn)':att>=75?'var(--gold)':att>=65?'var(--am)':'var(--rd)';
         return`<div class="d2-off-card">
           <div><div class="d2-off-name">${m.name}</div><div class="d2-off-role">${m.role}</div></div>
           <div class="d2-off-stat">
@@ -72,7 +72,7 @@ function renderDash(){
     const chartData=mandPast.map(ev=>{const att=D.attendance[ev.id]||{};const pres=Object.values(att).filter(v=>v==='present'||v==='excused').length;return tot?Math.round(pres/tot*100):0;});
     const chartLabels=mandPast.map(ev=>monthShort(ev.date)+' '+dayOfMonth(ev.date));
     const mx=Math.max(...chartData,1);
-    if(chartEl)chartEl.innerHTML=chartData.map((v,i)=>`<div class="mb" style="flex:1;height:${Math.round(v/mx*100)}%;background:${v<75?'var(--rd)':v<85?'var(--am)':i===chartData.length-1?'var(--navy)':'#dde5f0'};border-radius:3px 3px 0 0;transition:height .4s ease" title="${chartLabels[i]}: ${v}%"></div>`).join('');
+    if(chartEl)chartEl.innerHTML=chartData.map((v,i)=>`<div class="mb" style="flex:1;height:${Math.round(v/mx*100)}%;background:${v<75?'var(--rd)':v<85?'var(--am)':i===chartData.length-1?'var(--gold)':'#dde5f0'};border-radius:3px 3px 0 0;transition:height .4s ease" title="${chartLabels[i]}: ${v}%"></div>`).join('');
     if(labEl)labEl.innerHTML=chartLabels.map(l=>`<span>${l}</span>`).join('');
   } else {
     if(chartEl)chartEl.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ht)">No attendance data yet</div>`;
@@ -105,14 +105,14 @@ function dashDrawHealth(avgAtt,taskPct,openCases){
   const caseScore=Math.max(0,100-openCases*18);
 
   const dims=[
-    {k:'Attendance',v:avgAtt,w:.30,c:'var(--navy)'},
+    {k:'Attendance',v:avgAtt,w:.30,c:'var(--gold)'},
     {k:'Tasks',v:taskPct,w:.25,c:'var(--gn)'},
     {k:'GPA',v:gpaScore,w:.20,c:'var(--bl)'},
     {k:'Events',v:evtScore,w:.15,c:'var(--am)'},
     {k:'Accountability',v:caseScore,w:.10,c:caseScore>=80?'var(--gn)':'var(--rd)'},
   ];
   const score=Math.round(dims.reduce((s,d)=>s+d.v*d.w,0));
-  const scoreColor=score>=80?'var(--gn)':score>=65?'var(--navy)':score>=50?'var(--am)':'var(--rd)';
+  const scoreColor=score>=80?'var(--gn)':score>=65?'var(--gold)':score>=50?'var(--am)':'var(--rd)';
 
   const valEl=document.getElementById('d-health-val');
   const ringEl=document.getElementById('d-health-ring');
@@ -136,6 +136,27 @@ function dashDrawHealth(avgAtt,taskPct,openCases){
 
 // ── INTELLIGENCE ALERTS ──
 function dashBuildAlerts(avg){
+  const alerts=computeChapterAlerts(avg);
+  if(typeof updateNotifBellDot==='function')updateNotifBellDot(alerts.length);
+  document.getElementById('d-alerts-card')?.classList.toggle('risk-alert-card',alerts.length>0);
+
+  const dotEl=document.getElementById('d-alerts-dot');
+  if(dotEl){
+    dotEl.style.background=alerts.length?'var(--rd)':'var(--gn)';
+    if(alerts.length)dotEl.classList.add('active'); else dotEl.classList.remove('active');
+  }
+
+  const el=document.getElementById('d-alerts');
+  if(!el)return;
+  if(!alerts.length){
+    el.innerHTML=`<div class="es-inline ok"><i class="ti ti-circle-check"></i>All clear — no active alerts</div>`;
+    return;
+  }
+  el.innerHTML=alerts.slice(0,4).map(a=>`<div class="d-alert-row"><div class="d-alert-icon" style="${a.bg}"><i class="ti ${a.icon}" style="${a.ic}"></i></div><div style="flex:1;min-width:0"><div style="font-size:11.5px;font-weight:500;line-height:1.4">${a.title}</div><div style="font-size:10.5px;color:var(--mt);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.body}</div></div></div>`).join('');
+}
+
+// Pure alert computation, shared by the dashboard alerts card and the topbar notifications dropdown.
+function computeChapterAlerts(avg){
   const alerts=[];
   const ovT=D.tasks.filter(t=>isOverdue(t.dueDate)&&t.status!=='done');
   if(ovT.length){
@@ -162,19 +183,7 @@ function dashBuildAlerts(avg){
     alerts.push({type:'attendance',icon:'ti-trending-down',bg:'background:#f5f5f3',ic:'color:var(--mt)',title:`Chapter attendance at ${avg}% — below 85% target`,body:'Update attendance records to stay accurate'});
   }
 
-  const dotEl=document.getElementById('d-alerts-dot');
-  if(dotEl){
-    dotEl.style.background=alerts.length?'var(--rd)':'var(--gn)';
-    if(alerts.length)dotEl.classList.add('active'); else dotEl.classList.remove('active');
-  }
-
-  const el=document.getElementById('d-alerts');
-  if(!el)return;
-  if(!alerts.length){
-    el.innerHTML=`<div class="es-inline ok"><i class="ti ti-circle-check"></i>All clear — no active alerts</div>`;
-    return;
-  }
-  el.innerHTML=alerts.slice(0,4).map(a=>`<div class="d-alert-row"><div class="d-alert-icon" style="${a.bg}"><i class="ti ${a.icon}" style="${a.ic}"></i></div><div style="flex:1;min-width:0"><div style="font-size:11.5px;font-weight:500;line-height:1.4">${a.title}</div><div style="font-size:10.5px;color:var(--mt);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.body}</div></div></div>`).join('');
+  return alerts;
 }
 
 // ── OVERDUE TASKS ──
@@ -215,7 +224,7 @@ function dashBuildAttRisk(){
       <div class="sh-av" style="width:24px;height:24px;font-size:8px;background:${c.bg};color:${c.tc}">${m.initials}</div>
       <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.name}</div></div>
       <div style="display:flex;align-items:center;gap:6px">
-        <div style="width:50px;height:5px;background:#f0f0ee;border-radius:99px;overflow:hidden"><div style="height:100%;width:${r}%;background:${r<70?'var(--rd)':'var(--am)'};border-radius:99px"></div></div>
+        <div style="width:50px;height:5px;background:var(--surf2);border-radius:99px;overflow:hidden"><div style="height:100%;width:${r}%;background:${r<70?'var(--rd)':'var(--am)'};border-radius:99px"></div></div>
         <span style="font-size:11px;font-weight:700;color:${r<70?'var(--rd)':'var(--am-tx)'}">${r}%${tA}</span>
       </div>
     </div>`;}).join('');

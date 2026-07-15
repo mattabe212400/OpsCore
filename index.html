@@ -7,9 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>OpsCore 2.0 — Live Demo</title>
-<link rel="preconnect" href="https://api.fontshare.com">
-<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
 
 <!-- Styles -->
@@ -28,7 +28,7 @@
 <body>
 
 <!-- Demo banner -->
-<div id="demo-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#1A1F2B,#242B3A);color:#fff;font-size:11.5px;font-family:'Satoshi',system-ui,sans-serif;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)">
+<div id="demo-banner" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#1A1F2B,#242B3A);color:#fff;font-size:11.5px;font-family:var(--font);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span style="background:rgba(214,173,78,.2);border:1px solid rgba(214,173,78,.4);color:#E4C06B;border-radius:5px;padding:2px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Demo Mode</span>
     <span class="demo-banner-label" style="opacity:.9">OpsCore 2.0 · Viewing as <strong id="demo-role-label">President</strong> · All data is fictional</span>
@@ -71,6 +71,38 @@
 <!-- ── OFFLINE BANNER ── -->
 <div id="offline-banner"><i class="ti ti-wifi-off" style="font-size:13px;margin-right:6px;vertical-align:middle"></i>You are offline — changes are saved locally and will sync when reconnected.</div>
 
+<!-- ── COMMAND PALETTE ── -->
+<div id="cmdk-overlay" onclick="if(event.target===this)cmdkClose()">
+  <div class="cmdk-modal">
+    <div class="cmdk-header">
+      <i class="ti ti-search"></i>
+      <input id="gs-input" placeholder="Search members, events, tasks, files…" autocomplete="off"
+        oninput="gsOnInput()" onkeydown="gsOnKey(event)" onfocus="gsOnFocus()" />
+      <button class="gs-clear" id="gs-clear" onclick="gsClear()" title="Clear search"><i class="ti ti-x"></i></button>
+      <span class="cmdk-esc" onclick="cmdkClose()" title="Close">ESC</span>
+    </div>
+    <div class="cmdk-body">
+      <div class="gs-dropdown" id="gs-dropdown"></div>
+      <div id="cmdk-quick"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MEMBER PROFILE DRAWER ── -->
+<div class="drawer-overlay" id="member-drawer-overlay" onclick="if(event.target===this)closeMemberDrawer()">
+  <div class="drawer">
+    <div class="drawer-hd">
+      <div class="av-sm" id="mdw-av" style="width:38px;height:38px;font-size:13px"></div>
+      <div class="drawer-hd-text">
+        <div class="drawer-hd-name" id="mdw-name"></div>
+        <div class="drawer-hd-sub" id="mdw-sub"></div>
+      </div>
+      <button class="drawer-close" onclick="closeMemberDrawer()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="drawer-body" id="mdw-body"></div>
+  </div>
+</div>
+
 <!-- ── CONFIRM DIALOG ── -->
 <div id="confirm-overlay">
   <div class="confirm-box">
@@ -87,8 +119,8 @@
 <div id="login-gate">
   <div class="lg-box">
     <div class="lg-logo">
-      <div class="lg-badge">ΑΤΩ</div>
-      <div><div class="lg-name">Beta Chapter</div><div class="lg-sub">Executive Operations Platform</div></div>
+      <div class="lg-badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L21 8.5 L21 15.5 L12 21 L3 15.5 L3 8.5 Z"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg></div>
+      <div><div class="lg-name">OpsCore</div><div class="lg-sub">Beta Chapter · Executive Operations Platform</div></div>
     </div>
     <div class="lg-fld"><label>Email</label><input id="lg-user" type="email" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('lg-pass').focus()"></div>
     <div class="lg-fld"><label>Password</label><input id="lg-pass" type="password" placeholder="••••••••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleLogin()"></div>
@@ -100,70 +132,127 @@
 </div>
 
 <nav class="sb" id="app-nav" style="display:none">
-  <div class="sb-logo" style="display:flex;align-items:center;gap:8px;justify-content:space-between">
-    <div><div class="sb-badge">ΑΤΩ</div><div class="sb-name">Beta Chapter</div><div class="sb-sub" id="sb-sem">State University · Fall 2026</div></div>
-    <button class="ib sb-close-btn" id="sb-close-btn" onclick="sbClose()" title="Close menu" aria-label="Close menu" style="display:none"><i class="ti ti-x"></i></button>
+  <div class="sb-logo">
+    <div class="sb-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L21 8.5 L21 15.5 L12 21 L3 15.5 L3 8.5 Z"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg></div>
+    <div class="sb-word">
+      <div class="sb-name">OpsCore</div>
+      <div class="sb-sub" id="sb-sem">Beta Chapter</div>
+    </div>
+    <button class="ib sb-close-btn" id="sb-close-btn" onclick="sbClose()" title="Close menu" aria-label="Close menu" style="display:none;margin-left:auto;color:var(--sb-inactive)"><i class="ti ti-x"></i></button>
   </div>
-  <div class="ns"><div class="nl">Overview</div><div class="ni active" data-page="dashboard" onclick="rbacNav('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard</div></div>
+
+  <div class="ns" data-section="overview"><div class="nl">Overview</div>
+    <div class="ni active" data-page="dashboard" title="Dashboard" onclick="rbacNav('dashboard',this)"><i class="ti ti-layout-dashboard"></i><span>Dashboard</span></div>
+    <div class="ni" data-page="analytics" title="Chapter Intelligence" onclick="rbacNav('analytics',this)"><i class="ti ti-chart-bar"></i><span>Chapter Intelligence</span></div>
+    <div class="ni" data-page="healthscore" title="Health Score" onclick="rbacNav('healthscore',this)"><i class="ti ti-activity-heartbeat"></i><span>Health Score</span></div>
+    <div class="ni" data-page="tasks" title="Tasks &amp; Goals" onclick="rbacNav('tasks',this)"><i class="ti ti-checkbox"></i><span>Tasks &amp; Goals</span></div>
+    <div class="ni" data-page="calendar" title="Calendar" onclick="rbacNav('calendar',this)"><i class="ti ti-calendar"></i><span>Calendar</span></div>
+  </div>
+
+  <div class="ns" data-section="people"><div class="nl">People</div>
+    <div class="ni" data-page="members" title="Members" onclick="rbacNav('members',this)"><i class="ti ti-user-circle"></i><span>Members</span></div>
+    <div class="ni" data-page="recruitment" title="Recruitment CRM" onclick="rbacNav('recruitment',this)"><i class="ti ti-user-plus"></i><span>Recruitment</span></div>
+    <div class="ni" data-page="academics" title="Academics" onclick="rbacNav('academics',this)"><i class="ti ti-school"></i><span>Academics</span></div>
+    <div class="ni" data-page="newMemberEducation" title="New Member Education" onclick="rbacNav('newMemberEducation',this)"><i class="ti ti-backpack"></i><span>New Member Education</span></div>
+    <div class="ni" data-page="alumni" title="Alumni Relations" onclick="rbacNav('alumni',this)"><i class="ti ti-users-group"></i><span>Alumni Relations</span></div>
+    <div class="ni" data-page="committees" title="Committees" onclick="rbacNav('committees',this)"><i class="ti ti-sitemap"></i><span>Committees</span></div>
+  </div>
+
   <div class="ns" data-section="operations"><div class="nl">Operations</div>
-    <div class="ni" data-page="attendance" onclick="rbacNav('attendance',this)"><i class="ti ti-users"></i>Attendance<span class="nbdg nb-a" id="attend-sb-badge" style="display:none">0</span></div>
-    <div class="ni" data-page="calendar" onclick="rbacNav('calendar',this)"><i class="ti ti-calendar"></i>Calendar</div>
-    <div class="ni" data-page="tasks" onclick="rbacNav('tasks',this)"><i class="ti ti-checkbox"></i>Tasks &amp; Goals</div>
-    <div class="ni" data-page="notes" onclick="rbacNav('notes',this)"><i class="ti ti-notes"></i>Meeting Notes</div>
-    <div class="ni" data-page="kcrew" onclick="rbacNav('kcrew',this)"><i class="ti ti-tools-kitchen-2"></i>House Mgmt</div>
-    <div class="ni" data-page="finance" onclick="rbacNav('finance',this)"><i class="ti ti-cash"></i>Finance</div>
+    <div class="ni" data-page="attendance" title="Attendance" onclick="rbacNav('attendance',this)"><i class="ti ti-users"></i><span>Attendance</span><span class="nbdg nb-a" id="attend-sb-badge" style="display:none">0</span></div>
+    <div class="ni" data-page="finance" title="Finance" onclick="rbacNav('finance',this)"><i class="ti ti-cash"></i><span>Finance</span></div>
+    <div class="ni" data-page="judicial" title="Judicial Board" onclick="rbacNav('judicial',this)"><i class="ti ti-scale"></i><span>Judicial Board</span><span class="nbdg nb-r" id="judicial-sb-badge" style="display:none">0</span></div>
+    <div class="ni" data-page="notes" title="Meeting Notes" onclick="rbacNav('notes',this)"><i class="ti ti-notes"></i><span>Meeting Notes</span></div>
+    <div class="ni" data-page="sober" title="Social Event Safety" onclick="rbacNav('sober',this)"><i class="ti ti-shield-check"></i><span>Social Event Safety</span></div>
+    <div class="ni" data-page="social" title="Social Events" onclick="rbacNav('social',this)"><i class="ti ti-confetti"></i><span>Social Events</span></div>
+    <div class="ni" data-page="kcrew" title="House Management" onclick="rbacNav('kcrew',this)"><i class="ti ti-tools-kitchen-2"></i><span>House Management</span></div>
+    <div class="ni" data-page="ritual" title="Chaplain Hub" onclick="rbacNav('ritual',this)"><i class="ti ti-book"></i><span>Chaplain Hub</span></div>
+    <div class="ni" data-page="philanthropy" title="Philanthropy" onclick="rbacNav('philanthropy',this)"><i class="ti ti-heart"></i><span>Philanthropy</span></div>
+    <div class="ni" data-page="communityService" title="Community Service" onclick="rbacNav('communityService',this)"><i class="ti ti-heart-handshake"></i><span>Community Service</span></div>
   </div>
-  <div class="ns" data-section="governance"><div class="nl">Governance</div>
-    <div class="ni" data-page="judicial" onclick="rbacNav('judicial',this)"><i class="ti ti-scale"></i>Judicial Board<span class="nbdg nb-r" id="judicial-sb-badge" style="display:none">0</span></div>
-    <div class="ni" data-page="sober" onclick="rbacNav('sober',this)"><i class="ti ti-shield-check"></i>Social Monitors</div>
+
+  <div class="ns" data-section="resources"><div class="nl">Resources</div>
+    <div class="ni" data-page="transition" title="Transition Hub" onclick="rbacNav('transition',this)"><i class="ti ti-arrow-right-circle"></i><span>Transition Hub</span></div>
+    <div class="ni" data-page="reports" title="Reports" onclick="rbacNav('reports',this)"><i class="ti ti-file-analytics"></i><span>Reports</span></div>
+    <div class="ni" data-page="files" title="Files" onclick="rbacNav('files',this)"><i class="ti ti-folder"></i><span>Files</span></div>
   </div>
-  <div class="ns" data-section="members"><div class="nl">Members</div>
-    <div class="ni" data-page="members" onclick="rbacNav('members',this)"><i class="ti ti-user-circle"></i>Members</div>
-    <div class="ni" data-page="recruitment" onclick="rbacNav('recruitment',this)"><i class="ti ti-user-plus"></i>Recruitment CRM</div>
-    <div class="ni" data-page="academics" onclick="rbacNav('academics',this)"><i class="ti ti-school"></i>Academics</div>
-    <div class="ni" data-page="committees" onclick="rbacNav('committees',this)"><i class="ti ti-sitemap"></i>Committees</div>
+
+  <div class="ns" data-section="administration"><div class="nl">Administration</div>
+    <div class="ni" data-page="settings" title="Settings" onclick="rbacNav('settings',this)"><i class="ti ti-settings"></i><span>Settings</span></div>
   </div>
-  <div class="ns" data-section="community"><div class="nl">Community</div>
-    <div class="ni" data-page="philanthropy" onclick="rbacNav('philanthropy',this)"><i class="ti ti-heart"></i>Philanthropy</div>
-    <div class="ni" data-page="communityService" onclick="rbacNav('communityService',this)"><i class="ti ti-heart-handshake"></i>Community Service</div>
-    <div class="ni" data-page="alumni" onclick="rbacNav('alumni',this)"><i class="ti ti-users-group"></i>Alumni Relations</div>
-    <div class="ni" data-page="ritual" onclick="rbacNav('ritual',this)"><i class="ti ti-book"></i>Chaplain Hub</div>
-    <div class="ni" data-page="newMemberEducation" onclick="rbacNav('newMemberEducation',this)"><i class="ti ti-school"></i>New Member Education</div>
-    <div class="ni" data-page="social" onclick="rbacNav('social',this)"><i class="ti ti-confetti"></i>Social Events</div>
+
+  <div class="sb-footer">
+    <div class="sb-collapse-row" onclick="sbCollapseToggle()" title="Collapse sidebar"><i class="ti ti-layout-sidebar-left-collapse"></i><span>Collapse</span></div>
+    <div class="tb-dd-wrap">
+      <div class="sb-user" id="sb-user-trigger" onclick="sbPopoverToggle(event)">
+        <div class="av-sm" id="u-av"></div>
+        <div class="sb-user-text">
+          <div class="sb-user-name" id="u-name"></div>
+          <div class="sb-user-role" id="u-role"></div>
+        </div>
+      </div>
+      <div class="sb-popover" id="sb-popover">
+        <div class="sb-pop-hd"><div class="sb-pop-name" id="pop-u-name"></div><div class="sb-pop-email" id="pop-u-org">Beta Chapter · State University</div></div>
+        <div class="sb-pop-sec">
+          <div class="sb-pop-label">Switch Role (Demo)</div>
+          <select class="sb-pop-select" id="sb-role-switcher" onchange="switchDemoRole(this.value)">
+            <option value="" disabled selected>Switch role…</option>
+            <option value="President">President</option>
+            <option value="Vice President">Vice President</option>
+            <option value="Treasurer">Treasurer</option>
+            <option value="Secretary">Secretary</option>
+            <option value="Risk Manager">Risk Manager</option>
+            <option value="Recruitment Chair">Recruitment Chair</option>
+            <option value="Scholarship Chair">Scholarship Chair</option>
+            <option value="Chaplain">Chaplain</option>
+            <option value="Philanthropy Chair">Philanthropy Chair</option>
+            <option value="Community Service Chair">Community Service Chair</option>
+            <option value="Alumni Relations Chair">Alumni Relations Chair</option>
+            <option value="New Member Educator">New Member Educator</option>
+            <option value="Social Chair">Social Chair</option>
+            <option value="House Manager">House Manager</option>
+            <option value="Public Relations">Public Relations</option>
+            <option value="viewer">General Member (viewer)</option>
+          </select>
+        </div>
+        <div class="sb-pop-sec">
+          <button class="sb-pop-item" onclick="sbPopoverClose();rbacNav('settings',null)"><i class="ti ti-settings"></i>Settings</button>
+          <button class="sb-pop-item danger" onclick="sbPopoverClose();handleLogout()"><i class="ti ti-logout"></i>Sign out</button>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="ns" data-section="intelligence"><div class="nl">Intelligence</div>
-    <div class="ni" data-page="healthscore" onclick="rbacNav('healthscore',this)"><i class="ti ti-activity-heartbeat"></i>Health Scorecard</div>
-    <div class="ni" data-page="analytics" onclick="rbacNav('analytics',this)"><i class="ti ti-chart-bar"></i>Analytics</div>
-    <div class="ni" data-page="reports" onclick="rbacNav('reports',this)"><i class="ti ti-file-analytics"></i>Reports</div>
-    <div class="ni" data-page="files" onclick="rbacNav('files',this)"><i class="ti ti-folder"></i>Files</div>
-  </div>
-  <div class="ns" data-section="system"><div class="nl">System</div>
-    <div class="ni" data-page="transition" onclick="rbacNav('transition',this)"><i class="ti ti-arrow-right-circle"></i>Transition Hub</div>
-    <div class="ni" data-page="settings" onclick="rbacNav('settings',this)"><i class="ti ti-settings"></i>Settings</div>
-  </div>
-  <div class="sb-user"><div class="av-sm" id="u-av"></div><div><div style="font-size:12px;font-weight:500" id="u-name"></div><div style="font-size:10px;color:var(--mt)" id="u-role"></div></div></div>
 </nav>
 <div class="sb-overlay" id="sb-overlay" onclick="sbClose()"></div>
 <div class="main" id="app-main" style="display:none">
   <div class="topbar">
     <button class="ib sb-hamburger" id="sb-hamburger" onclick="sbToggle()" title="Menu" aria-label="Toggle menu"><i class="ti ti-menu-2"></i></button>
-    <div class="tb-title" id="pg-title" style="flex:0 0 auto;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dashboard</div>
-    <!-- Global Search -->
+    <div class="tb-breadcrumb">OpsCore <i class="ti ti-chevron-right" style="font-size:10px;vertical-align:-1px"></i> <b id="pg-title">Dashboard</b></div>
+
+    <!-- Global Search trigger → opens command palette -->
     <div class="gs-wrap" id="gs-wrap">
-      <div class="gs-input-row">
+      <div class="tb-search-trigger" onclick="event.stopPropagation();cmdkOpen()">
         <i class="ti ti-search"></i>
-        <input id="gs-input" placeholder="Search everything..." autocomplete="off"
-          oninput="gsOnInput()" onkeydown="gsOnKey(event)" onfocus="gsOnFocus()" />
-        <button class="gs-clear" id="gs-clear" onclick="gsClear()" title="Clear search"><i class="ti ti-x"></i></button>
+        <span>Search members, events, tasks, files…</span>
       </div>
-      <div class="gs-dropdown" id="gs-dropdown"></div>
     </div>
+
+    <div class="tb-dd-wrap">
+      <button class="qc-btn" onclick="tbQuickCreateToggle(event)" title="Quick create"><i class="ti ti-plus"></i><span class="btn-icon-label">Quick Create</span><i class="ti ti-chevron-down" style="font-size:11px"></i></button>
+      <div class="tb-dd" id="qc-dd"></div>
+    </div>
+
+    <div class="tb-dd-wrap">
+      <button class="ib" onclick="tbNotifToggle(event)" title="Notifications"><i class="ti ti-bell"></i><span class="bell-dot" id="tb-bell-dot"></span></button>
+      <div class="tb-dd notif-dd" id="notif-dd">
+        <div class="tb-dd-hd">Notifications</div>
+        <div id="notif-list"></div>
+      </div>
+    </div>
+
+    <div class="tb-divider"></div>
     <div class="tb-date" id="tb-date"></div>
-    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-      <button class="ib" onclick="rbacNav('settings',null)" title="Settings"><i class="ti ti-settings"></i></button>
-      <div class="av-sm" style="cursor:pointer" onclick="rbacNav('settings',null)" id="tb-av"></div>
-      <button class="ib" onclick="handleLogout()" title="Log out" style="margin-left:2px"><i class="ti ti-logout"></i></button>
-    </div>
+    <div class="av-sm" style="cursor:pointer" onclick="rbacNav('settings',null)" id="tb-av" title="Settings"></div>
   </div>
   <div class="content" id="ca">
     <div class="page active" id="page-dashboard">
@@ -225,7 +314,7 @@
         <div class="d2-left">
 
           <!-- Alerts -->
-          <div class="card d2-card" style="margin-bottom:11px">
+          <div class="card d2-card" id="d-alerts-card" style="margin-bottom:11px">
             <div class="card-hd">
               <span class="card-t d2-card-t">
                 <span id="d-alerts-dot" class="d2-pulse-dot"></span>
@@ -338,7 +427,7 @@
     <div class="page" id="page-attendance">
 
       <!-- KPIs -->
-      <div class="g4" id="a-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="a-kpi" style="margin-bottom:13px"></div>
 
       <!-- Tab Bar + Actions -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;flex-wrap:wrap;gap:8px" id="att-toolbar">
@@ -482,7 +571,7 @@
         <div class="ph-left"><div class="ph-title">Tasks &amp; Goals</div><div class="ph-sub">Track officer tasks, semester goals, and chapter priorities</div></div>
         <div class="ph-actions"><button class="btn" onclick="openImportModal('tasks')"><i class="ti ti-table-import"></i>Import CSV</button><button class="btn btn-p" onclick="openM('m-addtask')"><i class="ti ti-plus"></i>New Task</button></div>
       </div>
-      <div class="g4" id="t-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="t-kpi" style="margin-bottom:13px"></div>
       <div class="card" style="margin-bottom:13px"><div class="card-hd"><span class="card-t">Semester Goals</span><button class="card-a" onclick="openM('m-addgoal')">+ Add goal</button></div><div class="gg" id="t-goals"></div></div>
       <div class="sb2">
         <span class="sl">Task Board</span>
@@ -532,7 +621,7 @@
         </div>
 
         <!-- KPIs -->
-        <div class="g4" id="j-kpi" style="margin-bottom:13px"></div>
+        <div class="kpi-row" id="j-kpi" style="margin-bottom:13px"></div>
 
         <!-- Two-column layout -->
         <div class="g2" style="margin-bottom:13px">
@@ -568,7 +657,7 @@
           <button class="btn btn-p" id="sober-add-btn" onclick="openM('m-addshift')"><i class="ti ti-plus"></i>Add Shift</button>
         </div>
       </div>
-      <div class="g4" id="s-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="s-kpi" style="margin-bottom:13px"></div>
       <div id="s-alert"></div>
       <div class="card" style="margin-bottom:13px"><div class="card-hd"><span class="card-t">Upcoming Schedule</span></div><div class="tw"><table class="tbl" id="s-table"></table></div></div>
       <div class="card"><div class="card-hd"><span class="card-t">Past Shifts</span></div><div class="tw"><table class="tbl" id="s-hist"></table></div></div>
@@ -589,7 +678,7 @@
           <button class="btn btn-p" id="members-add-btn" onclick="openM('m-addmember')"><i class="ti ti-plus"></i>Add Member</button>
         </div>
       </div>
-      <div class="g4" id="m-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="m-kpi" style="margin-bottom:13px"></div>
       <div class="card"><div class="tw"><table class="tbl" id="m-table"></table></div></div>
     </div>
 
@@ -610,7 +699,7 @@
       </div>
       <div id="ac-content">
       <!-- KPIs -->
-      <div class="g4" id="ac-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="ac-kpi" style="margin-bottom:13px"></div>
 
       <!-- Chapter GPA card + update -->
       <div class="g21" style="margin-bottom:13px">
@@ -668,7 +757,7 @@
     <!-- ── FINANCE ── -->
     <div class="page" id="page-finance">
       <!-- Tab bar -->
-      <div id="fin-tabs-bar" style="display:flex;gap:0;border-bottom:2px solid var(--bdr);margin-bottom:14px">
+      <div id="fin-tabs-bar" style="margin-bottom:16px">
         <button class="fin-tab active" data-tab="fin-overview" onclick="finTab(this,'fin-overview')">Overview</button>
         <button class="fin-tab" data-tab="fin-dues" onclick="finTab(this,'fin-dues')">Member Dues</button>
         <button class="fin-tab" data-tab="fin-national" onclick="finTab(this,'fin-national')">National Dues</button>
@@ -680,7 +769,7 @@
 
       <!-- Overview Tab -->
       <div id="fin-overview">
-        <div class="g4" id="fin-kpi" style="margin-bottom:13px"></div>
+        <div class="kpi-row" id="fin-kpi" style="margin-bottom:13px"></div>
         <div class="g21" style="margin-bottom:13px">
           <!-- Budget Overview -->
           <div class="card">
@@ -720,7 +809,7 @@
 
       <!-- Member Dues Tab -->
       <div id="fin-dues" style="display:none">
-        <div class="g4" id="fin-dues-kpi" style="margin-bottom:11px"></div>
+        <div class="kpi-row" id="fin-dues-kpi" style="margin-bottom:11px"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap">
           <div class="sbar" style="flex:1;max-width:240px;margin-bottom:0"><i class="ti ti-search"></i><input id="fin-search" placeholder="Search member..." oninput="finFilterDues()"></div>
           <select id="fin-filter-pay" onchange="finFilterDues()" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none">
@@ -742,7 +831,7 @@
 
       <!-- National Dues Tab -->
       <div id="fin-national" style="display:none">
-        <div class="g4" id="fin-natl-kpi" style="margin-bottom:11px"></div>
+        <div class="kpi-row" id="fin-natl-kpi" style="margin-bottom:11px"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap">
           <div class="sbar" style="flex:1;max-width:240px;margin-bottom:0"><i class="ti ti-search"></i><input id="fin-natl-search" placeholder="Search member..." oninput="finFilterNational()"></div>
           <select id="fin-natl-filter" onchange="finFilterNational()" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none">
@@ -883,17 +972,17 @@
     <!-- ── RECRUITMENT CRM ── -->
     <div class="page" id="page-recruitment">
       <!-- Tab bar -->
-      <div id="rc-tabs-bar" style="display:flex;gap:0;border-bottom:2px solid var(--bdr);margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-        <button class="rc-tab active" data-tab="rc-overview" onclick="rcTab(this,'rc-overview')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--sky-tx);border-bottom:2px solid var(--navy);margin-bottom:-2px;font-family:inherit;white-space:nowrap;flex-shrink:0">Overview</button>
-        <button class="rc-tab" data-tab="rc-rushees" onclick="rcTab(this,'rc-rushees')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0">Rushee Database</button>
-        <button class="rc-tab" data-tab="rc-pipeline" onclick="rcTab(this,'rc-pipeline')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0">Pipeline Board</button>
-        <button class="rc-tab" data-tab="rc-events" onclick="rcTab(this,'rc-events')" style="padding:7px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mt);font-family:inherit;white-space:nowrap;flex-shrink:0">Rush Events</button>
+      <div id="rc-tabs-bar" style="margin-bottom:16px">
+        <button class="rc-tab active" data-tab="rc-overview" onclick="rcTab(this,'rc-overview')">Overview</button>
+        <button class="rc-tab" data-tab="rc-rushees" onclick="rcTab(this,'rc-rushees')">Rushee Database</button>
+        <button class="rc-tab" data-tab="rc-pipeline" onclick="rcTab(this,'rc-pipeline')">Pipeline Board</button>
+        <button class="rc-tab" data-tab="rc-events" onclick="rcTab(this,'rc-events')">Rush Events</button>
       </div>
 
       <!-- Overview Tab -->
       <div id="rc-overview">
         <!-- KPIs -->
-        <div class="g4" id="rc-kpi" style="margin-bottom:13px"></div>
+        <div class="kpi-row" id="rc-kpi" style="margin-bottom:13px"></div>
 
         <!-- Hero Funnel -->
         <div class="card" style="margin-bottom:11px">
@@ -1039,7 +1128,7 @@
       </div>
 
       <!-- Tabs -->
-      <div style="display:flex;gap:0;border-bottom:2px solid var(--bdr);margin-bottom:14px;overflow-x:auto">
+      <div id="ci-tabs-bar" style="margin-bottom:16px">
         <button class="fin-tab active" data-tab="ci-overview" onclick="ciTab(this,'ci-overview')">Overview</button>
         <button class="fin-tab" data-tab="ci-tab-attendance" onclick="ciTab(this,'ci-tab-attendance')">Attendance</button>
         <button class="fin-tab" data-tab="ci-tab-academics" onclick="ciTab(this,'ci-tab-academics')">Academics</button>
@@ -1106,7 +1195,7 @@
 
       <!-- SOCIAL -->
       <div class="ci-panel" id="ci-tab-social" style="display:none">
-        <div class="g4" id="ci-soc-kpi" style="margin-bottom:13px"></div>
+        <div class="kpi-row" id="ci-soc-kpi" style="margin-bottom:13px"></div>
         <div id="ci-soc-alerts" style="margin-bottom:13px"></div>
         <div class="g2" style="margin-bottom:13px">
           <div class="card"><div class="card-hd"><span class="card-t">Attendance Trend</span></div><div id="ci-soc-trend"></div></div>
@@ -1187,7 +1276,7 @@
 
     <!-- ═══════════ PHILANTHROPY & SERVICE ═══════════ -->
     <div class="page" id="page-communityService">
-      <div class="g4" id="cs-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="cs-kpi" style="margin-bottom:13px"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;row-gap:8px;margin-bottom:11px">
         <div style="display:flex;align-items:center;gap:7px">
           <div style="width:30px;height:30px;background:var(--gn-bg);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-heart-handshake" style="color:var(--gn);font-size:15px"></i></div>
@@ -1241,7 +1330,7 @@
 
     <!-- ═══════════ PHILANTHROPY ═══════════ -->
     <div class="page" id="page-philanthropy">
-      <div class="g4" id="ph-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="ph-kpi" style="margin-bottom:13px"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;row-gap:8px;margin-bottom:11px">
         <div style="display:flex;align-items:center;gap:7px">
           <div style="width:30px;height:30px;background:#fbeaf0;border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-heart" style="color:#c0345a;font-size:15px"></i></div>
@@ -1300,7 +1389,7 @@
 
     <!-- ═══════════ ALUMNI RELATIONS ═══════════ -->
     <div class="page" id="page-alumni">
-      <div class="g4" id="al-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="al-kpi" style="margin-bottom:13px"></div>
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:11px;flex-wrap:wrap">
         <div style="display:flex;gap:5px"><button class="btn btn-p" data-tab="al-directory" onclick="alTab(this,'al-directory')">Directory</button><button class="btn" data-tab="al-events" onclick="alTab(this,'al-events')">Events</button><button class="btn" data-tab="al-outreach" onclick="alTab(this,'al-outreach')">Outreach Log</button></div>
         <div class="sbar" style="max-width:220px;margin-bottom:0;margin-left:auto"><i class="ti ti-search"></i><input id="al-search" placeholder="Search alumni..." oninput="alFilter()"></div>
@@ -1437,7 +1526,7 @@
 
     <!-- ═══════════ NEW MEMBER EDUCATION + PEER MENTOR PROGRAM ═══════════ -->
     <div class="page" id="page-newMemberEducation">
-      <div class="g4" id="nme-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="nme-kpi" style="margin-bottom:13px"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;row-gap:8px;margin-bottom:11px">
         <div style="display:flex;align-items:center;gap:7px">
           <div style="width:30px;height:30px;background:var(--bl-bg);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="ti ti-school" style="color:var(--bl-tx);font-size:15px"></i></div>
@@ -1473,7 +1562,7 @@
             <button class="btn btn-p" style="height:26px;font-size:11px" onclick="pmpOpenAddGroup()"><i class="ti ti-plus"></i>Create Group</button>
           </div>
         </div>
-        <div class="g4" id="pmp-kpi" style="margin-bottom:13px"></div>
+        <div class="kpi-row" id="pmp-kpi" style="margin-bottom:13px"></div>
         <div class="two-col" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:13px;margin-bottom:13px;align-items:start">
           <div class="card">
             <div class="card-hd"><span class="card-t">Mentor Groups</span></div>
@@ -1496,7 +1585,7 @@
         </div>
         <div class="card">
           <div class="card-hd"><span class="card-t">Group Balance &amp; Analytics</span></div>
-          <div class="g4" id="pmp-analytics-kpi" style="margin-bottom:11px"></div>
+          <div class="kpi-row" id="pmp-analytics-kpi" style="margin-bottom:11px"></div>
           <div style="font-size:11px;font-weight:500;color:var(--mt);margin-bottom:5px">New Members by Mentor Group</div>
           <div id="pmp-analytics-chart"></div>
         </div>
@@ -1569,7 +1658,7 @@
             <div class="ph-left"><div class="ph-title">Social Events</div><div class="ph-sub">Date parties, mixers, exchanges, and formal planning</div></div>
             <div class="ph-actions"><button class="btn btn-p" onclick="socOpenAddEvent()"><i class="ti ti-plus"></i>Add Event</button></div>
           </div>
-          <div class="g4" id="soc-kpi" style="margin-bottom:13px"></div>
+          <div class="kpi-row" id="soc-kpi" style="margin-bottom:13px"></div>
           <div class="g21" style="margin-bottom:13px">
             <div class="card">
               <div class="card-hd"><span class="card-t">Upcoming &amp; Recent Events</span></div>
@@ -1596,7 +1685,7 @@
               <button class="btn btn-d" onclick="socDeleteEvent(SOC_CURRENT_EVENT_ID)"><i class="ti ti-trash"></i>Delete</button>
             </div>
           </div>
-          <div style="display:flex;gap:0;border-bottom:2px solid var(--bdr);margin-bottom:14px;overflow-x:auto">
+          <div id="soc-tabs-bar" style="margin-bottom:16px">
             <button class="soc-tab fin-tab active" data-tab="soc-overview" onclick="socTab(this,'soc-overview')">Overview</button>
             <button class="soc-tab fin-tab" data-tab="soc-checklist" onclick="socTab(this,'soc-checklist')">Checklist</button>
             <button class="soc-tab fin-tab" data-tab="soc-budget" onclick="socTab(this,'soc-budget')">Budget</button>
@@ -1685,7 +1774,7 @@
       </div>
 
       <!-- KPIs -->
-      <div class="g4" id="hs-kpi" style="margin-bottom:13px"></div>
+      <div class="kpi-row" id="hs-kpi" style="margin-bottom:13px"></div>
 
       <!-- Dimension Breakdown — horizontal bar format -->
       <div class="g2" style="margin-bottom:13px">
@@ -2397,6 +2486,7 @@
 <script src="js/kcrew.js"></script>
 <script src="js/import.js"></script>
 <script src="js/search.js"></script>
+<script src="js/shell.js"></script>
 <script src="js/reports.js"></script>
 <script src="js/router.js"></script>
 <script src="js/auth.js"></script>
