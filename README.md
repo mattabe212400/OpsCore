@@ -13,6 +13,16 @@
 
 ---
 
+## Business Impact
+
+- Replaced disconnected spreadsheets, email threads, and manual operational workflows with one centralized chapter-management platform
+- Improved visibility across attendance, finance, recruitment, accountability, committees, and executive reporting
+- Created a shared source of operational information for a 160-member organization
+- Supported leadership decision-making through KPI dashboards, alerts, reporting, and role-aware access
+- Demonstrated how business requirements can be translated into a deployed information system
+
+---
+
 ## 26 Operational Modules
 
 | Module | What it does |
