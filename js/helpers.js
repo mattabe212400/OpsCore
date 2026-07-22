@@ -134,7 +134,7 @@ function getAttendanceTrend(memberId){
 }
 function getTaskMetrics(id){const all=D.tasks.filter(t=>t.assignedTo===id);const dn=all.filter(t=>t.status==='done');return{total:all.length,done:dn.length,rate:all.length?Math.round(dn.length/all.length*100):0};}
 function memberSelectOptions(){return sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');}
-function eventCategoryStyle(t){const m={chapter:'background:var(--sky-bg);color:var(--sky-tx)',exec:'background:var(--surf2);color:#555',recruitment:'background:var(--gn-bg);color:var(--gn-tx)',philanthropy:'background:#fbeaf0;color:#993556',service:'background:var(--gn-bg);color:var(--gn-tx)',fundraiser:'background:#fbeaf0;color:#993556',social:'background:var(--rd-bg);color:var(--rd-tx)',brotherhood:'background:var(--am-bg);color:var(--am-tx)',retreat:'background:var(--gn-bg);color:var(--gn-tx)',mandatory:'background:var(--rd-bg);color:var(--rd-tx)'};return m[t]||'background:var(--surf2);color:#555';}
+function eventCategoryStyle(t){const m={chapter:'background:var(--sky-bg);color:var(--sky-tx)',exec:'background:var(--surf2);color:#555',committee:'background:var(--bl-bg);color:var(--bl-tx)',recruitment:'background:var(--gn-bg);color:var(--gn-tx)',philanthropy:'background:#fbeaf0;color:#993556',service:'background:var(--gn-bg);color:var(--gn-tx)',fundraiser:'background:#fbeaf0;color:#993556',social:'background:var(--rd-bg);color:var(--rd-tx)',brotherhood:'background:var(--am-bg);color:var(--am-tx)',retreat:'background:var(--gn-bg);color:var(--gn-tx)',mandatory:'background:var(--rd-bg);color:var(--rd-tx)'};return m[t]||'background:var(--surf2);color:#555';}
 
 // ── SIDEBAR RESPONSIVE ──
 function sbOpen(){
@@ -187,13 +187,13 @@ function nav(page,el){
 }
 function openM(id){
   const el=document.getElementById(id);
-  el.querySelectorAll('select[id="nt-a"],select[id="nc-m"],select[id="ns-m"],select[id="nco-c"],select[id="ntr-o"]').forEach(s=>{
-    const pre=s.id==='ns-m'?'<option value="">— Unassigned —</option>':'';
-    s.innerHTML=pre+memberSelectOptions();
+  el.querySelectorAll('select[id="nt-a"],select[id="nc-m"],select[id="nco-c"],select[id="ntr-o"]').forEach(s=>{
+    s.innerHTML=memberSelectOptions();
   });
   // Reset event modal to "New Event" mode
   if(id==='m-addevent'){
     const eid=document.getElementById('ne-edit-id');if(eid)eid.value='';
+    const ed=document.getElementById('ne-ed');if(ed)ed.value='';
     const mt=el.querySelector('.md-t');if(mt&&mt.childNodes[0])mt.childNodes[0].textContent='New Event';
   }
   el.classList.add('open');
@@ -219,13 +219,17 @@ async function addEv(){
   if(!canWrite()){toast('You do not have permission to add events.','error');return;}
   const title=document.getElementById('ne-t').value.trim();
   if(!title){toast('Title is required','error');return;}
+  const date=document.getElementById('ne-d').value;
+  const endDateRaw=document.getElementById('ne-ed')?.value||'';
+  if(endDateRaw&&endDateRaw<date){toast('End date can\'t be before the start date.','error');return;}
+  const endDate=endDateRaw&&endDateRaw>date?endDateRaw:null;
   const editId=document.getElementById('ne-edit-id')?.value;
   if(editId){
     const ev=D.events.find(e=>e.id===editId);
     if(!ev){toast('Event not found.','error');return;}
     // Snapshot for rollback
-    const prev={title:ev.title,type:ev.type,date:ev.date,start:ev.start,location:ev.location,mandatory:ev.mandatory};
-    ev.title=title;ev.type=document.getElementById('ne-tp').value;ev.date=document.getElementById('ne-d').value;ev.start=document.getElementById('ne-st').value;ev.location=document.getElementById('ne-l').value;ev.mandatory=document.getElementById('ne-m').value==='1';
+    const prev={title:ev.title,type:ev.type,date:ev.date,endDate:ev.endDate,start:ev.start,location:ev.location,mandatory:ev.mandatory};
+    ev.title=title;ev.type=document.getElementById('ne-tp').value;ev.date=date;ev.endDate=endDate;ev.start=document.getElementById('ne-st').value;ev.location=document.getElementById('ne-l').value;ev.mandatory=document.getElementById('ne-m').value==='1';
     document.getElementById('ne-edit-id').value='';
     try{
       await saveData();
@@ -236,7 +240,7 @@ async function addEv(){
     }
     return;
   }
-  const ev={id:uid(),title,type:document.getElementById('ne-tp').value,date:document.getElementById('ne-d').value,start:document.getElementById('ne-st').value,location:document.getElementById('ne-l').value,mandatory:document.getElementById('ne-m').value==='1'};
+  const ev={id:uid(),title,type:document.getElementById('ne-tp').value,date,endDate,start:document.getElementById('ne-st').value,location:document.getElementById('ne-l').value,mandatory:document.getElementById('ne-m').value==='1'};
   D.events.push(ev);
   try{
     await saveData();
@@ -254,6 +258,7 @@ function openEditEvent(id){
   document.getElementById('ne-t').value=ev.title;
   document.getElementById('ne-tp').value=ev.type||'chapter';
   document.getElementById('ne-d').value=ev.date;
+  if(document.getElementById('ne-ed'))document.getElementById('ne-ed').value=ev.endDate||'';
   document.getElementById('ne-st').value=ev.start||'';
   document.getElementById('ne-l').value=ev.location||'';
   document.getElementById('ne-m').value=ev.mandatory?'1':'0';
@@ -458,13 +463,6 @@ function addCase(){
   const filedBy=CURRENT_USER?CURRENT_USER.mid:null;
   D.cases.push({id:uid(),caseNum:'CASE-0'+String(D.cases.length+10),type:document.getElementById('nc-t').value,member:document.getElementById('nc-m').value,desc,status:document.getElementById('nc-s').value,hearingDate:document.getElementById('nc-h').value,resolution:'',filedBy});
   saveData();closeM(null,document.getElementById('m-addcase'));document.getElementById('nc-d').value='';renderJudicial();toast('Case filed','success');
-}
-function addShift(){
-  if(!canEditSober()){toast('Only the President, Vice President, and Risk Manager can add shifts.','error');return;}
-  const ev=document.getElementById('ns-e').value.trim();
-  if(!ev){toast('Event name is required','error');return;}
-  D.shifts.push({id:uid(),event:ev,date:document.getElementById('ns-d').value,start:document.getElementById('ns-st').value,end:document.getElementById('ns-en').value,memberId:document.getElementById('ns-m').value||null,confirmed:false,noShow:false});
-  saveData();closeM(null,document.getElementById('m-addshift'));document.getElementById('ns-e').value='';renderSober();toast('Shift added','success');
 }
 function addComm(){
   if(!canEditMembers()){toast('Only the President, Vice President, and Secretary can add committees.','error');return;}
@@ -787,10 +785,10 @@ function autoGenerateNotifs(){
     pushAuto('tasks_ov_'+today,'Overdue Tasks',`${ovT.length} task${ovT.length>1?'s':''} are past their due date. Highest priority: "${top.title}" (${top.priority}).`,'warning','tasks');
   }
 
-  // Unassigned social monitor shifts
-  const unassigned=D.shifts.filter(s=>isUpcoming(s.date)&&!s.memberId);
+  // Unassigned sober bro shifts
+  const unassigned=sbFlatSlots().filter(s=>isUpcoming(s.date)&&!s.memberId);
   if(unassigned.length){
-    pushAuto('sober_unassigned_'+today,'Unassigned Social Monitor Shifts',`${unassigned.length} upcoming shift${unassigned.length>1?'s':''} have no social monitor assigned. Next: ${formatDateShort(unassigned[0].date)}.`,'warning','sober');
+    pushAuto('sober_unassigned_'+today,'Unassigned Sober Bro Shifts',`${unassigned.length} upcoming shift${unassigned.length>1?'s':''} have no sober bro assigned. Next: ${formatDateShort(unassigned[0].date)}.`,'warning','sober');
   }
 
   // Open judicial cases
@@ -822,7 +820,6 @@ function autoGenerateNotifs(){
   saveData();
 }
 
-function confirmShift(id){if(!canWrite()){toast('You do not have permission to confirm shifts.','error');return;}const s=D.shifts.find(s=>s.id===id);if(s){s.confirmed=!s.confirmed;saveData();renderSober();}}
 function markRead(){if(!D.notifs)return;D.notifs.forEach(n=>n.read=true);saveData();renderNotifications();}
 function nRead(id){const n=D.notifs&&D.notifs.find(n=>n.id===id);if(n){n.read=true;saveData();renderNotifications();}}
 function saveProf(){
@@ -837,26 +834,9 @@ function saveProf(){
   toast('Profile saved','success');
 }
 function toggleSetting(k,el){D.settings[k]=!D.settings[k];el.className='tgl '+(D.settings[k]?'on':'off');saveData();}
-function handleSI(input){
-  if(!canWrite()){toast('You do not have permission to import shifts.','error');return;}
-  const f=input.files[0];if(!f)return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const lines=e.target.result.split('\n').filter(Boolean);
-    let added=0;
-    lines.slice(1).forEach(line=>{
-      const cols=line.split(',').map(s=>s.trim().replace(/^"|"$/g,''));
-      if(cols.length>=4&&cols[0]&&cols[1]){
-        const memberMatch=D.members.find(m=>m.name.toLowerCase().includes((cols[4]||'').toLowerCase())&&cols[4]);
-        D.shifts.push({id:uid(),event:cols[0],date:cols[1],start:cols[2]||'22:00',end:cols[3]||'02:00',memberId:memberMatch?memberMatch.id:null,confirmed:false,noShow:false});
-        added++;
-      }
-    });
-    if(added){saveData();renderSober();toast(added+' shift'+(added>1?'s':'')+' imported','success');closeM(null,document.getElementById('m-simport'));}
-    else{document.getElementById('si-prev').innerHTML=`<div class="bnr danger"><i class="ti ti-alert-circle" style="font-size:13px"></i>Could not parse file. Expected columns: Event, Date, Start, End, Member</div>`;}
-  };
-  reader.readAsText(f);
-}
+// CSV import for the sober bro weekly grid now lives in js/sober.js (sbHandleImport) — the
+// old flat-shift CSV shape (Event, Date, Start, End, Member) doesn't map to the weekend/day/slot
+// grid, so this was replaced rather than kept alongside it.
 function filterA(){const q=document.getElementById('a-search').value.toLowerCase();document.querySelectorAll('#a-table tbody tr').forEach(tr=>tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none');}
 function filterN(){const q=document.getElementById('n-search').value.toLowerCase();document.querySelectorAll('#notes-g>div').forEach(el=>el.style.display=el.textContent.toLowerCase().includes(q)?'':'none');}
 function filterM(){renderMembers();}

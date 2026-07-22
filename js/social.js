@@ -39,7 +39,7 @@ const SOC_MEMBER_VISIBLE_STATUSES = ['rsvp_open','ready','completed'];
 function socDefaultPlan(){
   return {
     status:'idea', eventCategory:'other',
-    expectedAttendance:null, capacity:null, rsvpDeadline:null, actualAttendance:null,
+    expectedAttendance:null, actualAttendance:null,
     venue:{name:'',address:'',contact:'',phone:'',deposit:0,totalCost:0,confirmed:false,contractStatus:'not_started',notes:''},
     transportation:{required:false,provider:'',contact:'',pickupLocation:'',departureTime:'',returnTime:'',vehicleCount:0,capacity:0,cost:0,confirmed:false,notes:''},
     lodging:{required:false,hotel:'',contact:'',roomCount:0,bookingStatus:'not_started',cost:0,notes:''},
@@ -159,7 +159,6 @@ function socRenderAlerts(){
     if(plan.transportation.required && !plan.transportation.confirmed) alerts.push({e,text:'Transportation not confirmed',icon:'ti-bus'});
     const tot = socBudgetTotals(plan);
     if(tot.actual > tot.est && tot.est>0) alerts.push({e,text:'Budget exceeded',icon:'ti-alert-triangle'});
-    if(plan.rsvpDeadline){ const days=Math.round((new Date(plan.rsvpDeadline+'T12:00:00')-new Date())/86400000); if(days>=0&&days<=3) alerts.push({e,text:'RSVP deadline in '+days+' day'+(days!==1?'s':''),icon:'ti-clock'}); }
     if(plan.checklist.length){ const undone=plan.checklist.filter(c=>!c.done).length; if(undone && e.date<=socToday()) alerts.push({e,text:undone+' checklist item'+(undone!==1?'s':'')+' incomplete, event is soon',icon:'ti-list-check'}); }
   });
   if(!alerts.length){ el.innerHTML = es('ti-circle-check','green','No planning alerts','Every upcoming event is on track.',''); return; }
@@ -245,7 +244,6 @@ async function socDeleteEvent(id){
   if(!ok) return;
   D.events = D.events.filter(e=>e.id!==id);
   if(D.social.planning) delete D.social.planning[id];
-  D.social.rsvps = D.social.rsvps.filter(r=>r.eventId!==id);
   await saveData();
   socShowList();
   if(typeof renderCalendar==='function') renderCalendar();
@@ -276,7 +274,6 @@ function socTab(btn, tabId){
   else if(tabId==='soc-budget') socRenderBudget();
   else if(tabId==='soc-vendors') socRenderEventVendors();
   else if(tabId==='soc-formal') socRenderFormal();
-  else if(tabId==='soc-rsvp') socRenderRsvpPanel();
 }
 
 function socRenderDetailOverview(){
@@ -295,23 +292,14 @@ function socRenderDetailOverview(){
       ${kpi('Status', socStatusLabel(plan.status), 'Current planning stage', 'neutral')}
     </div>
     ${r.missing.length?`<div class="bnr warn"><i class="ti ti-alert-triangle" style="font-size:13px"></i><div><strong>Missing to be fully ready:</strong> ${r.missing.map(esc).join(', ')}</div></div>`:''}
-    <div class="card" style="margin-bottom:13px">
+    <div class="card">
       <div class="card-hd"><span class="card-t">Status &amp; Attendance</span></div>
-      <div class="fr c2">
-        <div class="fld"><label>Status</label><select id="soc-ov-status" ${canEdit?'':'disabled'} onchange="socUpdateStatus()">${SOC_STATUSES.map(s=>`<option value="${s.v}"${plan.status===s.v?' selected':''}>${s.l}</option>`).join('')}</select></div>
-        <div class="fld"><label>RSVP Deadline</label><input id="soc-ov-rsvpdl" type="date" value="${plan.rsvpDeadline||''}" ${canEdit?'':'disabled'} onchange="socUpdateOverviewField('rsvpDeadline',this.value)"></div>
-      </div>
       <div class="fr c3">
+        <div class="fld"><label>Status</label><select id="soc-ov-status" ${canEdit?'':'disabled'} onchange="socUpdateStatus()">${SOC_STATUSES.map(s=>`<option value="${s.v}"${plan.status===s.v?' selected':''}>${s.l}</option>`).join('')}</select></div>
         <div class="fld"><label>Expected Attendance</label><input id="soc-ov-exp" type="number" min="0" value="${plan.expectedAttendance??''}" ${canEdit?'':'disabled'} onchange="socUpdateOverviewField('expectedAttendance',this.value===''?null:+this.value)"></div>
-        <div class="fld"><label>Capacity</label><input id="soc-ov-cap" type="number" min="0" value="${plan.capacity??''}" ${canEdit?'':'disabled'} onchange="socUpdateOverviewField('capacity',this.value===''?null:+this.value)"></div>
         <div class="fld"><label>Actual Attendance</label><input id="soc-ov-act" type="number" min="0" value="${plan.actualAttendance??''}" ${canEdit?'':'disabled'} onchange="socUpdateOverviewField('actualAttendance',this.value===''?null:+this.value)"></div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-hd"><span class="card-t">RSVPs</span><button class="card-a" onclick="socTab(document.querySelector('[data-tab=soc-rsvp]'),'soc-rsvp')">View all →</button></div>
-      <div id="soc-ov-rsvp-summary" style="font-size:12px;color:var(--mt)"></div>
     </div>`;
-  socLoadRsvpSummaryInto('soc-ov-rsvp-summary');
 }
 async function socUpdateStatus(){
   if(!socFull())return;
@@ -603,36 +591,9 @@ async function socSaveFormalSection(section){
   toast(section.charAt(0).toUpperCase()+section.slice(1)+' saved','success');
 }
 
-// ══════════════════════════════════════════════
-// RSVP — stored locally in D.social.rsvps (this demo has no real per-user backend)
-// ══════════════════════════════════════════════
-function socMyRsvp(eventId, memberId){ return D.social.rsvps.find(r=>r.eventId===eventId&&r.memberId===memberId); }
-async function socRsvpSet(eventId, status){
-  const memberId = CURRENT_USER?.mid; if(!memberId) return false;
-  const existing = socMyRsvp(eventId, memberId);
-  if(existing){ existing.status=status; existing.respondedAt=new Date().toISOString(); }
-  else D.social.rsvps.push({id:uid(),eventId,memberId,status,respondedAt:new Date().toISOString()});
-  await saveData();
-  return true;
-}
-function socRsvpsForEvent(eventId){ return D.social.rsvps.filter(r=>r.eventId===eventId); }
-function socLoadRsvpSummaryInto(elId){
-  const el=document.getElementById(elId); if(!el) return;
-  const eventId=SOC_CURRENT_EVENT_ID; if(!eventId) return;
-  const rsvps = socRsvpsForEvent(eventId);
-  const yes=rsvps.filter(r=>r.status==='yes').length, no=rsvps.filter(r=>r.status==='no').length, maybe=rsvps.filter(r=>r.status==='maybe').length;
-  el.innerHTML = `<div style="display:flex;gap:16px"><span><strong style="color:var(--gn)">${yes}</strong> Yes</span><span><strong style="color:var(--am-tx)">${maybe}</strong> Maybe</span><span><strong style="color:var(--rd)">${no}</strong> No</span><span style="color:var(--ht)">${rsvps.length} responded</span></div>`;
-}
-function socRenderRsvpPanel(){
-  const el=document.getElementById('soc-rsvp-body'); if(!el) return;
-  const eventId=SOC_CURRENT_EVENT_ID;
-  const rsvps = socRsvpsForEvent(eventId);
-  const yes=rsvps.filter(r=>r.status==='yes'), maybe=rsvps.filter(r=>r.status==='maybe'), no=rsvps.filter(r=>r.status==='no');
-  const list=(arr,label,color)=>`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:${color};margin-bottom:6px">${label} (${arr.length})</div>${arr.length?arr.map(r=>`<div style="font-size:12px;padding:3px 0">${esc(getMember(r.memberId).name)}</div>`).join(''):'<div style="font-size:11.5px;color:var(--ht)">None yet</div>'}</div>`;
-  el.innerHTML = `<div class="g3">${kpi('Yes',yes.length,'Attending','up')}${kpi('Maybe',maybe.length,'Unsure','neutral')}${kpi('No',no.length,'Not attending','neutral')}</div><div style="margin-top:14px" class="g3">${list(yes,'Yes','var(--gn-tx)')}${list(maybe,'Maybe','var(--am-tx)')}${list(no,'No','var(--rd-tx)')}</div>`;
-}
-
 // ── MEMBER-FACING RESTRICTED VIEW ──
+// RSVP tracking was removed — general members get a read-only view of events that have
+// actually opened up, same visibility rule as before, just without the Yes/Maybe/No response.
 function socRenderMemberView(){
   const el = document.getElementById('soc-member-events'); if(!el) return;
   const now = socToday();
@@ -640,26 +601,14 @@ function socRenderMemberView(){
     const plan=socPlan(e.id);
     return e.date>=now && SOC_MEMBER_VISIBLE_STATUSES.includes(plan.status);
   }).sort((a,b)=>a.date.localeCompare(b.date));
-  if(!events.length){ el.innerHTML = es('ti-confetti','pink','No upcoming social events','Check back soon — nothing has opened for RSVP yet.',''); return; }
-  const myId = CURRENT_USER?.mid;
+  if(!events.length){ el.innerHTML = es('ti-confetti','pink','No upcoming social events','Check back soon for the next social event.',''); return; }
   el.innerHTML = events.map(e=>{
     const plan=socPlan(e.id);
-    const mine = myId ? (socMyRsvp(e.id, myId)||{}).status : null;
     return `<div class="card" style="margin-bottom:11px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div><div style="font-size:14px;font-weight:600">${esc(e.title)}</div><div style="font-size:11.5px;color:var(--mt)">${socCatLabel(plan.eventCategory)} · ${formatDateShort(e.date)}${e.start?' · '+to12h(e.start):''}${e.location?' · '+esc(e.location):''}</div></div>
         <span class="badge ${socStatusClass(plan.status)}">${socStatusLabel(plan.status)}</span>
       </div>
-      ${plan.rsvpDeadline?`<div style="font-size:11px;color:var(--ht);margin-top:6px">RSVP by ${formatDateShort(plan.rsvpDeadline)}</div>`:''}
-      <div style="display:flex;gap:7px;margin-top:11px">
-        <button class="btn ${mine==='yes'?'btn-p':''}" onclick="socMemberRsvp('${e.id}','yes')">Yes</button>
-        <button class="btn ${mine==='maybe'?'btn-p':''}" onclick="socMemberRsvp('${e.id}','maybe')">Maybe</button>
-        <button class="btn ${mine==='no'?'btn-p':''}" onclick="socMemberRsvp('${e.id}','no')">No</button>
-      </div>
     </div>`;
   }).join('');
-}
-async function socMemberRsvp(eventId, status){
-  const ok = await socRsvpSet(eventId, status);
-  if(ok){ toast('RSVP saved: '+status.charAt(0).toUpperCase()+status.slice(1),'success'); socRenderMemberView(); }
 }

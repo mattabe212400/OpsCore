@@ -348,20 +348,21 @@ function alLogContact(){
 // read-only view (approved/upcoming events + next Bible study only, no costs/owner/notes).
 function chFull(){ return !!CURRENT_USER && CURRENT_USER.role!=='viewer'; }
 function chBibleStudies(){ return D.chaplainHub.bibleStudies||[]; }
-function chEvents(){ return D.chaplainHub.events||[]; }
-function chTasks(){ return D.chaplainHub.tasks||[]; }
-function chDaysAgo(dateStr){ if(!dateStr)return Infinity; return (Date.now()-new Date(dateStr+'T12:00:00').getTime())/86400000; }
+function chDevotionals(){ return D.chaplainHub.devotionals||[]; }
+// Brotherhood events live on the shared calendar (D.events, type:'brotherhood') — same pattern
+// as Social/Philanthropy/Community Service — so scheduling one here always shows up on the
+// Calendar too, not a separate copy.
+function chEvents(){ return (D.events||[]).filter(e=>e.type==='brotherhood'); }
 
 const CH_EVENT_TYPES=[{v:'movie',l:'Movie Night'},{v:'golf',l:'Golf'},{v:'bags',l:'Bags Tournament'},{v:'meal',l:'Brotherhood Meal'},{v:'sports',l:'Sports/Rec'},{v:'retreat',l:'Retreat'},{v:'custom',l:'Other'}];
 function chEventTypeLabel(v){ return (CH_EVENT_TYPES.find(t=>t.v===v)||{}).l||v||'Other'; }
 const CH_PLANNING_STATUSES=[{v:'idea',l:'Idea',c:'bm2'},{v:'planning',l:'Planning',c:'ba2'},{v:'scheduled',l:'Scheduled',c:'bb2'},{v:'completed',l:'Completed',c:'bg2'}];
 function chStatusLabel(v){ return (CH_PLANNING_STATUSES.find(s=>s.v===v)||{}).l||v; }
 function chStatusClass(v){ return (CH_PLANNING_STATUSES.find(s=>s.v===v)||{}).c||'bm2'; }
-const CH_BS_STATUSES=[{v:'planned',l:'Planned',c:'bb2'},{v:'completed',l:'Completed',c:'bg2'},{v:'canceled',l:'Canceled',c:'br2'}];
-function chBsStatusLabel(v){ return (CH_BS_STATUSES.find(s=>s.v===v)||{}).l||v; }
-function chBsStatusClass(v){ return (CH_BS_STATUSES.find(s=>s.v===v)||{}).c||'bm2'; }
+const CH_DV_STATUSES=[{v:'planned',l:'Planned',c:'bb2'},{v:'completed',l:'Completed',c:'bg2'},{v:'canceled',l:'Canceled',c:'br2'}];
+function chDvStatusLabel(v){ return (CH_DV_STATUSES.find(s=>s.v===v)||{}).l||v; }
+function chDvStatusClass(v){ return (CH_DV_STATUSES.find(s=>s.v===v)||{}).c||'bm2'; }
 const CH_MEMBER_VISIBLE_EVENT_STATUSES=['scheduled','completed'];
-const CH_QUICK_TASKS=['Confirm venue','Create signup form','Announce event','Collect RSVPs','Follow up with members','Record attendance','Add reflection notes'];
 
 function renderRitual(){
   const full=chFull();
@@ -373,11 +374,9 @@ function renderRitual(){
   if(actionsEl)actionsEl.style.display=full?'':'none';
   if(full){
     chRenderKpis();
-    chRenderBibleStudies();
+    chRenderDevotionals();
     chRenderEvents();
     chRenderKanban();
-    chRenderAnalytics();
-    chRenderTasks();
     riRenderProgram();
   }else{
     chRenderMemberView();
@@ -386,138 +385,119 @@ function renderRitual(){
 
 function chRenderKpis(){
   const today=new Date().toISOString().split('T')[0];
-  const events=chEvents(); const studies=chBibleStudies();
+  const events=chEvents();
   const upcomingEvents=events.filter(e=>e.date>=today && e.planningStatus!=='completed');
   const activeEventPlans=events.filter(e=>['idea','planning','scheduled'].includes(e.planningStatus));
   const completedEvents=events.filter(e=>e.planningStatus==='completed');
-  const rated=completedEvents.filter(e=>e.rating!=null);
-  const avgRating=rated.length?(rated.reduce((s,e)=>s+Number(e.rating),0)/rated.length).toFixed(1):null;
-  const recentStudies=studies.filter(s=>s.status==='completed' && s.attendanceCount!=null && chDaysAgo(s.date)<=90);
-  const bsAvgAtt=recentStudies.length?Math.round(recentStudies.reduce((s,x)=>s+Number(x.attendanceCount),0)/recentStudies.length):null;
-  const roster=D.members.length||1;
-  const engagementSamples=[...recentStudies.map(s=>Number(s.attendanceCount)),...completedEvents.filter(e=>e.actualAttendance!=null && chDaysAgo(e.date)<=90).map(e=>Number(e.actualAttendance))];
-  const engagementPct=engagementSamples.length?Math.round((engagementSamples.reduce((a,b)=>a+b,0)/engagementSamples.length)/roster*100):null;
   document.getElementById('ri-kpi').innerHTML=
     kpi('Upcoming Brotherhood Events',upcomingEvents.length,'On the calendar','neutral')+
-    kpi('Bible Study Attendance',bsAvgAtt!=null?bsAvgAtt:'—',bsAvgAtt!=null?'Avg, last 90 days':'No completed studies yet','neutral')+
     kpi('Active Event Plans',activeEventPlans.length,'Idea + Planning + Scheduled','neutral')+
-    kpi('Member Engagement',engagementPct!=null?engagementPct+'%':'—',engagementPct!=null?'Of roster, last 90 days':'No recent data yet',engagementPct!=null?(engagementPct>=50?'up':'down'):'neutral')+
-    kpi('Past Events Completed',completedEvents.length,'All-time','neutral')+
-    kpi('Avg Event Rating',avgRating!=null?avgRating+'/5':'—',rated.length?rated.length+' rated event'+(rated.length!==1?'s':''):'No ratings yet','neutral');
+    kpi('Past Events Completed',completedEvents.length,'All-time','neutral');
 }
 
-function chRenderBibleStudies(){
-  const el=document.getElementById('ch-bs-table'); if(!el)return;
-  const list=[...chBibleStudies()].sort((a,b)=>b.date.localeCompare(a.date));
-  if(!list.length){ el.innerHTML=`<tbody><tr><td>${es('ti-book-2','pink','No Bible studies yet','Plan your first Bible study session.','<button class="btn btn-p" onclick="chOpenAddBibleStudy()">Add Bible Study</button>')}</td></tr></tbody>`; return; }
-  el.innerHTML=`<thead><tr><th>Date</th><th>Topic</th><th>Scripture</th><th>Attendance</th><th>Status</th><th></th></tr></thead><tbody>${
+// ── DEVOTIONALS ──
+function chRenderDevotionals(){
+  const el=document.getElementById('ch-dv-table'); if(!el)return;
+  const list=[...chDevotionals()].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!list.length){ el.innerHTML=`<tbody><tr><td>${es('ti-book-2','pink','No devotionals yet','Plan your first devotional.','<button class="btn btn-p" onclick="chOpenAddDevotional()">Add Devotional</button>')}</td></tr></tbody>`; return; }
+  el.innerHTML=`<thead><tr><th>Date</th><th>Topic</th><th>Scripture</th><th>Status</th><th></th></tr></thead><tbody>${
     list.map(s=>`<tr>
       <td>${formatDateShort(s.date)}${s.time?' '+to12h(s.time):''}</td>
       <td style="font-weight:500">${s.topic||'—'}</td>
       <td>${s.scripture||'—'}</td>
-      <td>${s.attendanceCount!=null?s.attendanceCount:'—'}</td>
-      <td><span class="badge ${chBsStatusClass(s.status)}">${chBsStatusLabel(s.status)}</span></td>
-      <td style="white-space:nowrap"><button class="btn" style="height:22px;font-size:10px;padding:0 6px" onclick="chOpenEditBibleStudy('${s.id}')"><i class="ti ti-edit"></i></button> <button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="chDeleteBibleStudy('${s.id}')"><i class="ti ti-trash"></i></button></td>
+      <td><span class="badge ${chDvStatusClass(s.status)}">${chDvStatusLabel(s.status)}</span></td>
+      <td style="white-space:nowrap"><button class="btn" style="height:22px;font-size:10px;padding:0 6px" onclick="chOpenEditDevotional('${s.id}')"><i class="ti ti-edit"></i></button> <button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="chDeleteDevotional('${s.id}')"><i class="ti ti-trash"></i></button></td>
     </tr>`).join('')
   }</tbody>`;
 }
-function chOpenAddBibleStudy(){
-  document.getElementById('ch-bs-id').value='';
-  document.getElementById('ch-bs-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('ch-bs-time').value='';document.getElementById('ch-bs-topic').value='';document.getElementById('ch-bs-scripture').value='';
-  document.getElementById('ch-bs-questions').value='';document.getElementById('ch-bs-attendance').value='';document.getElementById('ch-bs-notes').value='';
-  document.getElementById('ch-bs-status').value='planned';
-  document.getElementById('m-ch-biblestudy').classList.add('open');
+function chOpenAddDevotional(){
+  document.getElementById('ch-dv-id').value='';
+  document.getElementById('ch-dv-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('ch-dv-time').value='';document.getElementById('ch-dv-topic').value='';document.getElementById('ch-dv-scripture').value='';
+  document.getElementById('ch-dv-questions').value='';document.getElementById('ch-dv-notes').value='';
+  document.getElementById('ch-dv-status').value='planned';
+  document.getElementById('m-ch-devotional').classList.add('open');
 }
-function chOpenEditBibleStudy(id){
-  const s=chBibleStudies().find(x=>x.id===id); if(!s)return;
-  document.getElementById('ch-bs-id').value=s.id;
-  document.getElementById('ch-bs-date').value=s.date||'';document.getElementById('ch-bs-time').value=s.time||'';
-  document.getElementById('ch-bs-topic').value=s.topic||'';document.getElementById('ch-bs-scripture').value=s.scripture||'';
-  document.getElementById('ch-bs-questions').value=s.discussionQuestions||'';
-  document.getElementById('ch-bs-attendance').value=s.attendanceCount!=null?s.attendanceCount:'';
-  document.getElementById('ch-bs-notes').value=s.notes||'';document.getElementById('ch-bs-status').value=s.status||'planned';
-  document.getElementById('m-ch-biblestudy').classList.add('open');
+function chOpenEditDevotional(id){
+  const s=chDevotionals().find(x=>x.id===id); if(!s)return;
+  document.getElementById('ch-dv-id').value=s.id;
+  document.getElementById('ch-dv-date').value=s.date||'';document.getElementById('ch-dv-time').value=s.time||'';
+  document.getElementById('ch-dv-topic').value=s.topic||'';document.getElementById('ch-dv-scripture').value=s.scripture||'';
+  document.getElementById('ch-dv-questions').value=s.discussionQuestions||'';
+  document.getElementById('ch-dv-notes').value=s.notes||'';document.getElementById('ch-dv-status').value=s.status||'planned';
+  document.getElementById('m-ch-devotional').classList.add('open');
 }
-async function chSaveBibleStudy(){
-  const id=document.getElementById('ch-bs-id').value;
-  const date=document.getElementById('ch-bs-date').value;
-  const topic=document.getElementById('ch-bs-topic').value.trim();
+async function chSaveDevotional(){
+  const id=document.getElementById('ch-dv-id').value;
+  const date=document.getElementById('ch-dv-date').value;
+  const topic=document.getElementById('ch-dv-topic').value.trim();
   if(!date||!topic){toast('Date and topic are required','error');return;}
-  const fields={date,time:document.getElementById('ch-bs-time').value,topic,scripture:document.getElementById('ch-bs-scripture').value.trim(),discussionQuestions:document.getElementById('ch-bs-questions').value.trim(),attendanceCount:document.getElementById('ch-bs-attendance').value===''?null:parseInt(document.getElementById('ch-bs-attendance').value),notes:document.getElementById('ch-bs-notes').value.trim(),status:document.getElementById('ch-bs-status').value};
-  if(id){const s=chBibleStudies().find(x=>x.id===id);if(s)Object.assign(s,fields);}
-  else D.chaplainHub.bibleStudies.push({id:uid(),...fields});
-  await saveData();closeM(null,document.getElementById('m-ch-biblestudy'));renderRitual();toast(id?'Bible study updated':'Bible study added','success');
+  const fields={date,time:document.getElementById('ch-dv-time').value,topic,scripture:document.getElementById('ch-dv-scripture').value.trim(),discussionQuestions:document.getElementById('ch-dv-questions').value.trim(),notes:document.getElementById('ch-dv-notes').value.trim(),status:document.getElementById('ch-dv-status').value};
+  if(id){const s=chDevotionals().find(x=>x.id===id);if(s)Object.assign(s,fields);}
+  else D.chaplainHub.devotionals.push({id:uid(),...fields});
+  await saveData();closeM(null,document.getElementById('m-ch-devotional'));renderRitual();toast(id?'Devotional updated':'Devotional added','success');
 }
-async function chDeleteBibleStudy(id){
-  const ok=await confirmDialog('Delete Bible Study','Delete this Bible study?');if(!ok)return;
-  D.chaplainHub.bibleStudies=D.chaplainHub.bibleStudies.filter(x=>x.id!==id);
-  await saveData();renderRitual();toast('Bible study deleted','info');
+async function chDeleteDevotional(id){
+  const ok=await confirmDialog('Delete Devotional','Delete this devotional?');if(!ok)return;
+  D.chaplainHub.devotionals=D.chaplainHub.devotionals.filter(x=>x.id!==id);
+  await saveData();renderRitual();toast('Devotional deleted','info');
 }
 
+// ── BROTHERHOOD EVENTS TRACKER ──
 function chRenderEvents(){
   const el=document.getElementById('ch-events-table'); if(!el)return;
   const list=[...chEvents()].sort((a,b)=>b.date.localeCompare(a.date));
   if(!list.length){ el.innerHTML=`<tbody><tr><td>${es('ti-users-group','pink','No brotherhood events yet','Plan a movie night, golf outing, or other morale event.','<button class="btn btn-p" onclick="chOpenAddEvent()">Add Event</button>')}</td></tr></tbody>`; return; }
-  el.innerHTML=`<thead><tr><th>Name</th><th>Type</th><th>Date</th><th>Location</th><th>Est. Cost</th><th>Attendance</th><th>Status</th><th>Rating</th><th></th></tr></thead><tbody>${
+  el.innerHTML=`<thead><tr><th>Name</th><th>Type</th><th>Date</th><th>Location</th><th>Est. Cost</th><th>Status</th><th></th></tr></thead><tbody>${
     list.map(e=>`<tr>
-      <td style="font-weight:500">${e.name}</td><td>${chEventTypeLabel(e.type)}</td><td>${formatDateShort(e.date)}</td><td>${e.location||'—'}</td>
+      <td style="font-weight:500">${e.title}</td><td>${chEventTypeLabel(e.chEventType)}</td><td>${formatDateShort(e.date)}</td><td>${e.location||'—'}</td>
       <td>${e.estCost!=null?'$'+Number(e.estCost).toLocaleString():'—'}</td>
-      <td>${e.actualAttendance!=null?e.actualAttendance:(e.expectedAttendance!=null?'~'+e.expectedAttendance+' exp.':'—')}</td>
       <td><span class="badge ${chStatusClass(e.planningStatus)}">${chStatusLabel(e.planningStatus)}</span></td>
-      <td>${e.rating!=null?e.rating+'/5':'—'}</td>
       <td style="white-space:nowrap"><button class="btn" style="height:22px;font-size:10px;padding:0 6px" onclick="chOpenEditEvent('${e.id}')"><i class="ti ti-edit"></i></button> <button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="chDeleteEvent('${e.id}')"><i class="ti ti-trash"></i></button></td>
     </tr>`).join('')
   }</tbody>`;
 }
 function chEventTypeOptions(sel){ return CH_EVENT_TYPES.map(t=>`<option value="${t.v}" ${sel===t.v?'selected':''}>${t.l}</option>`).join(''); }
 function chStatusOptions(sel){ return CH_PLANNING_STATUSES.map(s=>`<option value="${s.v}" ${sel===s.v?'selected':''}>${s.l}</option>`).join(''); }
-function chToggleEventCompletedFields(){
-  const wrap=document.getElementById('ch-ev-completed-fields');
-  if(wrap)wrap.style.display=document.getElementById('ch-ev-status').value==='completed'?'':'none';
-}
 function chOpenAddEvent(){
   document.getElementById('ch-ev-id').value='';document.getElementById('ch-ev-name').value='';
   document.getElementById('ch-ev-type').innerHTML=chEventTypeOptions('movie');
   document.getElementById('ch-ev-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('ch-ev-time').value='';document.getElementById('ch-ev-location').value='';
-  document.getElementById('ch-ev-cost').value='';document.getElementById('ch-ev-expected').value='';document.getElementById('ch-ev-actual').value='';
+  document.getElementById('ch-ev-cost').value='';
   document.getElementById('ch-ev-status').innerHTML=chStatusOptions('idea');
   document.getElementById('ch-ev-owner').innerHTML='<option value="">Unassigned</option>'+sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-  document.getElementById('ch-ev-notes').value='';document.getElementById('ch-ev-rating').value='';document.getElementById('ch-ev-reflection').value='';
-  chToggleEventCompletedFields();
+  document.getElementById('ch-ev-notes').value='';document.getElementById('ch-ev-reflection').value='';
   document.getElementById('m-ch-event').classList.add('open');
 }
 function chOpenEditEvent(id){
   const e=chEvents().find(x=>x.id===id); if(!e)return;
-  document.getElementById('ch-ev-id').value=e.id;document.getElementById('ch-ev-name').value=e.name;
-  document.getElementById('ch-ev-type').innerHTML=chEventTypeOptions(e.type);
-  document.getElementById('ch-ev-date').value=e.date||'';document.getElementById('ch-ev-time').value=e.time||'';
+  document.getElementById('ch-ev-id').value=e.id;document.getElementById('ch-ev-name').value=e.title;
+  document.getElementById('ch-ev-type').innerHTML=chEventTypeOptions(e.chEventType);
+  document.getElementById('ch-ev-date').value=e.date||'';document.getElementById('ch-ev-time').value=e.start||'';
   document.getElementById('ch-ev-location').value=e.location||'';
   document.getElementById('ch-ev-cost').value=e.estCost!=null?e.estCost:'';
-  document.getElementById('ch-ev-expected').value=e.expectedAttendance!=null?e.expectedAttendance:'';
-  document.getElementById('ch-ev-actual').value=e.actualAttendance!=null?e.actualAttendance:'';
   document.getElementById('ch-ev-status').innerHTML=chStatusOptions(e.planningStatus);
   document.getElementById('ch-ev-owner').innerHTML='<option value="">Unassigned</option>'+sortedMembers().map(m=>`<option value="${m.id}" ${e.owner===m.id?'selected':''}>${m.name}</option>`).join('');
   document.getElementById('ch-ev-notes').value=e.notes||'';
-  document.getElementById('ch-ev-rating').value=e.rating!=null?e.rating:'';document.getElementById('ch-ev-reflection').value=e.reflection||'';
-  chToggleEventCompletedFields();
+  document.getElementById('ch-ev-reflection').value=e.reflection||'';
   document.getElementById('m-ch-event').classList.add('open');
 }
 async function chSaveEvent(){
   const id=document.getElementById('ch-ev-id').value;
-  const name=document.getElementById('ch-ev-name').value.trim();
+  const title=document.getElementById('ch-ev-name').value.trim();
   const date=document.getElementById('ch-ev-date').value;
-  if(!name||!date){toast('Name and date are required','error');return;}
-  const fields={name,type:document.getElementById('ch-ev-type').value,date,time:document.getElementById('ch-ev-time').value,location:document.getElementById('ch-ev-location').value.trim(),estCost:document.getElementById('ch-ev-cost').value===''?null:parseFloat(document.getElementById('ch-ev-cost').value),expectedAttendance:document.getElementById('ch-ev-expected').value===''?null:parseInt(document.getElementById('ch-ev-expected').value),actualAttendance:document.getElementById('ch-ev-actual').value===''?null:parseInt(document.getElementById('ch-ev-actual').value),planningStatus:document.getElementById('ch-ev-status').value,owner:document.getElementById('ch-ev-owner').value||null,notes:document.getElementById('ch-ev-notes').value.trim(),rating:document.getElementById('ch-ev-rating').value===''?null:parseInt(document.getElementById('ch-ev-rating').value),reflection:document.getElementById('ch-ev-reflection').value.trim()};
-  if(id){const e=chEvents().find(x=>x.id===id);if(e)Object.assign(e,fields);}
-  else D.chaplainHub.events.push({id:uid(),...fields});
-  await saveData();closeM(null,document.getElementById('m-ch-event'));renderRitual();toast(id?'Event updated':'Event added','success');
+  if(!title||!date){toast('Name and date are required','error');return;}
+  const fields={title,type:'brotherhood',chEventType:document.getElementById('ch-ev-type').value,date,start:document.getElementById('ch-ev-time').value,location:document.getElementById('ch-ev-location').value.trim(),estCost:document.getElementById('ch-ev-cost').value===''?null:parseFloat(document.getElementById('ch-ev-cost').value),planningStatus:document.getElementById('ch-ev-status').value,owner:document.getElementById('ch-ev-owner').value||null,notes:document.getElementById('ch-ev-notes').value.trim(),reflection:document.getElementById('ch-ev-reflection').value.trim()};
+  if(id){const e=D.events.find(x=>x.id===id);if(e)Object.assign(e,fields);}
+  else D.events.push({id:uid(),mandatory:false,...fields});
+  await saveData();closeM(null,document.getElementById('m-ch-event'));renderRitual();if(typeof renderCalendar==='function')renderCalendar();toast(id?'Event updated':'Event added','success');
 }
 async function chDeleteEvent(id){
   const ok=await confirmDialog('Delete Event','Delete this brotherhood event?');if(!ok)return;
-  D.chaplainHub.events=D.chaplainHub.events.filter(x=>x.id!==id);
-  await saveData();renderRitual();toast('Event deleted','info');
+  D.events=D.events.filter(x=>x.id!==id);
+  delete D.attendance[id];
+  await saveData();renderRitual();if(typeof renderCalendar==='function')renderCalendar();toast('Event deleted','info');
 }
 
 let CH_DRAG_ID=null;
@@ -531,8 +511,8 @@ function chRenderKanban(){
       </div>
       <div class="rc-col-body rc-col-drop" id="chkd-${stage.v}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="chDrop(event,'${stage.v}')">
         ${items.map(e=>`<div class="rc-card" draggable="true" id="chkc-${e.id}" ondragstart="chDragStart('${e.id}')" ondragend="document.querySelectorAll('.rc-col-drop').forEach(c=>c.classList.remove('drag-over'))" onclick="chOpenEditEvent('${e.id}')">
-          <div style="font-size:12px;font-weight:500;margin-bottom:4px">${e.name}</div>
-          <div style="font-size:10.5px;color:var(--mt)">${chEventTypeLabel(e.type)} · ${formatDateShort(e.date)}</div>
+          <div style="font-size:12px;font-weight:500;margin-bottom:4px">${e.title}</div>
+          <div style="font-size:10.5px;color:var(--mt)">${chEventTypeLabel(e.chEventType)} · ${formatDateShort(e.date)}</div>
           <div style="font-size:10px;color:var(--ht);margin-top:3px">${e.owner?getMember(e.owner).name.split(' ')[0]:'Unassigned'}</div>
         </div>`).join('')||`<div style="padding:14px;text-align:center;font-size:11px;color:var(--ht)">Drop here</div>`}
       </div>
@@ -546,98 +526,27 @@ async function chDrop(event,stage){
   const e=chEvents().find(x=>x.id===CH_DRAG_ID); CH_DRAG_ID=null;
   if(!e||e.planningStatus===stage)return;
   e.planningStatus=stage;
-  await saveData();renderRitual();toast(e.name+' moved to '+chStatusLabel(stage),'success');
+  await saveData();renderRitual();toast(e.title+' moved to '+chStatusLabel(stage),'success');
 }
 
-function chRenderAnalytics(){
-  const byTypeEl=document.getElementById('ch-chart-type');
-  if(byTypeEl){
-    const withAtt=chEvents().filter(e=>e.actualAttendance!=null);
-    const types=[...new Set(withAtt.map(e=>e.type))];
-    if(!types.length){byTypeEl.innerHTML=`<div style="color:var(--ht);font-size:11.5px;padding:10px 0">No completed events with recorded attendance yet.</div>`;}
-    else{const pts=types.map(t=>{const inT=withAtt.filter(e=>e.type===t);return{label:chEventTypeLabel(t),val:Math.round(inT.reduce((s,e)=>s+Number(e.actualAttendance),0)/inT.length)};});byTypeEl.innerHTML=miniBarChart(pts,v=>v+' avg');}
-  }
-  const bsTrendEl=document.getElementById('ch-chart-bstrend');
-  if(bsTrendEl){
-    const withAtt=chBibleStudies().filter(s=>s.status==='completed'&&s.attendanceCount!=null).sort((a,b)=>a.date.localeCompare(b.date)).slice(-8);
-    if(!withAtt.length){bsTrendEl.innerHTML=`<div style="color:var(--ht);font-size:11.5px;padding:10px 0">No completed Bible studies with recorded attendance yet.</div>`;}
-    else{bsTrendEl.innerHTML=miniBarChart(withAtt.map(s=>({label:formatDateShort(s.date),val:Number(s.attendanceCount)})),v=>v);}
-  }
-  const byMonthEl=document.getElementById('ch-chart-month');
-  if(byMonthEl){
-    const completed=chEvents().filter(e=>e.planningStatus==='completed');
-    if(!completed.length){byMonthEl.innerHTML=`<div style="color:var(--ht);font-size:11.5px;padding:10px 0">No completed events yet.</div>`;}
-    else{const byMonth={};completed.forEach(e=>{const mo=(e.date||'').slice(0,7);if(!mo)return;byMonth[mo]=(byMonth[mo]||0)+1;});const months=Object.keys(byMonth).sort();byMonthEl.innerHTML=miniBarChart(months.map(mo=>({label:new Date(mo+'-01T12:00:00').toLocaleDateString('en-US',{month:'short'}),val:byMonth[mo]})),v=>v+' event'+(v!==1?'s':''));}
-  }
-  const engTrendEl=document.getElementById('ch-chart-engagement');
-  if(engTrendEl){
-    const roster=D.members.length||1;
-    const samples=[...chBibleStudies().filter(s=>s.status==='completed'&&s.attendanceCount!=null).map(s=>({date:s.date,val:Number(s.attendanceCount)})),...chEvents().filter(e=>e.planningStatus==='completed'&&e.actualAttendance!=null).map(e=>({date:e.date,val:Number(e.actualAttendance)}))];
-    if(samples.length<2){engTrendEl.innerHTML=`<div style="color:var(--ht);font-size:11.5px;padding:10px 0">Not enough attendance history yet.</div>`;}
-    else{const byMonth={};samples.forEach(s=>{const mo=(s.date||'').slice(0,7);if(!mo)return;if(!byMonth[mo])byMonth[mo]=[];byMonth[mo].push(s.val);});const months=Object.keys(byMonth).sort();const pts=months.map(mo=>({label:new Date(mo+'-01T12:00:00').toLocaleDateString('en-US',{month:'short'}),val:Math.min(100,Math.round((byMonth[mo].reduce((a,b)=>a+b,0)/byMonth[mo].length)/roster*100))}));engTrendEl.innerHTML=miniBarChart(pts,v=>v+'%');}
-  }
-}
-
-function chRenderTasks(){
-  const chipsEl=document.getElementById('ch-quick-chips');
-  if(chipsEl && !chipsEl._built){chipsEl.innerHTML=CH_QUICK_TASKS.map(l=>`<span class="rc-tag" onclick="chQuickAddTask('${l.replace(/'/g,"\\'")}')" style="cursor:pointer">+ ${l}</span>`).join('');chipsEl._built=true;}
-  const el=document.getElementById('ch-tasks-list'); if(!el)return;
-  const list=chTasks();
-  if(!list.length){el.innerHTML=es('ti-list-check','pink','No pending actions','Add a follow-up task or use a quick-add chip below.','');return;}
-  const sorted=[...list].sort((a,b)=>(a.done===b.done?0:a.done?1:-1)||(a.dueDate||'').localeCompare(b.dueDate||''));
-  el.innerHTML=sorted.map(t=>{
-    const linked=t.linkedType==='event'?chEvents().find(x=>x.id===t.linkedId):t.linkedType==='bibleStudy'?chBibleStudies().find(x=>x.id===t.linkedId):null;
-    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr)">
-      <div class="tc ${t.done?'done':''}" onclick="chToggleTask('${t.id}')">${t.done?'<i class="ti ti-check" style="font-size:9px"></i>':''}</div>
-      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;${t.done?'text-decoration:line-through;color:var(--mt)':''}">${t.label}${linked?' <span style="color:var(--ht);font-weight:400">— '+(t.linkedType==='event'?linked.name:linked.topic||'Bible Study')+'</span>':''}</div>
-      <div style="font-size:10px;color:var(--ht)">${t.assignedTo?getMember(t.assignedTo).name:'Unassigned'}${t.dueDate?' · Due '+formatDateShort(t.dueDate):''}</div></div>
-      <button class="btn btn-d" style="height:22px;font-size:10px;padding:0 6px" onclick="chDeleteTask('${t.id}')"><i class="ti ti-trash"></i></button>
-    </div>`;
-  }).join('');
-}
-async function chQuickAddTask(label){
-  D.chaplainHub.tasks.push({id:uid(),label,linkedType:null,linkedId:null,assignedTo:null,dueDate:null,done:false});
-  await saveData();chRenderTasks();toast('Task added','success');
-}
-function chOpenAddTask(){
-  document.getElementById('ch-tk-label').value='';
-  const linkSel=document.getElementById('ch-tk-linked');
-  linkSel.innerHTML='<option value="">None</option>'+chEvents().map(e=>`<option value="event:${e.id}">Event — ${e.name}</option>`).join('')+chBibleStudies().map(s=>`<option value="bibleStudy:${s.id}">Bible Study — ${s.topic||formatDateShort(s.date)}</option>`).join('');
-  document.getElementById('ch-tk-assigned').innerHTML='<option value="">Unassigned</option>'+sortedMembers().map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-  document.getElementById('ch-tk-due').value='';
-  document.getElementById('m-ch-task').classList.add('open');
-}
-async function chSaveTask(){
-  const label=document.getElementById('ch-tk-label').value.trim();
-  if(!label){toast('Task label is required','error');return;}
-  const linkedRaw=document.getElementById('ch-tk-linked').value;
-  const [linkedType,linkedId]=linkedRaw?linkedRaw.split(':'):[null,null];
-  D.chaplainHub.tasks.push({id:uid(),label,linkedType:linkedType||null,linkedId:linkedId||null,assignedTo:document.getElementById('ch-tk-assigned').value||null,dueDate:document.getElementById('ch-tk-due').value||null,done:false});
-  await saveData();closeM(null,document.getElementById('m-ch-task'));chRenderTasks();toast('Task added','success');
-}
-async function chToggleTask(id){
-  const t=chTasks().find(x=>x.id===id); if(!t)return;
-  t.done=!t.done; await saveData();chRenderTasks();
-}
-async function chDeleteTask(id){
-  D.chaplainHub.tasks=D.chaplainHub.tasks.filter(x=>x.id!==id);
-  await saveData();chRenderTasks();
-}
+// Bible Study Planner (the old informal per-session log), Engagement Analytics, and Pending
+// Actions were all removed — Devotionals + the Event Planning Board above now cover this ground.
+// chBibleStudies() stays only so the member view's legacy "Next Bible Study" data isn't lost.
 
 function chRenderMemberView(){
   const el=document.getElementById('ch-member-content'); if(!el)return;
   const today=new Date().toISOString().split('T')[0];
-  const nextStudy=[...chBibleStudies()].filter(s=>s.status==='planned'&&s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const nextDevotional=[...chDevotionals()].filter(s=>s.status==='planned'&&s.date>=today).sort((a,b)=>a.date.localeCompare(b.date))[0];
   const visibleEvents=[...chEvents()].filter(e=>CH_MEMBER_VISIBLE_EVENT_STATUSES.includes(e.planningStatus)).sort((a,b)=>a.date.localeCompare(b.date));
   el.innerHTML=`
     <div class="card" style="margin-bottom:11px">
-      <div class="card-hd"><span class="card-t">Next Bible Study</span></div>
-      ${nextStudy?`<div style="font-size:13px;font-weight:500">${nextStudy.topic||'Bible Study'}</div><div style="font-size:11px;color:var(--mt)">${formatDateShort(nextStudy.date)}${nextStudy.time?' at '+to12h(nextStudy.time):''}</div>`:es('ti-book-2','pink','Nothing scheduled yet','Check back soon for the next Bible study.','')}
+      <div class="card-hd"><span class="card-t">Next Devotional</span></div>
+      ${nextDevotional?`<div style="font-size:13px;font-weight:500">${nextDevotional.topic||'Devotional'}</div><div style="font-size:11px;color:var(--mt)">${formatDateShort(nextDevotional.date)}${nextDevotional.time?' at '+to12h(nextDevotional.time):''}</div>`:es('ti-book-2','pink','Nothing scheduled yet','Check back soon for the next devotional.','')}
     </div>
     <div class="card">
       <div class="card-hd"><span class="card-t">Upcoming &amp; Recent Brotherhood Events</span></div>
       ${visibleEvents.length?visibleEvents.map(e=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr)">
-        <div><div style="font-size:12px;font-weight:500">${e.name}</div><div style="font-size:10.5px;color:var(--ht)">${chEventTypeLabel(e.type)} · ${formatDateShort(e.date)}${e.location?' · '+e.location:''}</div></div>
+        <div><div style="font-size:12px;font-weight:500">${e.title}</div><div style="font-size:10.5px;color:var(--ht)">${chEventTypeLabel(e.chEventType)} · ${formatDateShort(e.date)}${e.location?' · '+e.location:''}</div></div>
         <span class="badge ${chStatusClass(e.planningStatus)}">${chStatusLabel(e.planningStatus)}</span>
       </div>`).join(''):es('ti-users-group','pink','No events yet','Check back soon for brotherhood events.','')}
     </div>`;

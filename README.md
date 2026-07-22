@@ -19,13 +19,13 @@
 |---|---|
 | **Dashboard** | Chapter Health Score (0–100), KPI ring, lead-posted Announcements widget (pinned + expiring), upcoming events, overdue tasks, active alerts, attendance risk list |
 | **Attendance** | Per-event tracking (Present / Excused Miss / Unexcused Miss, marked by the Secretary — no self-service check-in, which is easy to share or screenshot and defeats the point of tracking who actually showed up), semester average, class-year breakdown, warning threshold alerts, trend chart, and an Unexcused Miss can prompt a fine on the spot, posted straight to Finance |
-| **Calendar** | Month/week view, event creation with RSVP & mandatory flags, sober driver scheduling |
+| **Calendar** | Month/week view, multi-day event support (e.g. a 2-day Formal stays one record), Committee Meeting/Exec Event/Brotherhood/Social categories, mandatory-event flags |
 | **Tasks** | Kanban + list view, priority levels, assignee, due dates, completion tracking, CSV import |
 | **Notes** | Structured meeting minutes with officer reports, announcements, old/new business, weekly honors; branded PDF export |
 | **Finance** | Dues ledger (tiered by in-house/out-of-house/new-member rate), expense log, budget tracking, fine management (including fines issued directly from Attendance for an Unexcused Miss), income/expense P&L, 7-tab layout |
 | **Recruitment CRM** | Rushee pipeline (prospect → bid → pledge), funnel chart, stage conversion rates, rush event schedule |
 | **Judicial Board** | Case management, member lookup, hearing scheduling, outcome logging, case status tracking |
-| **Social Event Safety** | Sober driver shift scheduling, shift status, event coverage overview, CSV import |
+| **Social Event Safety** | Weekly sober-monitor grid (mirrors the real chapter spreadsheet — one card per weekend, Thu/Fri/Sat columns, per-day slot counts), pledge-shadow mode (new members shadow active brothers on Thu/Fri once a start date is set), CSV import |
 | **Members** | Full roster with GPA, class year, membership status, role, contact info, engagement score, mobile card view, CSV import (add or bulk-update by name match) |
 | **Academics** | GPA distribution, chapter average, scholarship tracking, academic warning list, CSV grade import — hard-gated to authorized roles |
 | **Committees** | Committee roster, chair assignment, member selection, active project tracking |
@@ -33,9 +33,9 @@
 | **Philanthropy** | Fundraising log, goals vs. funds raised, event performance ranking, organizations directory, vendors/donors directory |
 | **Community Service** | Service-hour logging by member and event, goal tracking (total hours / events / per-member requirement), volunteer leaderboard, service-location directory, below-requirement list |
 | **Alumni Relations** | Alumni directory, engagement tracking, mentorship connections, outreach log |
-| **Chaplain Hub** | Bible Study Planner, Brotherhood Events Tracker with a 4-column drag-and-drop planning board (Idea → Planning → Scheduled → Completed), engagement analytics, pending-actions list, and the preserved ritual checklist |
+| **Chaplain Hub** | Devotionals log, Brotherhood Events Tracker with a 4-column drag-and-drop planning board (Idea → Planning → Scheduled → Completed) — those events live on the shared Calendar, not a separate copy — and the preserved ritual checklist |
 | **New Member Education** | Progress tracker against configurable requirements (driven by membership status, not class year), at-risk list, education-session scheduling with attendance, plus a full **Peer Mentor Program**: mentor-group cards, searchable mentor/new-member assignment pickers, unassigned-new-member tracking, group-balance analytics, and a CSV-importable week-by-week mentor agenda |
-| **Social Events & Formal Planning** | Event list with planning-alert feed and a vendor directory, plus a per-event workspace (Overview, Checklist, Budget, Vendors, Formal Details, RSVPs tabs) covering venue/transportation/lodging/catering/entertainment/security, budget vs. actual, and member RSVP tracking; general members get a read-only view of open events with Yes/Maybe/No buttons |
+| **Social Events & Formal Planning** | Event list with planning-alert feed and a vendor directory, plus a per-event workspace (Overview, Checklist, Budget, Vendors, Formal Details tabs) covering venue/transportation/lodging/catering/entertainment/security and budget vs. actual; general members get a read-only view of events that have actually opened up |
 | **Health Score** | Composite chapter health across 8 weighted dimensions (attendance, tasks, academics, accountability, finances, recruitment, philanthropy, alumni) |
 | **Transition Hub** | Role handoff docs for all 15 officer positions — responsibilities, recurring tasks, key contacts, "wish I knew" notes |
 | **Reports** | Exportable summaries: semester report, officer report, financial summary, attendance report |
@@ -109,18 +109,18 @@ All others can **view** but not modify. Edit buttons, import controls, and add a
 The demo auto-logs in as **James Mitchell, President** with a complete seed dataset:
 
 - **18 members** — names, class years, GPAs, roles, membership status (Active / New Member), contact info, dues status, attendance history
-- **19 calendar events** — 6 past mandatory events with per-member attendance records, plus philanthropy, service, fundraiser, brotherhood, and social events spanning past and upcoming
+- **24 calendar events** — 6 past mandatory events with per-member attendance records, plus philanthropy, service, fundraiser, social, and brotherhood events (the latter doubling as the Chaplain Hub's Brotherhood Events Tracker) spanning past and upcoming
 - **12 tasks** — mix of open, in-progress, overdue, and completed across multiple assignees
 - **Finance** — tiered dues (in-house / out-of-house / new-member rate) for all 18 members, 7 expenses mapped to real budget categories, 18 budget line items, payment history, 2 outstanding fines
 - **14 rushees** — across 5 funnel stages with bid scores, recruiter assignments, and 5 rush events
 - **Judicial cases** — 3 cases (2 active, 1 resolved) with case types, status, and member lookup
-- **5 social monitor shifts** — across upcoming events, one unassigned to show coverage alerts
+- **3 sober-monitor weekends** — a fully-staffed past weekend, an upcoming one with pledge shadowing active and one open slot, and a formal weekend with a Wednesday pre-party and a bumped-up Saturday slot count
 - **4 committees** — with chairs and member rosters
 - **Philanthropy** — 3 fundraising events, a fundraising log, 2 partner organizations, 2 vendors/donors
 - **Community Service** — 2 service events, hours logged for 12 members, 2 service locations
-- **Chaplain Hub** — 3 Bible studies, 5 brotherhood/morale events across all 4 planning stages, a 12-item ritual checklist, and pending-action tasks
+- **Chaplain Hub** — 3 devotionals, 6 brotherhood/morale events across all 4 planning stages, and a 12-item ritual checklist
 - **New Member Education + Peer Mentor Program** — 4 requirements tracked for 3 new members, 4 education sessions, 2 mentor groups, and a seeded 10-week mentor agenda
-- **Social Events & Formal Planning** — 3 events (a completed mixer, an in-progress formal with full vendor/budget/RSVP detail, and an early-stage date party), 4 vendors, 6 member RSVPs
+- **Social Events & Formal Planning** — 3 events (a completed mixer, an in-progress formal with full vendor/budget detail, and an early-stage date party), 4 vendors
 - **Announcements** — 3 seeded posts, one pinned, demonstrating the Dashboard broadcast widget
 - **5 alumni contacts** — with engagement status, outreach log, and upcoming alumni event
 - **15 transition hub entries** — handoff docs for all officer positions, with role-specific content and key contacts

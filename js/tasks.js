@@ -74,15 +74,8 @@ async function deleteGoal(id){
   try{await saveData();renderTasks();toast('Goal removed','info');}
   catch(e){if(removed)D.goals.push(removed);toast('Failed to remove goal. Please try again.','error');}
 }
-async function deleteShift(id){
-  if(!canWrite()){toast('You do not have permission to delete shifts.','error');return;}
-  const ok=await confirmDialog('Delete Shift','Remove this sober bro shift?');
-  if(!ok)return;
-  const removed=D.shifts.find(s=>s.id===id);
-  D.shifts=D.shifts.filter(s=>s.id!==id);
-  try{await saveData();renderSober();renderDash();toast('Shift removed','info');}
-  catch(e){if(removed)D.shifts.push(removed);toast('Failed to remove shift. Please try again.','error');}
-}
+// deleteShift() removed — D.shifts is now a weekly weekend/day/slot grid, not a flat array of
+// individually-deletable shifts. See js/sober.js's sbDeleteWeekend() and sbClearDay().
 async function deleteCase(id){
   if(!canWrite()){toast('You do not have permission to delete cases.','error');return;}
   const ok=await confirmDialog('Delete Case','Permanently delete this judicial case?');

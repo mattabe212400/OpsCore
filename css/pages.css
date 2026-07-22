@@ -11,6 +11,7 @@
 .cal-pip{font-size:10px;line-height:1.3;padding:1px 5px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .cal-pip.chapter{background:#e8eef7;color:#1a3a6b}
 .cal-pip.exec{background:#f0f0ee;color:#555}
+.cal-pip.committee{background:var(--bl-bg);color:var(--bl-tx)}
 .cal-pip.recruitment{background:var(--gn-bg);color:var(--gn-tx)}
 .cal-pip.philanthropy{background:#fbeaf0;color:#993556}
 .cal-pip.brotherhood{background:var(--am-bg);color:var(--am-tx)}

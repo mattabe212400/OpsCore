@@ -64,7 +64,7 @@ function rpWeekly(){
   const upEvents=D.events.filter(e=>isUpcoming(e.date)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
   const overdue=D.tasks.filter(t=>isOverdue(t.dueDate)&&t.status!=='done').sort((a,b)=>({urgent:0,high:1,medium:2,low:3}[a.priority]||2)-({urgent:0,high:1,medium:2,low:3}[b.priority]||2));
   const lowAtt=D.members.filter(m=>getAttendanceRate(m.id)<75);
-  const unassignedShifts=D.shifts.filter(s=>isUpcoming(s.date)&&!s.memberId).length;
+  const unassignedShifts=sbFlatSlots().filter(s=>isUpcoming(s.date)&&!s.memberId).length;
 
   return rpHeader('Weekly Executive Summary','Officer briefing — key metrics, action items, and upcoming events')+
   rpSection('ti-chart-bar','Chapter Pulse',rpKpis([

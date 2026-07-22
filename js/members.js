@@ -104,29 +104,9 @@ function jbEditStatus(id){
   openResolveCase(id);
 }
 
-function renderSober(){
-  const ro=!canEditSober();
-  const addBtn=document.getElementById('sober-add-btn');
-  const impBtn=document.getElementById('sober-import-btn');
-  if(addBtn) addBtn.style.display=ro?'none':'';
-  if(impBtn) impBtn.style.display=ro?'none':'';
-
-  const today=new Date().toISOString().split('T')[0];
-  const ups=D.shifts.filter(s=>s.date>=today).sort((a,b)=>a.date.localeCompare(b.date));
-  const hist=D.shifts.filter(s=>s.date<today).sort((a,b)=>b.date.localeCompare(a.date));
-  const una=ups.filter(s=>!s.memberId).length;const ns=D.shifts.filter(s=>s.noShow).length;
-  document.getElementById('s-kpi').innerHTML=kpi('Upcoming shifts',ups.length,'Next 2 weeks','neutral')+kpi('Unassigned',una,una>0?'Need coverage':'All covered',una>0?'down':'neutral')+kpi('Total this semester',D.shifts.length,getSemester(),'neutral')+kpi('No-shows YTD',ns,ns>0?'Flag for JBoard':'Clean record',ns>0?'down':'neutral');
-  document.getElementById('s-alert').innerHTML=una>0?`<div class="bnr danger"><i class="ti ti-alert-circle" style="font-size:13px"></i>${una} shift${una>1?'s':''} need${una===1?'s':''} coverage before the event.</div>`:'';
-  const shiftRows=ups.map(s=>{
-    const m=s.memberId?getMember(s.memberId):null;
-    const actionCell=ro?'':'<td style="white-space:nowrap">'+(m&&!s.confirmed?`<button class="btn" style="height:23px;font-size:10.5px;margin-right:4px" onclick="confirmShift('${s.id}')">Confirm</button>`:'')+`<button class="btn btn-d" style="height:23px;font-size:10.5px;padding:0 7px" onclick="deleteShift('${s.id}')"><i class="ti ti-trash"></i></button></td>`;
-    return`<tr><td style="font-weight:500">${s.event}</td><td style="color:var(--mt)">${formatDate(s.date)}</td><td style="font-family:'IBM Plex Mono',monospace;font-size:11px">${to12h(s.start)}–${to12h(s.end)}</td><td>${m?`<span style="font-weight:500">${m.name}</span>`:'<span style="color:var(--rd);font-weight:500">Unassigned</span>'}</td><td>${!m?'<span class="badge br2">Needed</span>':s.confirmed?'<span class="badge bg2">Confirmed</span>':'<span class="badge ba2">Pending</span>'}</td>${actionCell}</tr>`;
-  }).join('');
-  const emptyAddBtn=ro?'':'<button class="btn btn-p" onclick="openM(\'m-addshift\')"><i class="ti ti-plus"></i>Add Shift</button>';
-  const emptyRow=`<tr><td colspan="${ro?5:6}"><div style="padding:8px">${es('ti-shield-check','green','No upcoming social monitor shifts','Add shifts for upcoming events to track coverage.',emptyAddBtn)}</div></td></tr>`;
-  document.getElementById('s-table').innerHTML=`<thead><tr><th>Event</th><th>Date</th><th>Time</th><th>Member</th><th>Status</th>${ro?'':'<th></th>'}</tr></thead><tbody>${shiftRows||emptyRow}</tbody>`;
-  document.getElementById('s-hist').innerHTML=`<thead><tr><th>Event</th><th>Date</th><th>Member</th><th>Outcome</th></tr></thead><tbody>${hist.map(s=>{const m=s.memberId?getMember(s.memberId):null;return`<tr><td>${s.event}</td><td style="color:var(--mt)">${formatDateShort(s.date)}</td><td style="font-weight:500">${m?m.name:'Unassigned'}</td><td>${s.noShow?'<span class="badge br2">No-show</span>':s.confirmed?'<span class="badge bg2">Completed</span>':'—'}</td></tr>`;}).join('')}</tbody>`;
-}
+// renderSober() and its shift-CRUD helpers now live in js/sober.js — D.shifts moved from a
+// flat array of individual shifts to a weekly weekend/day/slot grid (mirrors the chapter's
+// real sober-monitor spreadsheet) so a whole weekend's Thu/Fri/Sat coverage is one record.
 
 function renderMembers(){
   const canEdit=canEditMembers();

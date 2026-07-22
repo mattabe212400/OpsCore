@@ -651,16 +651,16 @@
 
     <div class="page" id="page-sober">
       <div class="ph">
-        <div class="ph-left"><div class="ph-title">Social Monitors</div><div class="ph-sub">Shift scheduling and coverage tracking</div></div>
+        <div class="ph-left"><div class="ph-title">Social Event Safety</div><div class="ph-sub">Weekend sober-monitor shift scheduling and coverage tracking</div></div>
         <div class="ph-actions" id="sober-toolbar">
+          <div class="fld" style="margin-bottom:0"><label style="font-size:9.5px">Pledge shadows start</label><input id="sb-pledge-date" type="date" onchange="sbSetPledgeShadowStart(this.value)" style="height:29px;padding:0 9px;border:1px solid var(--bdr);border-radius:7px;font-size:12px;font-family:inherit;background:var(--surf);color:var(--tx);outline:none"></div>
           <button class="btn" id="sober-import-btn" onclick="openM('m-simport')"><i class="ti ti-upload"></i>Import</button>
-          <button class="btn btn-p" id="sober-add-btn" onclick="openM('m-addshift')"><i class="ti ti-plus"></i>Add Shift</button>
+          <button class="btn btn-p" id="sober-add-btn" onclick="openM('m-addweekend')"><i class="ti ti-plus"></i>Add Weekend</button>
         </div>
       </div>
       <div class="kpi-row" id="s-kpi" style="margin-bottom:13px"></div>
       <div id="s-alert"></div>
-      <div class="card" style="margin-bottom:13px"><div class="card-hd"><span class="card-t">Upcoming Schedule</span></div><div class="tw"><table class="tbl" id="s-table"></table></div></div>
-      <div class="card"><div class="card-hd"><span class="card-t">Past Shifts</span></div><div class="tw"><table class="tbl" id="s-hist"></table></div></div>
+      <div id="s-schedule"></div>
     </div>
 
     <div class="page" id="page-members">
@@ -1442,8 +1442,8 @@
       <div id="ch-full-view" style="display:none">
         <div class="two-col" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px;margin-bottom:13px">
           <div class="card">
-            <div class="card-hd"><span class="card-t">Bible Study Planner</span><button class="btn btn-p" style="height:24px;font-size:10.5px" onclick="chOpenAddBibleStudy()"><i class="ti ti-plus"></i>Add Bible Study</button></div>
-            <div class="tw"><table class="tbl" id="ch-bs-table"></table></div>
+            <div class="card-hd"><span class="card-t">Devotionals</span><button class="btn btn-p" style="height:24px;font-size:10.5px" onclick="chOpenAddDevotional()"><i class="ti ti-plus"></i>Add Devotional</button></div>
+            <div class="tw"><table class="tbl" id="ch-dv-table"></table></div>
           </div>
           <div class="card">
             <div class="card-hd"><span class="card-t">Brotherhood Events Tracker</span><button class="btn btn-p" style="height:24px;font-size:10.5px" onclick="chOpenAddEvent()"><i class="ti ti-plus"></i>Add Event</button></div>
@@ -1456,30 +1456,10 @@
           <div class="g4" id="ch-kanban" style="margin-bottom:0"></div>
         </div>
 
-        <div class="card" style="margin-bottom:13px">
-          <div class="card-hd"><span class="card-t">Engagement Analytics</span></div>
-          <div class="g4" style="margin-bottom:0">
-            <div><div style="font-size:11px;color:var(--mt);margin-bottom:5px">Avg Attendance by Event Type</div><div id="ch-chart-type"></div></div>
-            <div><div style="font-size:11px;color:var(--mt);margin-bottom:5px">Bible Study Attendance Trend</div><div id="ch-chart-bstrend"></div></div>
-            <div><div style="font-size:11px;color:var(--mt);margin-bottom:5px">Events Completed by Month</div><div id="ch-chart-month"></div></div>
-            <div><div style="font-size:11px;color:var(--mt);margin-bottom:5px">Member Engagement Trend</div><div id="ch-chart-engagement"></div></div>
-          </div>
-        </div>
-
-        <div class="two-col" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px">
-          <div class="card">
-            <div class="card-hd"><span class="card-t">Ritual Checklist</span><span id="ri-prog-pct" style="font-size:12px;font-weight:600;color:var(--sky-tx)"></span></div>
-            <div style="padding:9px 13px 0"><button class="btn btn-p" style="height:24px;font-size:10.5px" onclick="riOpenAddItem()"><i class="ti ti-plus"></i>Add Item</button></div>
-            <div id="ri-program-list"></div>
-          </div>
-          <div class="card">
-            <div class="card-hd"><span class="card-t">Pending Actions</span></div>
-            <div id="ch-quick-chips" style="display:flex;flex-wrap:wrap;gap:5px;padding:9px 13px 0"></div>
-            <div style="padding:0 13px">
-              <button class="btn" style="height:24px;font-size:10.5px;margin:9px 0" onclick="chOpenAddTask()"><i class="ti ti-plus"></i>Add Task</button>
-              <div id="ch-tasks-list"></div>
-            </div>
-          </div>
+        <div class="card">
+          <div class="card-hd"><span class="card-t">Ritual Checklist</span><span id="ri-prog-pct" style="font-size:12px;font-weight:600;color:var(--sky-tx)"></span></div>
+          <div style="padding:9px 13px 0"><button class="btn btn-p" style="height:24px;font-size:10.5px" onclick="riOpenAddItem()"><i class="ti ti-plus"></i>Add Item</button></div>
+          <div id="ri-program-list"></div>
         </div>
       </div>
     </div>
@@ -1491,15 +1471,15 @@
       <div class="fr"><div class="fld"><label>Description</label><textarea id="ri-item-desc" placeholder="Details about this milestone..."></textarea></div></div>
       <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ri-additem'))">Cancel</button><button class="btn btn-p" onclick="riAddItem()">Add Item</button></div>
     </div></div>
-    <div class="mo" id="m-ch-biblestudy" onclick="closeM(event,this)"><div class="md">
-      <div class="md-t">Bible Study<button class="md-x" onclick="closeM(null,document.getElementById('m-ch-biblestudy'))">&#x00D7;</button></div>
-      <input type="hidden" id="ch-bs-id">
-      <div class="fr c2"><div class="fld"><label>Date</label><input id="ch-bs-date" type="date"></div><div class="fld"><label>Time</label><input id="ch-bs-time" type="time"></div></div>
-      <div class="fr c2"><div class="fld"><label>Topic</label><input id="ch-bs-topic" placeholder="e.g. Faith &amp; Brotherhood"></div><div class="fld"><label>Scripture</label><input id="ch-bs-scripture" placeholder="e.g. Proverbs 27:17"></div></div>
-      <div class="fr"><div class="fld"><label>Discussion Questions</label><textarea id="ch-bs-questions" placeholder="Questions to guide discussion..."></textarea></div></div>
-      <div class="fr c2"><div class="fld"><label>Attendance</label><input id="ch-bs-attendance" type="number" min="0" placeholder="e.g. 14"></div><div class="fld"><label>Status</label><select id="ch-bs-status"><option value="planned">Planned</option><option value="completed">Completed</option><option value="canceled">Canceled</option></select></div></div>
-      <div class="fr"><div class="fld"><label>Notes</label><textarea id="ch-bs-notes" placeholder="How it went, follow-up..."></textarea></div></div>
-      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ch-biblestudy'))">Cancel</button><button class="btn btn-p" onclick="chSaveBibleStudy()">Save</button></div>
+    <div class="mo" id="m-ch-devotional" onclick="closeM(event,this)"><div class="md">
+      <div class="md-t">Devotional<button class="md-x" onclick="closeM(null,document.getElementById('m-ch-devotional'))">&#x00D7;</button></div>
+      <input type="hidden" id="ch-dv-id">
+      <div class="fr c2"><div class="fld"><label>Date</label><input id="ch-dv-date" type="date"></div><div class="fld"><label>Time</label><input id="ch-dv-time" type="time"></div></div>
+      <div class="fr c2"><div class="fld"><label>Topic</label><input id="ch-dv-topic" placeholder="e.g. Faith &amp; Brotherhood"></div><div class="fld"><label>Scripture</label><input id="ch-dv-scripture" placeholder="e.g. Proverbs 27:17"></div></div>
+      <div class="fr"><div class="fld"><label>Discussion Questions</label><textarea id="ch-dv-questions" placeholder="Questions to guide discussion..."></textarea></div></div>
+      <div class="fr"><div class="fld"><label>Status</label><select id="ch-dv-status"><option value="planned">Planned</option><option value="completed">Completed</option><option value="canceled">Canceled</option></select></div></div>
+      <div class="fr"><div class="fld"><label>Notes</label><textarea id="ch-dv-notes" placeholder="How it went, follow-up..."></textarea></div></div>
+      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ch-devotional'))">Cancel</button><button class="btn btn-p" onclick="chSaveDevotional()">Save</button></div>
     </div></div>
     <div class="mo" id="m-ch-event" onclick="closeM(event,this)"><div class="md">
       <div class="md-t">Brotherhood Event<button class="md-x" onclick="closeM(null,document.getElementById('m-ch-event'))">&#x00D7;</button></div>
@@ -1507,21 +1487,10 @@
       <div class="fr c2"><div class="fld"><label>Event Name</label><input id="ch-ev-name" placeholder="e.g. Movie Night"></div><div class="fld"><label>Type</label><select id="ch-ev-type"></select></div></div>
       <div class="fr c2"><div class="fld"><label>Date</label><input id="ch-ev-date" type="date"></div><div class="fld"><label>Time</label><input id="ch-ev-time" type="time"></div></div>
       <div class="fr c2"><div class="fld"><label>Location</label><input id="ch-ev-location" placeholder="e.g. Chapter House"></div><div class="fld"><label>Est. Cost</label><input id="ch-ev-cost" type="number" min="0" step="0.01" placeholder="e.g. 150"></div></div>
-      <div class="fr c2"><div class="fld"><label>Expected Attendance</label><input id="ch-ev-expected" type="number" min="0" placeholder="e.g. 25"></div><div class="fld"><label>Owner</label><select id="ch-ev-owner"></select></div></div>
-      <div class="fr"><div class="fld"><label>Planning Status</label><select id="ch-ev-status" onchange="chToggleEventCompletedFields()"></select></div></div>
+      <div class="fr c2"><div class="fld"><label>Planning Status</label><select id="ch-ev-status"></select></div><div class="fld"><label>Owner</label><select id="ch-ev-owner"></select></div></div>
       <div class="fr"><div class="fld"><label>Notes</label><textarea id="ch-ev-notes" placeholder="Planning notes..."></textarea></div></div>
-      <div id="ch-ev-completed-fields">
-        <div class="fr c2"><div class="fld"><label>Actual Attendance</label><input id="ch-ev-actual" type="number" min="0" placeholder="e.g. 22"></div><div class="fld"><label>Rating (1-5)</label><input id="ch-ev-rating" type="number" min="1" max="5" placeholder="e.g. 4"></div></div>
-        <div class="fr"><div class="fld"><label>Reflection</label><textarea id="ch-ev-reflection" placeholder="What went well, what to improve next time..."></textarea></div></div>
-      </div>
+      <div class="fr"><div class="fld"><label>Reflection</label><textarea id="ch-ev-reflection" placeholder="What went well, what to improve next time..."></textarea></div></div>
       <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ch-event'))">Cancel</button><button class="btn btn-p" onclick="chSaveEvent()">Save</button></div>
-    </div></div>
-    <div class="mo" id="m-ch-task" onclick="closeM(event,this)"><div class="md">
-      <div class="md-t">Add Task<button class="md-x" onclick="closeM(null,document.getElementById('m-ch-task'))">&#x00D7;</button></div>
-      <div class="fr"><div class="fld"><label>Task</label><input id="ch-tk-label" placeholder="e.g. Confirm venue"></div></div>
-      <div class="fr c2"><div class="fld"><label>Linked To</label><select id="ch-tk-linked"></select></div><div class="fld"><label>Assigned To</label><select id="ch-tk-assigned"></select></div></div>
-      <div class="fr"><div class="fld"><label>Due Date</label><input id="ch-tk-due" type="date"></div></div>
-      <div style="display:flex;gap:7px;justify-content:flex-end;margin-top:5px"><button class="btn" onclick="closeM(null,document.getElementById('m-ch-task'))">Cancel</button><button class="btn btn-p" onclick="chSaveTask()">Add Task</button></div>
     </div></div>
 
     <!-- ═══════════ NEW MEMBER EDUCATION + PEER MENTOR PROGRAM ═══════════ -->
@@ -1691,7 +1660,6 @@
             <button class="soc-tab fin-tab" data-tab="soc-budget" onclick="socTab(this,'soc-budget')">Budget</button>
             <button class="soc-tab fin-tab" data-tab="soc-vendors" onclick="socTab(this,'soc-vendors')">Vendors</button>
             <button class="soc-tab fin-tab" data-tab="soc-formal" id="soc-tab-formal" onclick="socTab(this,'soc-formal')">Formal Details</button>
-            <button class="soc-tab fin-tab" data-tab="soc-rsvp" onclick="socTab(this,'soc-rsvp')">RSVPs</button>
           </div>
           <div class="soc-panel" id="soc-overview"></div>
           <div class="soc-panel" id="soc-checklist" style="display:none"><div id="soc-checklist-list"></div></div>
@@ -1700,7 +1668,6 @@
             <div class="card"><div class="card-hd"><span class="card-t">Vendors for This Event</span></div><div id="soc-event-vendors"></div></div>
           </div>
           <div class="soc-panel" id="soc-formal" style="display:none"><div id="soc-formal-body"></div></div>
-          <div class="soc-panel" id="soc-rsvp" style="display:none"><div id="soc-rsvp-body"></div></div>
         </div>
       </div>
 
@@ -2227,8 +2194,9 @@
 <div class="mo" id="m-addevent" onclick="closeM(event,this)"><div class="md"><div class="md-t">New Event<button class="md-x" onclick="closeM(null,document.getElementById('m-addevent'))"><i class="ti ti-x"></i></button></div>
   <input type="hidden" id="ne-edit-id">
   <div class="fr"><div class="fld"><label>Event title *</label><input id="ne-t" placeholder="Chapter Meeting"></div></div>
-  <div class="fr c2"><div class="fld"><label>Type</label><select id="ne-tp"><option value="chapter">Chapter</option><option value="exec">Exec</option><option value="recruitment">Recruitment</option><option value="philanthropy">Philanthropy</option><option value="service">Community Service</option><option value="social">Social</option><option value="brotherhood">Brotherhood</option><option value="retreat">Retreat</option><option value="mandatory">Mandatory</option></select></div><div class="fld"><label>Date</label><input id="ne-d" type="date"></div></div>
-  <div class="fr c2"><div class="fld"><label>Start time</label><input id="ne-st" type="time" value="19:00"></div><div class="fld"><label>Location</label><input id="ne-l" placeholder="Chapter House"></div></div>
+  <div class="fr c2"><div class="fld"><label>Type</label><select id="ne-tp"><option value="chapter">Chapter</option><option value="exec">Exec Event</option><option value="committee">Committee Meeting</option><option value="recruitment">Recruitment</option><option value="philanthropy">Philanthropy</option><option value="service">Community Service</option><option value="social">Social</option><option value="brotherhood">Brotherhood</option><option value="retreat">Retreat</option><option value="mandatory">Mandatory</option></select></div><div class="fld"><label>Date</label><input id="ne-d" type="date"></div></div>
+  <div class="fr c2"><div class="fld"><label>End date <span style="font-weight:400;color:var(--ht)">(multi-day events)</span></label><input id="ne-ed" type="date"></div><div class="fld"><label>Start time</label><input id="ne-st" type="time" value="19:00"></div></div>
+  <div class="fr"><div class="fld"><label>Location</label><input id="ne-l" placeholder="Chapter House"></div></div>
   <div class="fr"><div class="fld"><label>Mandatory?</label><select id="ne-m"><option value="1">Yes — Required</option><option value="0">No — Optional</option></select></div></div>
   <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addevent'))">Cancel</button><button class="btn btn-p" onclick="addEv()">Create Event</button></div>
 </div></div>
@@ -2312,19 +2280,18 @@
   <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addcase'))">Cancel</button><button class="btn btn-p" onclick="addCase()">File Case</button></div>
 </div></div>
 
-<div class="mo" id="m-addshift" onclick="closeM(event,this)"><div class="md"><div class="md-t">Add Social Monitor Shift<button class="md-x" onclick="closeM(null,document.getElementById('m-addshift'))"><i class="ti ti-x"></i></button></div>
-  <div class="fr c2"><div class="fld"><label>Event name *</label><input id="ns-e" placeholder="Friday Mixer"></div><div class="fld"><label>Date *</label><input id="ns-d" type="date"></div></div>
-  <div class="fr c2"><div class="fld"><label>Start time</label><input id="ns-st" type="time" value="22:00"></div><div class="fld"><label>End time</label><input id="ns-en" type="time" value="02:00"></div></div>
-  <div class="fr"><div class="fld"><label>Assigned member</label><select id="ns-m"><option value="">— Unassigned —</option></select></div></div>
-  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addshift'))">Cancel</button><button class="btn btn-p" onclick="addShift()">Add Shift</button></div>
+<div class="mo" id="m-addweekend" onclick="closeM(event,this)"><div class="md"><div class="md-t">Add Weekend<button class="md-x" onclick="closeM(null,document.getElementById('m-addweekend'))"><i class="ti ti-x"></i></button></div>
+  <div class="fr c2"><div class="fld"><label>Thursday date *</label><input id="nw-date" type="date"></div><div class="fld"><label>Number of weekends</label><input id="nw-weeks" type="number" min="1" max="26" value="1"></div></div>
+  <div style="font-size:11px;color:var(--mt);margin-bottom:11px">Adding more than one weekend creates consecutive weeks starting from the date above, 7 days apart. Each weekend starts with 3 open slots per day — rename or resize them (e.g. "Bid Day", 4 slots) after adding.</div>
+  <div style="display:flex;gap:7px;justify-content:flex-end"><button class="btn" onclick="closeM(null,document.getElementById('m-addweekend'))">Cancel</button><button class="btn btn-p" onclick="sbAddWeekend()">Add Weekend</button></div>
 </div></div>
 
-<div class="mo" id="m-simport" onclick="closeM(event,this)"><div class="md"><div class="md-t">Import Social Monitor Schedule<button class="md-x" onclick="closeM(null,document.getElementById('m-simport'))"><i class="ti ti-x"></i></button></div>
+<div class="mo" id="m-simport" onclick="closeM(event,this)"><div class="md"><div class="md-t">Import Sober Bro Schedule<button class="md-x" onclick="closeM(null,document.getElementById('m-simport'))"><i class="ti ti-x"></i></button></div>
   <div style="border:2px dashed var(--bdr);border-radius:10px;padding:26px;text-align:center;margin-bottom:13px">
     <i class="ti ti-file-spreadsheet" style="font-size:26px;color:var(--ht);display:block;margin:0 auto 7px"></i>
     <div style="font-size:13px;font-weight:500;margin-bottom:4px">Drop .xlsx or .csv here</div>
-    <div style="font-size:11px;color:var(--mt);margin-bottom:11px">Expected columns: Event, Date, Start, End, Member</div>
-    <label class="btn btn-p" style="cursor:pointer"><i class="ti ti-upload"></i>Browse File<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleSI(this)"></label>
+    <div style="font-size:11px;color:var(--mt);margin-bottom:11px">Expected columns: Thursday Date, Thu Event, Thu Members, Fri Event, Fri Members, Sat Event, Sat Members — Members are semicolon-separated names (e.g. "Marcus Bell; Connor Walsh")</div>
+    <label class="btn btn-p" style="cursor:pointer"><i class="ti ti-upload"></i>Browse File<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="sbHandleImport(this)"></label>
   </div>
   <div id="si-prev"></div>
 </div></div>
@@ -2476,6 +2443,7 @@
 <script src="js/calendar.js"></script>
 <script src="js/tasks.js"></script>
 <script src="js/members.js"></script>
+<script src="js/sober.js"></script>
 <script src="js/recruitment.js"></script>
 <script src="js/finance.js"></script>
 <script src="js/operations.js"></script>

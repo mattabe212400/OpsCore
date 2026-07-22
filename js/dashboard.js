@@ -31,8 +31,8 @@ function renderDash(){
   dashBuildEvents();
 
   // ── SOBER BROS ──
-  const ws=D.shifts.filter(s=>isUpcoming(s.date)).slice(0,4);
-  document.getElementById('d-sober').innerHTML=ws.map(s=>{const m=s.memberId?getMember(s.memberId):null;return`<div class="sh-row"><div class="sh-av">${m?m.initials:'??'}</div><div style="flex:1"><div style="font-size:12px;font-weight:500;color:${m?'var(--tx)':'var(--rd)'}">${m?m.name:'Unassigned'}</div><div style="font-size:10.5px;color:var(--ht)">${formatDateShort(s.date)} · ${to12h(s.start)}</div></div><span class="dot ${!m?'dr':s.confirmed?'dg':'da'}"></span></div>`;}).join('')||es('ti-shield-check','green','No shifts scheduled','Shifts appear here.',`<button class="btn" onclick="rbacNav('sober',null)">View schedule</button>`);
+  const ws=sbFlatSlots().filter(s=>isUpcoming(s.date)).slice(0,4);
+  document.getElementById('d-sober').innerHTML=ws.map(s=>{const m=s.memberId?getMember(s.memberId):null;return`<div class="sh-row"><div class="sh-av">${m?m.initials:'??'}</div><div style="flex:1"><div style="font-size:12px;font-weight:500;color:${m?'var(--tx)':'var(--rd)'}">${m?m.name:'Unassigned'}</div><div style="font-size:10.5px;color:var(--ht)">${formatDateShort(s.date)} · ${s.label}</div></div><span class="dot ${!m?'dr':'dg'}"></span></div>`;}).join('')||es('ti-shield-check','green','No shifts scheduled','Shifts appear here.',`<button class="btn" onclick="rbacNav('sober',null)">View schedule</button>`);
 
   // ── OFFICER ACCOUNTABILITY TABLE (legacy hidden) ──
   const offs=D.members.filter(m=>m.role!=='Member');
@@ -171,7 +171,7 @@ function computeChapterAlerts(avg){
   if(probation.length){
     alerts.push({type:'attendance',icon:'ti-alert-triangle',bg:'background:var(--am-bg)',ic:'color:var(--am-tx)',title:`${probation.length} member${probation.length>1?'s':''} nearing probation threshold`,body:probation.slice(0,2).map(m=>m.name.split(' ')[0]).join(', ')+(probation.length>2?' +'+(probation.length-2)+' more':'')+' — between 65–75%'});
   }
-  const unassigned=D.shifts.filter(s=>isUpcoming(s.date)&&!s.memberId);
+  const unassigned=sbFlatSlots().filter(s=>isUpcoming(s.date)&&!s.memberId);
   if(unassigned.length){
     alerts.push({type:'sober',icon:'ti-shield-exclamation',bg:'background:var(--bl-bg)',ic:'color:var(--bl-tx)',title:`${unassigned.length} unassigned sober bro shift${unassigned.length>1?'s':''}`,body:`Next: ${formatDateShort(unassigned[0].date)} · Needs coverage`});
   }
@@ -276,9 +276,9 @@ function dashBuildFeed(){
   });
 
   // Recent shifts
-  D.shifts.filter(s=>s.confirmed).slice(0,2).forEach(s=>{
-    const m=s.memberId?getMember(s.memberId):null;
-    if(m)activities.push({time:s.date,icon:'ti-shield-check',color:'var(--gn)',text:`<strong>${m.name.split(' ')[0]}</strong> confirmed sober bro shift`,sub:formatDateShort(s.date)+' · '+s.event,page:'sober'});
+  sbFlatSlots().filter(s=>s.memberId).slice(0,2).forEach(s=>{
+    const m=getMember(s.memberId);
+    activities.push({time:s.date,icon:'ti-shield-check',color:'var(--gn)',text:`<strong>${m.name.split(' ')[0]}</strong> assigned to sober bro shift`,sub:formatDateShort(s.date)+' · '+s.label,page:'sober'});
   });
 
   if(!activities.length){

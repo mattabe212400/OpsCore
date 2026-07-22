@@ -54,7 +54,7 @@ function loadDemoData(){
     {id:'e05',title:'Risk Management Workshop',type:'mandatory',date:past(35),start:'6:00 PM',location:'Student Union',mandatory:true},
     {id:'e06',title:'New Member Education',type:'chapter',date:past(21),start:'8:00 PM',location:'Chapter House',mandatory:true},
     {id:'e07',title:'Philanthropy 5K Run',type:'philanthropy',date:past(10),start:'9:00 AM',location:'Campus Rec',mandatory:false,fundGoal:1000,org:'Local Food Bank',notes:'Annual 5K benefiting the local food bank.'},
-    {id:'e08',title:'Brotherhood Retreat',type:'brotherhood',date:past(5),start:'10:00 AM',location:'State Park',mandatory:false},
+    {id:'e08',title:'Brotherhood Retreat',type:'brotherhood',chEventType:'retreat',date:past(5),start:'10:00 AM',location:'State Park',mandatory:false,planningStatus:'completed',estCost:800,owner:'m17'},
     {id:'e09',title:'Chapter Meeting',type:'chapter',date:future(7),start:'7:00 PM',location:'Chapter House',mandatory:true},
     {id:'e10',title:'Spring Formal',type:'social',date:future(14),start:'7:00 PM',location:'Grand Ballroom',mandatory:false},
     {id:'e11',title:'Recruitment Kickoff',type:'recruitment',date:future(3),start:'5:00 PM',location:'Chapter House',mandatory:false},
@@ -66,6 +66,14 @@ function loadDemoData(){
     {id:'e17',title:'Food Bank Volunteer Day',type:'service',date:past(25),start:'10:00 AM',location:'Downtown Food Bank',mandatory:false,hourGoal:40,org:'Local Food Bank',notes:'Monthly volunteering at the campus-adjacent food bank.'},
     {id:'e18',title:'Habitat for Humanity Build',type:'service',date:future(12),start:'9:00 AM',location:'Habitat Build Site',mandatory:false,hourGoal:30,org:'Habitat for Humanity',notes:''},
     {id:'e19',title:'Spring Fundraiser Gala',type:'fundraiser',date:future(45),start:'7:00 PM',location:'Grand Ballroom',mandatory:false,fundGoal:2000,org:'Chapter Scholarship Fund',notes:'Annual gala raising funds for the chapter scholarship.'},
+    // Chaplain Hub's Brotherhood Events Tracker — these live on the shared calendar (type:
+    // 'brotherhood') and ride the Event Planning Board's chEventType/estCost/planningStatus/
+    // owner/notes/reflection fields inline, same pattern as Social/Philanthropy events.
+    {id:'ce01',title:'Movie Night',type:'brotherhood',chEventType:'movie',date:past(14),start:'20:00',location:'Chapter House',mandatory:false,estCost:60,planningStatus:'completed',owner:'m17',notes:'',reflection:'Great turnout, low cost.'},
+    {id:'ce02',title:'Golf Outing',type:'brotherhood',chEventType:'golf',date:past(30),start:'09:00',location:'Riverside Golf Club',mandatory:false,estCost:350,planningStatus:'completed',owner:'m17',notes:'',reflection:'Great weather, everyone had fun.'},
+    {id:'ce03',title:'Bags Tournament',type:'brotherhood',chEventType:'bags',date:future(10),start:'14:00',location:'Chapter House',mandatory:false,estCost:75,planningStatus:'scheduled',owner:'m17',notes:'Bracket set, signage ordered.',reflection:''},
+    {id:'ce04',title:'Brotherhood Retreat Planning',type:'brotherhood',chEventType:'retreat',date:future(25),start:'',location:'',mandatory:false,estCost:1200,planningStatus:'planning',owner:'m17',notes:'Comparing 2 cabin venues.',reflection:''},
+    {id:'ce05',title:'Bowling Night',type:'brotherhood',chEventType:'custom',date:future(40),start:'',location:'',mandatory:false,estCost:null,planningStatus:'idea',owner:null,notes:'',reflection:''},
   ];
 
   // ── ATTENDANCE (realistic — some members miss events) ──
@@ -151,14 +159,46 @@ function loadDemoData(){
      filedBy:'m01',resolution:'10 hours community service completed. Case closed.',hearingDate:past(30)},
   ];
 
-  // ── SOBER SHIFTS ──
-  const shifts = [
-    {id:'sh01',event:'Spring Formal',date:future(14),start:'7:00 PM',end:'12:00 AM',memberId:'m06',confirmed:true,noShow:false},
-    {id:'sh02',event:'Spring Formal',date:future(14),start:'7:00 PM',end:'12:00 AM',memberId:'m10',confirmed:true,noShow:false},
-    {id:'sh03',event:'Luau Party',date:future(3),start:'9:00 PM',end:'1:00 AM',memberId:'m14',confirmed:true,noShow:false},
-    {id:'sh04',event:'Luau Party',date:future(3),start:'9:00 PM',end:'1:00 AM',memberId:null,confirmed:false,noShow:false},
-    {id:'sh05',event:'Casino Night Formal',date:future(28),start:'8:00 PM',end:'12:00 AM',memberId:'m11',confirmed:false,noShow:false},
-  ];
+  // ── SOBER BROS — weekly weekend/day/slot grid (mirrors the real chapter's spreadsheet) ──
+  // Pledge shadowing (m11/m12/m13, the New Members) starts a few days out, so the past weekend
+  // shows full active-member coverage while the upcoming weekends demonstrate the "2 active +
+  // pledges" Thu/Fri pattern.
+  const pledgeShadowStart = future(3);
+  const shifts = {
+    pledgeShadowStart,
+    weekends: [
+      { // Past weekend — fully staffed, shows the "Past" badge and completed coverage history
+        id:'sbw01', thuDate:past(11),
+        days:{
+          wed:{name:'',slotCount:0,memberIds:[],pledgeIds:[]},
+          thu:{name:'',slotCount:3,memberIds:['m06','m10','m14'],pledgeIds:[]},
+          fri:{name:'',slotCount:3,memberIds:['m05','m03','m08'],pledgeIds:[]},
+          sat:{name:'Luau Party',slotCount:3,memberIds:['m02','m07','m16'],pledgeIds:[]},
+          sun:{name:'',slotCount:0,memberIds:[],pledgeIds:[]},
+        }
+      },
+      { // This coming weekend — pledge shadowing active on Thu/Fri, one open Saturday slot
+        id:'sbw02', thuDate:future(3),
+        days:{
+          wed:{name:'',slotCount:0,memberIds:[],pledgeIds:[]},
+          thu:{name:'',slotCount:3,memberIds:['m06','m10',null],pledgeIds:['m11']},
+          fri:{name:'',slotCount:3,memberIds:['m14','m03',null],pledgeIds:['m12','m13']},
+          sat:{name:'Casino Night',slotCount:3,memberIds:['m02','m07',null],pledgeIds:[]},
+          sun:{name:'',slotCount:0,memberIds:[],pledgeIds:[]},
+        }
+      },
+      { // Formal weekend further out — Saturday bumped to 4 slots, plus a Wednesday pre-party
+        id:'sbw03', thuDate:future(10),
+        days:{
+          wed:{name:'Pre-Formal Mixer',slotCount:2,memberIds:['m08','m16'],pledgeIds:[]},
+          thu:{name:'',slotCount:3,memberIds:['m05','m06',null],pledgeIds:['m11']},
+          fri:{name:'',slotCount:3,memberIds:['m03','m14',null],pledgeIds:['m12']},
+          sat:{name:'Spring Formal',slotCount:4,memberIds:['m02','m07','m10','m17'],pledgeIds:[]},
+          sun:{name:'',slotCount:0,memberIds:[],pledgeIds:[]},
+        }
+      },
+    ]
+  };
 
   // ── ACADEMICS ──
   const gpas = {
@@ -409,24 +449,18 @@ function loadDemoData(){
         {id:'ri12',title:'Initiation Ceremony Preparation',category:'ritual',week:8,required:true,desc:'',done:false},
       ],
     },
-    // Chaplain Hub — Bible study, brotherhood/morale events, and follow-up tasks.
+    // Chaplain Hub — Devotionals + the Brotherhood Events Tracker (events above, on the shared
+    // calendar) + the preserved Ritual Checklist. bibleStudies is legacy, frozen data (the member
+    // view's "Next Bible Study" card used to read it) — Devotionals is the active feature now.
     chaplainHub: {
       bibleStudies: [
         {id:'bs01',date:past(21),time:'19:00',topic:'Faith and Brotherhood',scripture:'Proverbs 27:17',discussionQuestions:'What does iron sharpening iron look like in our chapter?',attendanceCount:14,notes:'',status:'completed'},
         {id:'bs02',date:past(7),time:'19:00',topic:'Perseverance Through Challenges',scripture:'James 1:2-4',discussionQuestions:'',attendanceCount:11,notes:'',status:'completed'},
-        {id:'bs03',date:future(7),time:'19:30',topic:'Living with Integrity',scripture:'',discussionQuestions:'',attendanceCount:null,notes:'',status:'planned'},
       ],
-      events: [
-        {id:'ce01',name:'Movie Night',type:'movie',date:past(14),time:'20:00',location:'Chapter House',estCost:60,expectedAttendance:20,actualAttendance:18,planningStatus:'completed',owner:'m17',notes:'',rating:4,reflection:'Great turnout, low cost.'},
-        {id:'ce02',name:'Golf Outing',type:'golf',date:past(30),time:'09:00',location:'Riverside Golf Club',estCost:350,expectedAttendance:12,actualAttendance:10,planningStatus:'completed',owner:'m17',notes:'',rating:5,reflection:'Great weather, everyone had fun.'},
-        {id:'ce03',name:'Bags Tournament',type:'bags',date:future(10),time:'14:00',location:'Chapter House',estCost:75,expectedAttendance:24,actualAttendance:null,planningStatus:'scheduled',owner:'m17',notes:'Bracket set, signage ordered.',rating:null,reflection:''},
-        {id:'ce04',name:'Brotherhood Retreat Planning',type:'retreat',date:future(25),time:'',location:'',estCost:1200,expectedAttendance:null,actualAttendance:null,planningStatus:'planning',owner:'m17',notes:'Comparing 2 cabin venues.',rating:null,reflection:''},
-        {id:'ce05',name:'Bowling Night',type:'custom',date:future(40),time:'',location:'',estCost:null,expectedAttendance:null,actualAttendance:null,planningStatus:'idea',owner:null,notes:'',rating:null,reflection:''},
-      ],
-      tasks: [
-        {id:'ct01',label:'Confirm venue',linkedType:'event',linkedId:'ce03',assignedTo:'m17',dueDate:future(3),done:false},
-        {id:'ct02',label:'Record attendance',linkedType:'bibleStudy',linkedId:'bs01',assignedTo:'m17',dueDate:null,done:true},
-        {id:'ct03',label:'Follow up with members who missed Bible study',linkedType:null,linkedId:null,assignedTo:'m17',dueDate:future(2),done:false},
+      devotionals: [
+        {id:'dv01',date:past(14),time:'19:00',topic:'Faith and Brotherhood',scripture:'Proverbs 27:17',discussionQuestions:'What does iron sharpening iron look like in our chapter?',notes:'Good turnout, strong discussion.',status:'completed'},
+        {id:'dv02',date:past(3),time:'19:00',topic:'Perseverance Through Challenges',scripture:'James 1:2-4',discussionQuestions:'',notes:'',status:'completed'},
+        {id:'dv03',date:future(4),time:'19:30',topic:'Living with Integrity',scripture:'',discussionQuestions:'',notes:'',status:'planned'},
       ],
     },
     // New Member Education — education sessions + per-member requirement progress + Peer

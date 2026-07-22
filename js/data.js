@@ -17,7 +17,9 @@ function initDataDefaults(){
   if(!D.goals)D.goals=[];
   if(!D.notes)D.notes=[];
   if(!D.cases)D.cases=[];
-  if(!D.shifts)D.shifts=[];
+  // D.shifts is a weekly weekend/day/slot grid ({pledgeShadowStart, weekends:[...]}), not a flat
+  // shift array — see js/sober.js's sbEnsureDefaults(), which also migrates any legacy array shape.
+  if(!D.shifts||Array.isArray(D.shifts))D.shifts={pledgeShadowStart:'',weekends:[]};
   if(!D.files)D.files=[];
   if(!D.notifs)D.notifs=[];
   if(!D.committees)D.committees=[];
@@ -51,12 +53,16 @@ function initDataDefaults(){
   // Ritual — narrowed to the ceremony/administrative checklist only; sessions/progress now
   // live in D.newMemberEducation, and brotherhood/Bible study planning lives in D.chaplainHub.
   if(!D.ritual)D.ritual={items:[]};
-  if(!D.chaplainHub)D.chaplainHub={bibleStudies:[],events:[],tasks:[]};
+  // 'events'/'tasks' were the old separate Chaplain Hub lists — brotherhood events now live on
+  // the shared D.events calendar (type:'brotherhood') and Pending Actions was removed. Kept out
+  // of the default shape entirely; chBibleStudies() still reads .bibleStudies for the member
+  // view's legacy "Next Bible Study" card.
+  if(!D.chaplainHub)D.chaplainHub={bibleStudies:[],devotionals:[]};
+  if(!D.chaplainHub.devotionals)D.chaplainHub.devotionals=[];
   if(!D.newMemberEducation)D.newMemberEducation={sessions:[],requirements:[],progress:{},mentorGroups:[],mentorProgramAgenda:[]};
-  if(!D.social)D.social={planning:{},vendors:[],rsvps:[]};
+  if(!D.social)D.social={planning:{},vendors:[]};
   if(!D.social.planning)D.social.planning={};
   if(!D.social.vendors)D.social.vendors=[];
-  if(!D.social.rsvps)D.social.rsvps=[];
   if(!D.vendors)D.vendors=[];
   if(!D.transitionHub)D.transitionHub={deadlines:[],issues:[],archive:[]};
   if(!D.settings)D.settings={name:'',year:'',classYear:'Senior',notifAttendance:true,notifTasks:true,notifSober:true,notifWeekly:true,chapterName:'Beta Chapter',university:'State University',chapterSize:'',chapterFounded:''};
@@ -149,7 +155,7 @@ async function _saveDFlush(){
       notes:        D.notes||[],
       attendance:   D.attendance||{},
       cases:        D.cases||[],
-      shifts:       D.shifts||[],
+      shifts:       D.shifts||{pledgeShadowStart:'',weekends:[]},
       files:        D.files||[],
       notifs:       D.notifs||[],
       committees:   D.committees||[],
